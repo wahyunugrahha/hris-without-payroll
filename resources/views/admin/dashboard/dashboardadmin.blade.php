@@ -2,6 +2,34 @@
 
 @section('content')
     <style>
+        html,
+        body {
+            overflow-x: hidden;
+            max-width: 100%;
+        }
+
+        .page,
+        .page-wrapper,
+        .page-body,
+        .container-fluid {
+            max-width: 100%;
+            min-width: 0;
+        }
+
+        .page,
+        .page-wrapper {
+            overflow-x: clip;
+        }
+
+        .page-body {
+            overflow-x: hidden;
+        }
+
+        .dashboard-shell .row,
+        .dashboard-shell [class*="col-"] {
+            min-width: 0;
+        }
+
         .realtime-strip {
             display: flex;
             flex-wrap: nowrap;
@@ -19,6 +47,8 @@
             max-width: none;
             padding-left: 0.9rem;
             padding-right: 0.9rem;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .realtime-card {
@@ -474,6 +504,10 @@
             min-height: 200px;
         }
 
+        .card-body-scrollable {
+            overflow-x: hidden;
+        }
+
         .leaderboard-table {
             margin-bottom: 0;
         }
@@ -709,10 +743,32 @@
             }
         }
 
+        @media (max-width: 1399.98px) {
+
+            .page-body .col-lg-8,
+            .page-body .col-lg-4 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 1199.98px) {
+
+            .page-body .col-lg-8,
+            .page-body .col-lg-4 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+
         @media (max-width: 768px) {
             .dashboard-shell {
                 padding-left: 0.75rem;
                 padding-right: 0.75rem;
+            }
+
+            .row {
+                --tblr-gutter-x: 0.75rem;
             }
 
             .realtime-strip {
@@ -801,6 +857,11 @@
                 min-height: 248px;
             }
 
+            .card-body-scrollable {
+                height: auto !important;
+                max-height: none !important;
+            }
+
             .chart-surface {
                 padding: 0.55rem 0.65rem;
             }
@@ -820,6 +881,15 @@
 
             .hr-calendar-table {
                 font-size: 9px;
+            }
+
+            .hr-calendar-wrap {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .hr-calendar-table {
+                min-width: 560px;
             }
 
             .hr-calendar-table .calendar-day-cell {
@@ -1260,6 +1330,11 @@
                 align-items: flex-start !important;
             }
 
+            .page-header .col-auto.ms-auto {
+                width: 100%;
+                margin-left: 0 !important;
+            }
+
             .page-header-actions {
                 width: 100%;
                 justify-content: flex-start;
@@ -1281,6 +1356,11 @@
 
             .people-insight-card .card-body {
                 padding: 0.45rem;
+            }
+
+            .card-body-scrollable {
+                height: auto !important;
+                max-height: 60vh !important;
             }
 
             .people-insight-table {
@@ -1447,6 +1527,11 @@
                 height: auto !important;
                 min-height: 0;
                 padding: 0.55rem;
+            }
+
+            .analytics-card .chart-canvas,
+            .demography-card .chart-canvas {
+                min-height: 170px;
             }
 
             .analytics-card .chart-surface {
@@ -3143,7 +3228,33 @@
                 },
                 legend: {
                     position: 'bottom'
-                }
+                },
+                responsive: [{
+                    breakpoint: 576,
+                    options: {
+                        chart: {
+                            height: 200
+                        },
+                        xaxis: {
+                            labels: {
+                                rotate: -45,
+                                trim: true
+                            }
+                        },
+                        yaxis: [{
+                            labels: {
+                                show: true
+                            }
+                        }, {
+                            labels: {
+                                show: false
+                            },
+                            title: {
+                                text: ''
+                            }
+                        }]
+                    }
+                }]
             });
 
             // 6. CHART KPI CABANG
@@ -3171,7 +3282,26 @@
                 xaxis: {
                     categories: @json($kpiCabangLabels ?? [])
                 },
-                colors: ['#6f42c1']
+                colors: ['#6f42c1'],
+                responsive: [{
+                    breakpoint: 576,
+                    options: {
+                        chart: {
+                            height: 200
+                        },
+                        plotOptions: {
+                            bar: {
+                                columnWidth: '62%'
+                            }
+                        },
+                        xaxis: {
+                            labels: {
+                                rotate: -35,
+                                trim: true
+                            }
+                        }
+                    }
+                }]
             });
 
             // 7. CHART DEMOGRAFI UMUR
@@ -3189,7 +3319,15 @@
                 colors: ["#4299e1", "#48bb78", "#ecc94b", "#ed8936", "#f56565"],
                 legend: {
                     position: 'right'
-                }
+                },
+                responsive: [{
+                    breakpoint: 768,
+                    options: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }]
             });
 
             // 8. CHART GENDER
@@ -3207,7 +3345,15 @@
                 colors: ["#206bc4", "#ff4d6d"],
                 legend: {
                     position: 'right'
-                }
+                },
+                responsive: [{
+                    breakpoint: 768,
+                    options: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }]
             });
 
             // 9. CHART PENDIDIKAN
@@ -3225,7 +3371,15 @@
                 colors: ["#206bc4", "#094b87", "#f59f00", "#d63939"],
                 legend: {
                     position: 'right'
-                }
+                },
+                responsive: [{
+                    breakpoint: 768,
+                    options: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }]
             });
 
             // SCRIPT KALENDER DETAIL

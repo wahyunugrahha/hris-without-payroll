@@ -21,7 +21,7 @@
 
         :root {
             --tblr-primary: #094b87;
-            --tblr-primary-rgb: 47, 179, 68;
+            --tblr-primary-rgb: 9, 75, 135;
         }
 
         body {
@@ -51,6 +51,13 @@
         .login-bg-inner {
             position: relative;
             z-index: 1;
+        }
+
+        .form-control:focus,
+        .input-group .form-control:focus,
+        .input-group-flat .form-control:focus {
+            border-color: rgba(9, 75, 135, 0.45) !important;
+            box-shadow: 0 0 0 0.2rem rgba(9, 75, 135, 0.2) !important;
         }
     </style>
 </head>
