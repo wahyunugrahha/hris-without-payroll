@@ -6,7 +6,7 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#10b981">
-    <title>Verifikasi Token | Sistem Absensi DevHRIS</title>
+    <title>Verifikasi Token | Sistem Absensi wndev</title>
     <link rel="icon" type="image/png" href="{{ asset('assets/img/logo.png') }}" sizes="32x32">
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <style>
@@ -157,7 +157,7 @@
 <body class="login-page">
 
     <div class="login-form">
-        <img src="{{ asset('assets/img/logo.png') }}" alt="DevHRIS" class="form-image">
+        <x-brand-logo variant="square" alt="wndev" class="form-image" />
 
         <div class="login-header">
             <h1>Verifikasi Token</h1>

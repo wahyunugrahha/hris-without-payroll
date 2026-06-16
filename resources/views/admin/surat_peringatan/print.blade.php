@@ -240,10 +240,10 @@
     <div class="page">
 
         <div class="header">
-            <img src="{{ asset('assets/img/logo.png') }}" class="logo" alt="DevHRIS">
+            <x-brand-logo variant="print-square" alt="wndev" class="logo" />
             <div class="company-contact">
                 Website : <a href="#" target="_blank">#</a> — email : <a
-                    href="mailto:info@devhris.com">info@devhris.com</a>
+                    href="mailto:info@wndev.com">info@wndev.com</a>
             </div>
         </div>
 
@@ -343,7 +343,7 @@
                 </tr>
                 <tr>
                     <td style="padding-top: 15px;">
-                        <span class="bold">DevHRIS</span>
+                        <span class="bold">wndev</span>
                     </td>
                     <td style="padding-top: 15px; padding-left: 50px;">
                         Yang Menerima SP {{ $sp->level }},

@@ -3,13 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
 
 class HariLibur extends Model
 {
-    use LogsActivity;
-
     protected $table = 'hari_libur';
     
     protected $fillable = [
@@ -56,10 +52,4 @@ class HariLibur extends Model
         return $query->exists();
     }
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logAll()
-            ->useLogName('audit');
-    }
 }

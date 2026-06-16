@@ -2,14 +2,10 @@
 
 namespace App\Models;
 
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\Model;
 
 class Departemen extends Model
 {
-    use LogsActivity;
-
     protected $table = 'departemen';
     protected $primaryKey = 'kode_dept';
     public $incrementing = false;
@@ -45,10 +41,4 @@ class Departemen extends Model
         return $this->hasMany(HariLibur::class, 'kode_dept', 'kode_dept');
     }
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logAll()
-            ->useLogName('audit');
-    }
 }

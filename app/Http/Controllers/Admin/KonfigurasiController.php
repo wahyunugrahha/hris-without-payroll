@@ -102,23 +102,10 @@ class KonfigurasiController extends Controller
         $data['kode_jam_kerja'] = $new_kode_jam_kerja;
 
         try {
-            $jamKerjaLama = JamKerja::where('kode_jam_kerja', $kode_jam_kerja)->first();
             // Update menggunakan DB query builder untuk menangani perubahan Primary Key
             $update = DB::table('jam_kerja')->where('kode_jam_kerja', $kode_jam_kerja)->update($data);
 
             if ($update) {
-                $jamKerjaBaru = JamKerja::where('kode_jam_kerja', $new_kode_jam_kerja)->first();
-                if ($jamKerjaBaru) {
-                    $oldData = $jamKerjaLama ? $jamKerjaLama->toArray() : [];
-                    $newData = $jamKerjaBaru->toArray();
-                    $changedAttributes = array_diff_assoc($newData, $oldData);
-                    $oldAttributes = array_intersect_key($oldData, $changedAttributes);
-                    if (!empty($changedAttributes)) {
-                        activity('audit')->event('updated')->performedOn($jamKerjaBaru)
-                            ->withProperties(['old' => $oldAttributes, 'attributes' => $changedAttributes])
-                            ->log('updated');
-                    }
-                }
                 return Redirect::route('konfigurasi.jamkerja')->with(['success' => 'Data Jam Kerja Berhasil Diupdate']);
             } else {
                 return Redirect::back()->with(['warning' => 'Tidak Ada Perubahan Data']);
@@ -300,13 +287,6 @@ class KonfigurasiController extends Controller
             KonfigurasiJkDeptDetail::insert($data);
             DB::commit();
 
-            $dept = KonfigurasiJkDept::where('kode_jk_dept', $kode_jk_dept)->first();
-            if($dept) {
-                activity('audit')->event('updated')->performedOn($dept)
-                    ->withProperties(['attributes' => ['details_updated' => true]])
-                    ->log('updated');
-            }
-
             return redirect('/konfigurasi/jamkerjadept')->with(['success' => 'Data Berhasil Disimpan']);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -450,12 +430,6 @@ class KonfigurasiController extends Controller
                     Setjamkerja::insert($data);
                 }
             });
-
-            if ($karyawan) {
-                 activity('audit')->event('updated')->performedOn($karyawan)
-                    ->withProperties(['attributes' => ['set_jam_kerja_updated' => true]])
-                    ->log('updated');
-            }
 
             return redirect('/karyawan')->with(['success' => 'Jam Kerja Berhasil Di Seting']);
         } catch (\Exception $e) {

@@ -5,12 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
 
 class Presensi extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory;
 
     protected $table = 'presensi';
 
@@ -41,10 +39,4 @@ class Presensi extends Model
         return $this->belongsTo(JamKerja::class, 'kode_jam_kerja', 'kode_jam_kerja');
     }
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logAll()
-            ->useLogName('audit');
-    }
 }

@@ -100,24 +100,6 @@ class DepartemenController extends Controller
                 'nama_dept' => $nama_dept
             ]);
 
-            $departemenBaru = Departemen::where('kode_dept', $new_kode_dept)->first();
-            if ($departemenBaru) {
-                $oldData = $departemen->toArray();
-                $newData = $departemenBaru->toArray();
-                $changedAttributes = array_diff_assoc($newData, $oldData);
-                $oldAttributes = array_intersect_key($oldData, $changedAttributes);
-
-                if (!empty($changedAttributes)) {
-                    activity('audit')->event('updated')
-                        ->performedOn($departemenBaru)
-                        ->withProperties([
-                            'old' => $oldAttributes,
-                            'attributes' => $changedAttributes
-                        ])
-                        ->log('updated');
-                }
-            }
-
             return Redirect::back()->with('success', 'Data Departemen Berhasil Diupdate');
         } catch (\Exception $e) {
             return Redirect::back()->with('warning', 'Data Departemen Gagal Diupdate: ' . $e->getMessage())->withInput();

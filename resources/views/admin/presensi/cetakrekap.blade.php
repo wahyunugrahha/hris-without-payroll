@@ -156,7 +156,7 @@
         $qrImage = 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' . urlencode($ttdUrl);
 
         // Fallback nama cabang untuk lembar template kosong.
-        $defaultBranch = $cabang->nama_cabang ?? 'DevHRIS';
+        $defaultBranch = $cabang->nama_cabang ?? 'wndev';
     @endphp
 
     @foreach ($pages as $pageIndex => $pageData)
@@ -164,14 +164,14 @@
             <table style="width: 100%; border:none;">
                 <tr>
                     <td style="width: 80px; border:none;">
-                        <img src="{{ asset('assets/img/logo.png') }}" height="50">
+                        <x-brand-logo variant="print-square" alt="wndev" />
                     </td>
                     <td style="border:none; text-align: left; vertical-align: top;">
                         <div id="title">
                             REKAPITULASI PRESENSI KARYAWAN<br>
                             PERIODE {{ \Carbon\Carbon::parse($tgl_awal)->translatedFormat('d F Y') }} -
                             {{ \Carbon\Carbon::parse($tgl_akhir)->translatedFormat('d F Y') }} <br>
-                            {{ $cabang->nama_cabang ?? 'DevHRIS' }}
+                            {{ $cabang->nama_cabang ?? 'wndev' }}
                         </div>
                         <span style="font-size: 9px;">Jl. W.R. Suprtaman, RT 07 Rw 02, Kel. Bentiring, Kec Muara
                             Bangkahulu, Kota Bengkulu</span>
@@ -336,7 +336,7 @@
                         <td width="40%" style="text-align: center;">
                             <div>Bengkulu, {{ $approvedAt }}</div>
                             <div style="margin-top:5px; font-weight:bold;">Mengetahui,</div>
-                            <div style="margin-top:2px;">DevHRIS</div>
+                            <div style="margin-top:2px;">wndev</div>
 
                             <div class="qr-box">
                                 <img src="{{ $qrImage }}" alt="QR Code TTD">
@@ -370,7 +370,7 @@
                     <table style="width: 100%; border:none;">
                         <tr>
                             <td style="width: 80px; border:none;">
-                                <img src="{{ asset('assets/img/logo.png') }}" height="50">
+                                <x-brand-logo variant="print-square" alt="wndev" />
                             </td>
                             <td style="border:none; text-align: left; vertical-align: top;">
                                 <div id="title" style="font-size: 13px;">
@@ -378,7 +378,7 @@
                                     DAFTAR KARYAWAN YANG MENDAPATKAN KENAIKAN GAJI<br>
                                     PERIODE {{ \Carbon\Carbon::parse($tgl_awal)->translatedFormat('d F Y') }} -
                                     {{ \Carbon\Carbon::parse($tgl_akhir)->translatedFormat('d F Y') }} <br>
-                                    {{ $cabang->nama_cabang ?? 'DevHRIS' }}
+                                    {{ $cabang->nama_cabang ?? 'wndev' }}
                                 </div>
                                 <span style="font-size: 9px;">Jl. W.R. Supratman, RT 07 Rw 02, Kel. Bentiring, Kec Muara
                                     Bangkahulu, Kota Bengkulu</span>
@@ -456,7 +456,7 @@
                             <td width="40%" style="text-align: center; font-size: 9px;">
                                 <div>Bengkulu, {{ $approvedAt }}</div>
                                 <div style="margin-top:5px; font-weight:bold;">Mengetahui & Mensahkan,</div>
-                                <div style="margin-top:2px;">DevHRIS</div>
+                                <div style="margin-top:2px;">wndev</div>
 
                                 <div class="qr-box">
                                     <img src="{{ $qrImage }}" alt="QR Code TTD"
@@ -478,7 +478,7 @@
         $karyawanDapatBonus = collect();
 
         $rekapPerCabang = collect($rekap)->groupBy(function ($item) {
-            return $item->nama_cabang ?? 'DevHRIS';
+            return $item->nama_cabang ?? 'wndev';
         });
 
         foreach ($rekapPerCabang as $branchName => $branchEmployees) {
@@ -522,7 +522,7 @@
                     <table style="width: 100%; border:none;">
                         <tr>
                             <td style="width: 80px; border:none;">
-                                <img src="{{ asset('assets/img/logo.png') }}" height="50">
+                                <x-brand-logo variant="print-square" alt="wndev" />
                             </td>
                             <td style="border:none; text-align: left; vertical-align: top;">
                                 <div id="title" style="font-size: 13px;">
@@ -530,7 +530,7 @@
                                     DAFTAR KARYAWAN YANG MENDAPATKAN BONUS PERFORMA PER CABANG<br>
                                     PERIODE {{ \Carbon\Carbon::parse($tgl_awal)->translatedFormat('d F Y') }} -
                                     {{ \Carbon\Carbon::parse($tgl_akhir)->translatedFormat('d F Y') }} <br>
-                                    {{ $cabang->nama_cabang ?? 'DevHRIS' }}
+                                    {{ $cabang->nama_cabang ?? 'wndev' }}
                                 </div>
                                 <span style="font-size: 9px;">Jl. W.R. Supratman, RT 07 Rw 02, Kel. Bentiring, Kec
                                     Muara Bangkahulu, Kota Bengkulu</span>
@@ -613,7 +613,7 @@
                             <td width="40%" style="text-align: center; font-size: 9px;">
                                 <div>Bengkulu, {{ $approvedAt }}</div>
                                 <div style="margin-top:5px; font-weight:bold;">Mengetahui & Mensahkan,</div>
-                                <div style="margin-top:2px;">DevHRIS</div>
+                                <div style="margin-top:2px;">wndev</div>
 
                                 <div class="qr-box">
                                     <img src="{{ $qrImage }}" alt="QR Code TTD"
@@ -634,7 +634,7 @@
             <table style="width: 100%; border:none;">
                 <tr>
                     <td style="width: 80px; border:none;">
-                        <img src="{{ asset('assets/img/logo.png') }}" height="50">
+                        <x-brand-logo variant="print-square" alt="wndev" />
                     </td>
                     <td style="border:none; text-align: left; vertical-align: top;">
                         <div id="title" style="font-size: 13px;">
@@ -642,7 +642,7 @@
                             DAFTAR KARYAWAN YANG MENDAPATKAN BONUS PERFORMA PER CABANG<br>
                             PERIODE {{ \Carbon\Carbon::parse($tgl_awal)->translatedFormat('d F Y') }} -
                             {{ \Carbon\Carbon::parse($tgl_akhir)->translatedFormat('d F Y') }} <br>
-                            {{ $cabang->nama_cabang ?? 'DevHRIS' }}
+                            {{ $cabang->nama_cabang ?? 'wndev' }}
                         </div>
                         <span style="font-size: 9px;">Jl. W.R. Supratman, RT 07 Rw 02, Kel. Bentiring, Kec Muara
                             Bangkahulu, Kota Bengkulu</span>
@@ -723,7 +723,7 @@
                     <td width="40%" style="text-align: center; font-size: 9px;">
                         <div>Bengkulu, {{ $approvedAt }}</div>
                         <div style="margin-top:5px; font-weight:bold;">Mengetahui & Mensahkan,</div>
-                        <div style="margin-top:2px;">DevHRIS</div>
+                        <div style="margin-top:2px;">wndev</div>
 
                         <div class="qr-box">
                             <img src="{{ $qrImage }}" alt="QR Code TTD" style="width: 75px; height: 75px;">

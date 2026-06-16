@@ -51,7 +51,6 @@ class RoleSeeder extends Seeder
             'users-view-admin', 'users-create-admin', 'users-edit-admin', 'users-delete-admin',
             'roles-view-admin', 'roles-create-admin', 'roles-edit-admin', 'roles-delete-admin',
             'permissions-view-admin', 'permissions-create-admin', 'permissions-edit-admin', 'permissions-delete-admin',
-            'audit-log-view-admin',
         ];
 
         $hrdPermissions = [

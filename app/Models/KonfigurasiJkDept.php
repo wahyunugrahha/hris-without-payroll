@@ -5,13 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
 
 class KonfigurasiJkDept extends Model
 {
-    use LogsActivity;
-
     protected $table = 'konfigurasi_jk_dept';
     public $incrementing = false;
     protected $keyType = 'string';
@@ -40,10 +36,4 @@ class KonfigurasiJkDept extends Model
         return $this->belongsTo(Departemen::class, 'kode_dept', 'kode_dept');
     }
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logAll()
-            ->useLogName('audit');
-    }
 }

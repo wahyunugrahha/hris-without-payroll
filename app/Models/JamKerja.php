@@ -3,13 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
 
 class JamKerja extends Model
 {
-    use LogsActivity;
-
     protected $table = 'jam_kerja';
     protected $primaryKey = 'kode_jam_kerja';
     public $incrementing = false;
@@ -40,10 +36,4 @@ class JamKerja extends Model
         return $this->hasMany(Setjamkerja::class, 'kode_jam_kerja', 'kode_jam_kerja');
     }
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logAll()
-            ->useLogName('audit');
-    }
 }

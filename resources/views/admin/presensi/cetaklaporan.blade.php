@@ -212,8 +212,8 @@
         <table>
             <tr>
                 <td style="width: 80px; vertical-align: top;">
-                    <img src="{{ asset('assets/img/logo.png') }}" width="70" alt="Logo"
-                        onerror="this.style.display='none'">
+                    <x-brand-logo variant="print-square" alt="Logo"
+                        onerror="this.style.display='none'" />
                 </td>
                 <td style="vertical-align: top; text-align:left;">
                     <span id="title">
@@ -221,7 +221,7 @@
                         PERIODE {{ strtoupper(\Carbon\Carbon::parse($tgl_awal)->translatedFormat('d F Y')) }} -
                         {{ strtoupper(\Carbon\Carbon::parse($tgl_akhir)->translatedFormat('d F Y')) }}<br>
                         <span
-                            style="font-size: 14px; font-weight: bold;">{{ $cabang->nama_cabang ?? 'DevHRIS' }}</span>
+                            style="font-size: 14px; font-weight: bold;">{{ $cabang->nama_cabang ?? 'wndev' }}</span>
                     </span><br>
                     <span style="font-size: 9px; line-height: 1.4; display: block; margin-top: 4px;">
                         <i>Jl. W.R. Supratman RT 07 Rw 02 Kel. Bentiring Kec. Muara Bangkahulu Kota Bengkulu</i>
@@ -262,7 +262,7 @@
                     <tr>
                         <td class="label">Cabang</td>
                         <td class="colon">:</td>
-                        <td>{{ $cabang->nama_cabang ?? 'DevHRIS' }}</td>
+                        <td>{{ $cabang->nama_cabang ?? 'wndev' }}</td>
                     </tr>
                     @if(isset($bonusBulanan) && $bonusBulanan > 0)
                     <tr>
@@ -333,7 +333,7 @@
             <div class="footer-left">
                 <strong>Catatan :</strong>
                 <ol>
-                    <li>Laporan ini dihasilkan secara otomatis oleh sistem <i>devhris.com</i>.</li>
+                    <li>Laporan ini dihasilkan secara otomatis oleh sistem <i>wndev.com</i>.</li>
                     <li>Total jam kerja dihitung berdasarkan selisih jam masuk dan jam pulang.</li>
                     <li>Jika terdapat ketidaksesuaian data presensi, harap segera menghubungi bagian HRD.</li>
                 </ol>
@@ -342,7 +342,7 @@
             <div class="footer-right">
                 <div>Bengkulu, {{ $approvedAt }}</div>
                 <div style="margin-top:5px; font-weight:bold;">Mengetahui,</div>
-                <div style="margin-top:2px;">DevHRIS</div>
+                <div style="margin-top:2px;">wndev</div>
 
                 <div class="qr-box">
                     <img src="{{ $qrImage }}" alt="QR Code Validasi">

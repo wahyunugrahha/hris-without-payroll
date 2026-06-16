@@ -188,14 +188,14 @@
         <table style="width: 100%;">
             <tr>
                 <td style="width: 60px;">
-                    <img src="{{ asset('assets/img/logo.png') }}" height="50">
+                    <x-brand-logo variant="print-square" alt="wndev" />
                 </td>
                 <td>
                     <div id="title">
                         REKAPITULASI LEMBUR KARYAWAN<br>
                         PERIODE {{ \Carbon\Carbon::parse($start_date)->translatedFormat('d F Y') }} -
                         {{ \Carbon\Carbon::parse($end_date)->translatedFormat('d F Y') }} <br>
-                        {{ $cabang->nama_cabang ?? 'DevHRIS' }}
+                        {{ $cabang->nama_cabang ?? 'wndev' }}
                     </div>
                     <span style="font-size: 9px;">Jl. W.R. Suprtaman, RT 07 Rw 02, Kel. Bentiring, Kec Muara Bangkahulu,
                         Kota Bengkulu</span>
@@ -273,7 +273,7 @@
                 <td width="40%" style="text-align: center;">
                     <div>Bengkulu, {{ $approvedAt }}</div>
                     <div style="margin-top:5px; font-weight:bold;">Mengetahui,</div>
-                    <div style="margin-top:2px;">DevHRIS</div>
+                    <div style="margin-top:2px;">wndev</div>
 
                     <div class="qr-box">
                         <img src="{{ $qrImage }}" alt="QR Code TTD">

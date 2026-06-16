@@ -14,9 +14,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <meta name="theme-color" content="#000000">
-    <title>Sistem Absensi DevHRIS</title>
-    <meta name="description" content="Sistem Absensi Karyawan DevHRIS">
-    <meta name="keywords" content="absensi, karyawan, devhris" />
+    <title>Sistem Absensi wndev</title>
+    <meta name="description" content="Sistem Absensi Karyawan wndev">
+    <meta name="keywords" content="absensi, karyawan, wndev" />
 
     <link rel="icon" type="image/png" href="{{ asset('assets/img/logo.png') }}" sizes="32x32">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/img/icon/180x180.png') }}">

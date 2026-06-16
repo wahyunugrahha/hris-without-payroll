@@ -162,12 +162,6 @@ class KaryawanController extends Controller
 
             // 1. Simpan DB
             $karyawan = Karyawan::create($data);
-            if ($karyawan) {
-                activity('audit')
-                    ->performedOn($karyawan)
-                    ->withProperties(['attributes' => $karyawan->toArray()])
-                    ->log('created');
-            }
 
             if ($jabatan && $jabatan->role) {
                 $karyawan->syncRoles([$jabatan->role->name]);
@@ -348,23 +342,6 @@ class KaryawanController extends Controller
             // 1. Update DB
             $oldDataKaryawan = $karyawan->toArray();
             Karyawan::where('nik', $nik)->update($payload);
-
-            $karyawanUpdated = Karyawan::where('nik', $newNik)->first();
-            if ($karyawanUpdated) {
-                $newData = $karyawanUpdated->toArray();
-                $changedAttributes = array_diff_assoc($newData, $oldDataKaryawan);
-                $oldAttributes = array_intersect_key($oldDataKaryawan, $changedAttributes);
-
-                if (!empty($changedAttributes)) {
-                    activity('audit')->event('updated')
-                        ->performedOn($karyawanUpdated)
-                        ->withProperties([
-                            'old' => $oldAttributes,
-                            'attributes' => $changedAttributes
-                        ])
-                        ->log('updated');
-                }
-            }
 
             $karyawanUpdated = Karyawan::where('nik', $newNik)->first();
 

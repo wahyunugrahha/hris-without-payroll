@@ -355,13 +355,6 @@
                             <p class="mb-1"><strong>Kode Lembur:</strong><br><span id="mdKode">-</span></p>
                             <p class="mb-1"><strong>Jam Mulai:</strong><br><span id="mdJamMulai">-</span></p>
                             <p class="mb-0"><strong>Jam Selesai:</strong><br><span id="mdJamSelesai">-</span></p>
-                            <div class="mt-2" id="mdAuditContainer" style="display: none;">
-                                <span class="badge bg-purple text-purple-fg">Diperbarui <span
-                                        id="mdUpdateCount"></span>x</span><br>
-                                <small class="text-secondary">Awal: <strong id="mdJamAwal"></strong></small><br>
-                                <small class="text-secondary text-muted">Update Pk: <span
-                                        id="mdLastUpdate"></span></small>
-                            </div>
                         </div>
                     </div>
                     <hr>
@@ -542,18 +535,6 @@
                     setText('mdTempat', button.getAttribute('data-tempat'));
                     setText('mdTotalJam', button.getAttribute('data-totaljam'));
                     setText('mdKeterangan', button.getAttribute('data-keterangan'));
-
-                    // Set Audit Update Status
-                    const updateCount = button.getAttribute('data-updatecount');
-                    const auditContainer = document.getElementById('mdAuditContainer');
-                    if (updateCount && parseInt(updateCount) > 0) {
-                        setText('mdUpdateCount', updateCount);
-                        setText('mdJamAwal', button.getAttribute('data-jamselesaiawal'));
-                        setText('mdLastUpdate', button.getAttribute('data-lastupdate'));
-                        auditContainer.style.display = 'block';
-                    } else {
-                        auditContainer.style.display = 'none';
-                    }
 
                     // Set hidden IDs for actions
                     const idVal = button.getAttribute('data-id');

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace Database\Seeders;
 
@@ -45,25 +45,25 @@ class CabangSeeder extends Seeder
             ],
             [
                 'kode_cabang' => 'CBNG0006',
-                'nama_cabang' => 'DevHRIS Konstruksi',
+                'nama_cabang' => 'wndev Konstruksi',
                 'lokasi_kantor' => '-3.781170845255156, 102.3167987777119',
                 'radius' => 30,
             ],
             [
                 'kode_cabang' => 'CBNG0001',
-                'nama_cabang' => 'DevHRIS',
+                'nama_cabang' => 'wndev',
                 'lokasi_kantor' => '-3.7812597146924785, 102.31705329402465',
                 'radius' => 100,
             ],
             [
                 'kode_cabang' => 'CBNG0007',
-                'nama_cabang' => 'DevHRIS Pratama',
+                'nama_cabang' => 'wndev Pratama',
                 'lokasi_kantor' => '-3.7810868959589463, 102.31682163602754',
                 'radius' => 100,
             ],
             [
                 'kode_cabang' => 'CBNG0008',
-                'nama_cabang' => 'DevHRIS Energi',
+                'nama_cabang' => 'wndev Energi',
                 'lokasi_kantor' => '-3.7810868959589463, 102.31682163602754',
                 'radius' => 100,
             ],
@@ -75,13 +75,13 @@ class CabangSeeder extends Seeder
             ],
             [
                 'kode_cabang' => 'CBNG0002',
-                'nama_cabang' => 'DevHRIS Site SSKB',
+                'nama_cabang' => 'wndev Site SSKB',
                 'lokasi_kantor' => '-1.9517749116109366, 103.03197675101389',
                 'radius' => 5000,
             ],
             [
                 'kode_cabang' => 'CBNG0003',
-                'nama_cabang' => 'DevHRIS Site INJATAMA',
+                'nama_cabang' => 'wndev Site INJATAMA',
                 'lokasi_kantor' => '-3.2550007475785905, 101.84215105616725',
                 'radius' => 1000,
             ],

@@ -5,8 +5,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Sistem Absensi DevHRIS</title>
-    <link rel="icon" type="image/png" href="{{ asset('assets/img/logo.png') }}" sizes="32x32">
+    <title>Sistem Absensi wndev</title>
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/logo-main.png') }}" sizes="32x32">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/img/icon/180x180.png') }}">
     <link rel="manifest" href="{{ asset('__manifest.json') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler.min.css" />
@@ -41,32 +41,98 @@
             --admin-header-height: 66px;
         }
 
-        .navbar-vertical {
-            background-color: #ffffff;
-            border-right: 1px solid rgba(0, 0, 0, 0.05);
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: #f8fafc;
         }
 
-        .navbar-vertical .navbar-brand {
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            min-height: var(--admin-header-height);
+        .page {
+            min-height: 100vh;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: .35rem 0;
-            margin-bottom: .6rem;
+            flex-direction: row !important;
+            flex-wrap: nowrap;
+            align-items: stretch;
         }
 
-        .navbar-vertical .admin-sidebar-logo {
-            height: clamp(34px, calc(var(--admin-header-height) - 24px), 42px);
-            width: auto;
-            max-width: min(250px, 94%);
-            object-fit: contain;
+        .page > .navbar-vertical {
+            margin: 0;
+            flex: 0 0 auto;
+            width: 260px;
+        }
+
+        .page > .page-wrapper {
+            flex: 1 1 auto;
+            min-width: 0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page > .page-wrapper > .page-wrapper {
+            margin: 0;
+            padding: 0;
         }
 
         @media (max-width: 1199.98px) {
+            .page {
+                flex-direction: row !important;
+            }
+
+            .page > .navbar-vertical {
+                width: 260px;
+            }
+        }
+
+        .navbar-vertical {
+            background-color: #ffffff;
+            border-right: 1px solid rgba(0, 0, 0, 0.05);
+            min-height: 100vh;
+        }
+
+        .navbar-vertical .navbar-brand {
+            border-bottom: 0;
+            background: transparent;
+            min-height: var(--admin-header-height);
+            height: var(--admin-header-height);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            margin-bottom: 0;
+            overflow: visible;
+        }
+
+        .navbar-vertical .navbar-brand > a {
+            width: 100%;
+            height: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .navbar-vertical .admin-sidebar-logo {
+            width: min(150px, calc(100% - 16px)) !important;
+            max-width: min(150px, calc(100% - 16px)) !important;
+            min-width: 124px;
+            height: auto !important;
+            max-height: 52px !important;
+            object-fit: contain !important;
+            object-position: center center;
+            filter: none;
+        }
+
+        @media (max-width: 1199.98px) {
+            .navbar-vertical .navbar-brand {
+                min-height: var(--admin-header-height);
+                height: var(--admin-header-height);
+            }
+
             .navbar-vertical .admin-sidebar-logo {
-                height: 34px;
-                max-width: min(220px, 84vw);
+                width: min(138px, calc(100% - 16px)) !important;
+                max-width: min(138px, calc(100% - 16px)) !important;
+                min-width: 116px;
+                max-height: 48px !important;
             }
         }
 
@@ -102,6 +168,15 @@
             background-color: #ffffff;
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
             min-height: var(--admin-header-height);
+            margin: 0;
+        }
+
+        .app-header .container-xl {
+            width: 100%;
+            max-width: 100%;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            margin: 0;
         }
 
         .app-header .nav-link {
@@ -142,6 +217,10 @@
         [data-bs-theme="dark"] .navbar-vertical {
             background-color: #1e293b !important;
             border-right-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        [data-bs-theme="dark"] .navbar-vertical .admin-sidebar-logo {
+            filter: brightness(0) invert(1);
         }
 
         [data-bs-theme="dark"] .navbar-vertical .navbar-brand {
@@ -310,7 +389,24 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <script>
-        // Dark Mode Toggle (handle clicks only)
+        // Dark Mode Toggle
+        (function() {
+            const url = new URL(window.location.href);
+            const themeFromUrl = url.searchParams.get('theme');
+            const storedTheme = localStorage.getItem('theme');
+            const theme = themeFromUrl === 'dark' || themeFromUrl === 'light'
+                ? themeFromUrl
+                : (storedTheme === 'dark' || storedTheme === 'light' ? storedTheme : 'light');
+
+            document.documentElement.setAttribute('data-bs-theme', theme);
+
+            if (themeFromUrl === 'dark' || themeFromUrl === 'light') {
+                localStorage.setItem('theme', themeFromUrl);
+                url.searchParams.delete('theme');
+                window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+            }
+        })();
+
         document.addEventListener("DOMContentLoaded", function() {
             // Handle theme toggle clicks
             document.querySelectorAll('[href="?theme=dark"], [href="?theme=light"]').forEach(link => {
@@ -319,6 +415,9 @@
                     const newTheme = this.getAttribute('href').includes('dark') ? 'dark' : 'light';
                     document.documentElement.setAttribute('data-bs-theme', newTheme);
                     localStorage.setItem('theme', newTheme);
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete('theme');
+                    window.history.replaceState({}, '', url.pathname + url.search + url.hash);
                 });
             });
 

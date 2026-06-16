@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="refresh" content="300">
-    <title>DevHRIS TV Dashboard - Master Monitor</title>
+    <title>wndev TV Dashboard - Master Monitor</title>
 
     <link rel="icon" type="image/png" href="{{ asset('assets/img/logo.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -587,7 +587,7 @@
 
         <header>
             <div class="h-brand">
-                <img src="{{ asset('assets/img/logo.png') }}" alt="DevHRIS">
+                <x-brand-logo variant="landscape" alt="wndev" />
                 <div>
                     <h1>DASHBOARD</h1>
                     <small>Monitoring System</small>
@@ -1005,7 +1005,7 @@
             <div class="mq-tag">LIVE INFO</div>
             <div class="mq-wrap">
                 <div class="mq-text">
-                    Selamat Datang di Dashboard Monitoring DevHRIS &nbsp;&bull;&nbsp;
+                    Selamat Datang di Dashboard Monitoring wndev &nbsp;&bull;&nbsp;
                     Total Karyawan Hadir: {{ count($dataPresensi) }} &nbsp;&bull;&nbsp;
                     Disiplin dan Integritas &nbsp;&bull;&nbsp;
                     {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}

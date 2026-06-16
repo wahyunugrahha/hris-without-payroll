@@ -655,7 +655,7 @@
                         @endif
                     </div>
                     <div class="header-info">
-                        <h2>{{ $user?->nama_lengkap ?? 'Team DevHRIS' }}</h2>
+                        <h2>{{ $user?->nama_lengkap ?? 'Team wndev' }}</h2>
                         <p class="header-role">
                             <ion-icon name="person"></ion-icon>
                             {{ $user?->jabatanRel->nama_jabatan ?? 'DEVELOPER' }}

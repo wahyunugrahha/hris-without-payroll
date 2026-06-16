@@ -213,8 +213,8 @@
             <table style="width: 100%; margin-bottom: 10px; border:none;">
                 <tr>
                     <td style="width: 80px; vertical-align: top; border:none; padding:0;">
-                        <img src="{{ asset('assets/img/logo.png') }}" width="70" alt="Logo"
-                            onerror="this.style.display='none'">
+                        <x-brand-logo variant="print-square" alt="Logo"
+                            onerror="this.style.display='none'" />
                     </td>
                     <td style="vertical-align: top; text-align:left; border:none; padding:0;">
                         <span id="title">
@@ -223,7 +223,7 @@
                             <span style="font-size: 14px; font-weight: bold;">{{ strtoupper($row->cabang) }}</span>
                         </span><br>
                         <span style="font-size: 9px; line-height: 1.4; display: block; margin-top: 4px;">
-                            <i>Sistem Penilaian Kinerja Karyawan (DevHRIS)</i>
+                            <i>Sistem Penilaian Kinerja Karyawan (wndev)</i>
                         </span>
                     </td>
                 </tr>

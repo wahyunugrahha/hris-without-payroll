@@ -6,7 +6,7 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#10b981">
-    <title>Registrasi Karyawan | Sistem Absensi DevHRIS</title>
+    <title>Registrasi Karyawan | Sistem Absensi wndev</title>
     <link rel="icon" type="image/png" href="{{ asset('assets/img/logo.png') }}" sizes="32x32">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -581,7 +581,7 @@
                 </div>
                 <div class="mt-3 text-center">
                     Copyright &copy; 2026
-                    <a href="#" class="link-secondary">DevHRIS</a>.
+                    <a href="#" class="link-secondary">wndev</a>.
                     All rights reserved.
                 </div>
             </div>

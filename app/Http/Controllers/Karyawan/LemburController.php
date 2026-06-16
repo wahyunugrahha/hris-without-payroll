@@ -378,7 +378,7 @@ class LemburController extends Controller
                 'foto_keluar' => $fileName
             ];
 
-            // Fitur Audit Update Selesai
+            // Simpan metadata saat jam selesai diperbarui
             if (!empty($lembur->jam_selesai)) {
                 if (empty($lembur->jam_selesai_awal)) {
                     $updateData['jam_selesai_awal'] = $lembur->jam_selesai;

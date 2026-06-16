@@ -4,12 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
 
 class MasterCuti extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory;
 
     protected $table = 'master_cuti';
 
@@ -33,10 +31,4 @@ class MasterCuti extends Model
         return $this->hasMany(Izin::class, 'kode_cuti', 'kode_cuti');
     }
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logAll()
-            ->useLogName('audit');
-    }
 }

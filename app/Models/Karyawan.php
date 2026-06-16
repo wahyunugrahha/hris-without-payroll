@@ -9,12 +9,10 @@ use Laravel\Sanctum\HasApiTokens;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
 
 class Karyawan extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles, LogsActivity;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     public const STATUS_AKTIF = 'Aktif';
     public const STATUS_NONAKTIF = 'Nonaktif';
@@ -241,11 +239,5 @@ class Karyawan extends Authenticatable
     public function suratPeringatan()
     {
         return $this->hasMany(SuratPeringatan::class, 'nik', 'nik');
-    }
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logAll()
-            ->useLogName('audit');
     }
 }

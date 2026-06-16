@@ -5,8 +5,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Login Admin | Sistem Absensi DevHRIS</title>
-    <link rel="icon" type="image/png" href="{{ asset('assets/img/logo.png') }}" sizes="32x32">
+    <title>Login Admin | Sistem Absensi wndev</title>
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/logo-main.png') }}" sizes="32x32">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/img/icon/180x180.png') }}">
     <link rel="manifest" href="{{ asset('__manifest.json') }}">
 
@@ -33,7 +33,8 @@
         }
 
         .login-logo img {
-            max-width: 220px;
+            width: min(100%, 280px);
+            max-width: 280px;
         }
 
         .login-bg {
@@ -63,10 +64,9 @@
 
                     {{-- Logo --}}
                     <div class="text-center mb-4 login-logo">
-                        <a href="{{ url('/') }}" aria-label="DevHRIS"
+                        <a href="{{ url('/') }}" aria-label="wndev"
                             class="navbar-brand navbar-brand-autodark d-inline-flex align-items-center justify-content-center">
-                            <img src="{{ asset('assets/img/logo.png') }}" class="img-fluid d-block mx-auto"
-                                alt="DevHRIS">
+                            <x-brand-logo variant="square" alt="wndev" class="img-fluid d-block mx-auto" />
                         </a>
                     </div>
 
@@ -165,7 +165,7 @@
                         </div>
 
                         <div class="card-footer text-center text-secondary small">
-                            &copy; {{ date('Y') }} DevHRIS. All rights reserved.
+                            &copy; {{ date('Y') }} wndev. All rights reserved.
                         </div>
                     </div>
                 </div>
@@ -190,7 +190,7 @@
                             </p>
                         </div>
                         <div class="small text-white-50">
-                            Jl. WR Supratman RT 07 RW 02, Kel. Bentiring, Kec. Muara Bangkahulu, Kota Bengkulu
+                            WN Developer
                         </div>
                     </div>
                 </div>

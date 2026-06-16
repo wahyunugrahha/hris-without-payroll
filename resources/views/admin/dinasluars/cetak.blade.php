@@ -291,7 +291,7 @@
     <div class="main-container">
         <div class="header">
             <div class="logo-section-container">
-                <img src="{{ asset('assets/img/logo.png') }}" alt="DevHRIS Logo" class="logo-horizontal">
+                <x-brand-logo variant="print-square" alt="wndev Logo" class="logo-horizontal" />
             </div>
 
             <div class="doc-info">
@@ -299,7 +299,7 @@
                 <div class="doc-subtitle">FPD Internal</div>
                 <div>Registered No.
                     {{ str_pad($dinasLuar->id, 3, '0', STR_PAD_LEFT) }}/FM/SPPD/SJP/{{ $bln_romawi }}/{{ date('Y', strtotime($dinasLuar->created_at)) }}
-                                    {{ str_pad($dinasLuar->id, 3, '0', STR_PAD_LEFT) }}/FM/SPPD/DevHRIS/{{ $bln_romawi }}/{{ date('Y', strtotime($dinasLuar->created_at)) }}
+                                    {{ str_pad($dinasLuar->id, 3, '0', STR_PAD_LEFT) }}/FM/SPPD/wndev/{{ $bln_romawi }}/{{ date('Y', strtotime($dinasLuar->created_at)) }}
                 </div>
             </div>
         </div>
@@ -318,7 +318,7 @@
             <div class="bio-row">
                 <div class="bio-label">Entitas</div>
                 <div class="bio-separator">:</div>
-                <div class="bio-value">{{ $dinasLuar->karyawan->cabang->nama_cabang ?? 'DevHRIS' }}
+                <div class="bio-value">{{ $dinasLuar->karyawan->cabang->nama_cabang ?? 'wndev' }}
                 </div>
             </div>
         </div>
@@ -396,7 +396,7 @@
             <div class="footer-left">
                 <div class="catatan-title">Catatan :</div>
                 <ol class="catatan-list">
-                    <li>Biaya Perjalanan dinas berdasarkan SOP & PP DevHRIS</li>
+                    <li>Biaya Perjalanan dinas berdasarkan SOP & PP wndev</li>
                     <li>Dana diluar Form ini wajib menyertakan nota asli.</li>
                 </ol>
             </div>
@@ -405,7 +405,7 @@
                 <div class="ttd-place-date">
                     {{ 'Bengkulu' }}, {{ $tgl_cetak }}
                     {{ $bln_cetak }} {{ $thn_cetak }}<br>
-                    DevHRIS
+                    wndev
                 </div>
 
                 <div class="ttd-signature">

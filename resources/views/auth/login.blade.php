@@ -9,9 +9,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1e74fd">
-    <title>Login Karyawan | Sistem Absensi DevHRIS</title>
-    <meta name="description" content="Sistem Absensi Karyawan DevHRIS">
-    <meta name="keywords" content="absensi, login, devhris" />
+    <title>Login Karyawan | Sistem Absensi wndev</title>
+    <meta name="description" content="Sistem Absensi Karyawan wndev">
+    <meta name="keywords" content="absensi, login, wndev" />
     <link rel="icon" type="image/png" href="{{ asset('assets/img/logo.png') }}" sizes="32x32">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/img/icon/180x180.png') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
@@ -36,7 +36,9 @@
 
     <div id="appCapsule">
         <div class="login-form">
-            <img src="{{ asset('assets/img/logo.png') }}" alt="DevHRIS" class="form-image">
+            <div class="login-brand">
+                <x-brand-logo variant="square" alt="wndev" class="form-image" />
+            </div>
 
             <div class="login-header">
                 <h1>Selamat Datang</h1>
@@ -89,7 +91,7 @@
 
             <div class="mt-3 text-center">
                 Copyright &copy; 2026
-                <a href="#" class="link-secondary">DevHRIS</a>.
+                <a href="#" class="link-secondary">wndev</a>.
                 All rights reserved.
             </div>            
         </div>

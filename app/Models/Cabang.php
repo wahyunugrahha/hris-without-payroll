@@ -4,13 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
 
 class Cabang extends Model
 {
     use HasFactory;
-    use LogsActivity;
 
     protected $table = 'cabang';
     protected $primaryKey = 'kode_cabang';
@@ -37,13 +34,6 @@ class Cabang extends Model
     public function karyawans()
     {
         return $this->hasMany(Karyawan::class, 'kode_cabang', 'kode_cabang');
-    }
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logAll()
-            ->useLogName('audit');
     }
 
     public function users()

@@ -220,11 +220,6 @@ class KPIController extends Controller
 
             DB::commit();
 
-            $kpiUpdated = KPIMaster::findOrFail($id);
-            activity('audit')->event('updated')->performedOn($kpiUpdated)
-                ->withProperties(['attributes' => ['details_updated' => true]])
-                ->log('updated');
-
             return redirect()->route('kpi.master.index')
                 ->with('success', 'Data KPI Master berhasil diperbarui. Cabang aktif: ' . count($newCabangs));
         } catch (\Exception $e) {
@@ -377,12 +372,6 @@ class KPIController extends Controller
             }
 
             DB::commit();
-
-            if ($master) {
-                activity('audit')->event('updated')->performedOn($master)
-                    ->withProperties(['attributes' => ['details_updated' => true]])
-                    ->log('updated');
-            }
 
             return back()->with('success', "Data Pengaturan KPI dan Indikator berhasil diperbarui.");
 

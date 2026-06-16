@@ -3,13 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
 
 class Lembur extends Model
 {
-    use LogsActivity;
-
     protected $table = 'lembur';
     protected $fillable = [
         'kode_lembur',
@@ -39,10 +35,4 @@ class Lembur extends Model
         return $this->belongsTo(Karyawan::class, 'nik', 'nik');
     }
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logAll()
-            ->useLogName('audit');
-    }
 }

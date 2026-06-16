@@ -4,12 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
 
 class SuratPeringatan extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory;
 
     protected $table = 'surat_peringatan';
 
@@ -32,10 +30,4 @@ class SuratPeringatan extends Model
         return $this->belongsTo(Karyawan::class, 'nik', 'nik');
     }
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logAll()
-            ->useLogName('audit');
-    }
 }

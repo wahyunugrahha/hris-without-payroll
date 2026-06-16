@@ -4,13 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\Models\Role;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
 
 class Jabatan extends Model
 {
-    use LogsActivity;
-
     protected $table = 'jabatan';
 
     protected $fillable = [
@@ -38,10 +34,4 @@ class Jabatan extends Model
         return $this->hasMany(User::class, 'jabatan_id', 'id');
     }
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logAll()
-            ->useLogName('audit');
-    }
 }

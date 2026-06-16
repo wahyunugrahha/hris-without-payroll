@@ -2693,7 +2693,7 @@
                         </div>
                     </div>
 
-                    {{-- 5. AUDIT LOG --}}
+                    {{-- 5. ACTIVITY FEED --}}
                     <div class="card border-0 shadow-sm rounded-3">
                         <div class="card-header p-2 border-bottom-0">
                             <h3 class="card-title fs-5">📋 Activity Feed</h3>
@@ -2701,24 +2701,24 @@
                         <div class="card-body p-3 card-body-scrollable" style="height: 180px;">
                             <ul class="list list-timeline list-timeline-simple mb-0">
                                 @php
-                                    $activityAudit = collect([]);
+                                    $recentActivities = collect([]);
                                     foreach (($izinPending ?? collect())->take(2) as $i) {
-                                        $activityAudit->push([
+                                        $recentActivities->push([
                                             'time' => $i->created_at ?? now(),
                                             'text' => 'Izin dari ' . ($i->nama_lengkap ?? '-') . ' menunggu review.',
                                             'color' => 'bg-yellow',
                                         ]);
                                     }
                                     foreach (($lemburPending ?? collect())->take(2) as $l) {
-                                        $activityAudit->push([
+                                        $recentActivities->push([
                                             'time' => $l->created_at ?? now(),
                                             'text' => 'Lembur ' . ($l->nama_lengkap ?? '-') . ' masuk antrean.',
                                             'color' => 'bg-blue',
                                         ]);
                                     }
-                                    $activityAudit = $activityAudit->sortByDesc('time')->take(5);
+                                    $recentActivities = $recentActivities->sortByDesc('time')->take(5);
                                 @endphp
-                                @forelse($activityAudit as $log)
+                                @forelse($recentActivities as $log)
                                     <li class="list-timeline-item pt-0 pb-2">
                                         <div class="list-timeline-icon {{ $log['color'] }}"></div>
                                         <div class="list-timeline-content text-truncate">
@@ -2728,7 +2728,7 @@
                                         </div>
                                     </li>
                                 @empty
-                                    <div class="text-center text-muted small">Belum ada jejak audit.</div>
+                                    <div class="text-center text-muted small">Belum ada aktivitas terbaru.</div>
                                 @endforelse
                             </ul>
                         </div>

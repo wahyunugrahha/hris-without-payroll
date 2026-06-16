@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace Database\Seeders;
 
@@ -15,7 +15,7 @@ class AdminUserSeeder extends Seeder
         $users = [
             [
                 'name' => 'Admin IT',
-                'email' => 'admin@devhris.com',
+                'email' => 'admin@wndev.com',
                 'password' => Hash::make('Admin12345'),
                 'kode_dept' => 'DEV',
                 'kode_cabang' => null,
@@ -23,7 +23,7 @@ class AdminUserSeeder extends Seeder
             ],
             [
                 'name' => 'HRD',
-                'email' => 'hrd@devhris.com',
+                'email' => 'hrd@wndev.com',
                 'password' => Hash::make('123456'),
                 'kode_dept' => 'HRD',
                 'kode_cabang' => 'CBNG0001',
@@ -31,7 +31,7 @@ class AdminUserSeeder extends Seeder
             ],
             [
                 'name' => 'Karina',
-                'email' => 'karina@devhris.com',
+                'email' => 'karina@wndev.com',
                 'password' => Hash::make('123456'),
                 'kode_dept' => 'HRD',
                 'kode_cabang' => null,
@@ -39,7 +39,7 @@ class AdminUserSeeder extends Seeder
             ],
             [
                 'name' => 'admincecan1',
-                'email' => 'hradmin1@devhris.com',
+                'email' => 'hradmin1@wndev.com',
                 'password' => Hash::make('123456'),
                 'kode_dept' => 'ADM',
                 'kode_cabang' => 'GLOBAL',
@@ -47,7 +47,7 @@ class AdminUserSeeder extends Seeder
             ],
             [
                 'name' => 'admincecan2',
-                'email' => 'hradmin2@devhris.com',
+                'email' => 'hradmin2@wndev.com',
                 'password' => Hash::make('123456'),
                 'kode_dept' => 'ADM',
                 'kode_cabang' => 'GLOBAL',
@@ -55,7 +55,7 @@ class AdminUserSeeder extends Seeder
             ],
             [
                 'name' => 'admincecan3',
-                'email' => 'hradmin3@devhris.com',
+                'email' => 'hradmin3@wndev.com',
                 'password' => Hash::make('123456'),
                 'kode_dept' => 'ADM',
                 'kode_cabang' => 'GLOBAL',
@@ -63,7 +63,7 @@ class AdminUserSeeder extends Seeder
             ],
             [
                 'name' => 'DEDENG MARCO SAPUTRA',
-                'email' => 'owner@devhris.com',
+                'email' => 'owner@wndev.com',
                 'password' => Hash::make('123456'),
                 'kode_dept' => 'OWN',
                 'kode_cabang' => null,
@@ -71,7 +71,7 @@ class AdminUserSeeder extends Seeder
             ],
             [
                 'name' => 'HRD SITE KETAHUN',
-                'email' => 'hrdketahun@devhris.com',
+                'email' => 'hrdketahun@wndev.com',
                 'password' => Hash::make('123456'),
                 'kode_dept' => 'HRD',
                 'kode_cabang' => 'CBNG0003',
@@ -79,7 +79,7 @@ class AdminUserSeeder extends Seeder
             ],
             [
                 'name' => 'HRD RBJ',
-                'email' => 'hrdrbj@devhris.com',
+                'email' => 'hrdrbj@wndev.com',
                 'password' => Hash::make('123456'),
                 'kode_dept' => 'HRD',
                 'kode_cabang' => 'RBJ',
@@ -87,7 +87,7 @@ class AdminUserSeeder extends Seeder
             ],
             [
                 'name' => 'HRD SITE JAMBI',
-                'email' => 'hrdjambi@devhris.com',
+                'email' => 'hrdjambi@wndev.com',
                 'password' => Hash::make('123456'),
                 'kode_dept' => 'HRD',
                 'kode_cabang' => 'CBNG0002',
@@ -95,7 +95,7 @@ class AdminUserSeeder extends Seeder
             ],
             [
                 'name' => 'HRD PULAU BAAI',
-                'email' => 'hrdsas@devhris.com',
+                'email' => 'hrdsas@wndev.com',
                 'password' => Hash::make('123456'),
                 'kode_dept' => 'HRD',
                 'kode_cabang' => 'CBNG0004',
@@ -103,7 +103,7 @@ class AdminUserSeeder extends Seeder
             ],
             [
                 'name' => 'Widia HR Payroll',
-                'email' => 'widia@devhris.com',
+                'email' => 'widia@wndev.com',
                 'password' => Hash::make('123456'),
                 'kode_dept' => 'HRD',
                 'kode_cabang' => null,
@@ -111,7 +111,7 @@ class AdminUserSeeder extends Seeder
             ],
             [
                 'name' => 'tes',
-                'email' => 'tes@devhris.com',
+                'email' => 'tes@wndev.com',
                 'password' => Hash::make('123456'),
                 'kode_dept' => 'HRD',
                 'kode_cabang' => null,

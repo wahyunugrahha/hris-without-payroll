@@ -4,13 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
 
 class KonfigurasiJkDeptDetail extends Model
 {
-    use LogsActivity;
-
     protected $table = 'konfigurasi_jk_dept_detail';
 
     public $incrementing = false;
@@ -52,10 +48,4 @@ class KonfigurasiJkDeptDetail extends Model
         return $this->belongsTo(JamKerja::class, 'kode_jam_kerja', 'kode_jam_kerja');
     }
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logAll()
-            ->useLogName('audit');
-    }
 }

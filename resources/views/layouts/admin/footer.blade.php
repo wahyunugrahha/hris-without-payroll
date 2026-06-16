@@ -5,7 +5,7 @@
                 <ul class="list-inline list-inline-dots mb-0">
                     <li class="list-inline-item">
                         Copyright &copy; 2026
-                        <a href="#" class="link-secondary">DevHRIS</a>.
+                        <a href="#" class="link-secondary">wndev</a>.
                         All rights reserved.
                     </li>
                     <li class="list-inline-item">

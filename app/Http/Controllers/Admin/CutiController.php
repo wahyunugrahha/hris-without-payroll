@@ -88,24 +88,6 @@ class CutiController extends Controller
                 'jml_hari'  => $request->jml_hari_edit,
             ]);
 
-            $cutiBaru = \App\Models\MasterCuti::where('kode_cuti', $new_kode_cuti)->first();
-            if ($cutiBaru) {
-                $oldData = $cutiLama ? $cutiLama->toArray() : [];
-                $newData = $cutiBaru->toArray();
-                $changedAttributes = array_diff_assoc($newData, $oldData);
-                $oldAttributes = array_intersect_key($oldData, $changedAttributes);
-
-                if (!empty($changedAttributes)) {
-                    activity('audit')->event('updated')
-                        ->performedOn($cutiBaru)
-                        ->withProperties([
-                            'old' => $oldAttributes,
-                            'attributes' => $changedAttributes
-                        ])
-                        ->log('updated');
-                }
-            }
-
             return Redirect::back()->with('success', 'Data Cuti Berhasil Diupdate');
         } catch (\Exception $e) {
             return Redirect::back()->with('warning', 'Data Cuti Gagal Diupdate: ' . $e->getMessage())->withInput();

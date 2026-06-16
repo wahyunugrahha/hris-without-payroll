@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Dashboard Presensi DevHRIS</title>
+    <title>Live Dashboard Presensi wndev</title>
     <link rel="icon" type="image/png" href="{{ asset('assets/img/logo.png') }}" sizes="32x32">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler.min.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -338,7 +338,7 @@
                 
                     <div class="d-flex align-items-center gap-3">
                         <div class="bg-white bg-opacity-10 p-2 rounded-3 shadow-sm">
-                            <img src="{{ asset('assets/img/logo.png') }}" width="48" alt="Logo">
+                            <x-brand-logo variant="compact" alt="wndev" />
                         </div>
                         <div>
                             <h1 class="m-0 text-white fw-bold" style="font-size: 1.6rem; letter-spacing: -0.5px;">Live Monitor</h1>

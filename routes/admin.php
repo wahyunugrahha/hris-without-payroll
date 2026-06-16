@@ -23,7 +23,6 @@ use App\Http\Controllers\Admin\KenaikanGajiController;
 use App\Http\Controllers\Admin\KPIController;
 use App\Http\Controllers\Admin\LemburController;
 use App\Http\Controllers\Admin\PresensiController;
-use App\Http\Controllers\Admin\AuditLogController;
 
 Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(function () {
 
@@ -570,8 +569,4 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
         Route::delete('/harilibur/{id}', [HariLiburController::class, 'destroy'])->name('harilibur.destroy');
     });
 
-    // Audit Log
-    Route::get('/audit-log', [AuditLogController::class, 'index'])
-        ->middleware('permission:audit-log-view-admin,user')
-        ->name('audit-log.index');
 });

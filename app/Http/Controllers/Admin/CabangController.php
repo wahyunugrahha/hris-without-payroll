@@ -141,22 +141,6 @@ class CabangController extends Controller
                 ]);
 
                 $cabangBaru = Cabang::where('kode_cabang', $new_kode_cabang)->first();
-                if ($cabangBaru) {
-                    $oldData = $cabangLama ? $cabangLama->toArray() : [];
-                    $newData = $cabangBaru->toArray();
-                    $changedAttributes = array_diff_assoc($newData, $oldData);
-                    $oldAttributes = array_intersect_key($oldData, $changedAttributes);
-
-                    if (!empty($changedAttributes)) {
-                        activity('audit')->event('updated')
-                            ->performedOn($cabangBaru)
-                            ->withProperties([
-                                'old' => $oldAttributes,
-                                'attributes' => $changedAttributes
-                            ])
-                            ->log('updated');
-                    }
-                }
 
                 // 2) Sinkronkan ke multilokasi jika relevan (Gunakan kode baru karena cascade)
                 $lat = null; $lon = null;
