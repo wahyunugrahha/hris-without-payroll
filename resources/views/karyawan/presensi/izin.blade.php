@@ -18,7 +18,7 @@
             background: #fff;
             padding: 15px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 4px 14px rgba(9, 75, 135, 0.08);
             margin-bottom: 20px;
         }
 
@@ -27,7 +27,7 @@
             align-items: stretch;
             background: #ffffff;
             border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 6px 16px rgba(9, 75, 135, 0.08);
             margin-bottom: 14px;
             padding: 0;
             border: 1px solid #f5f5f5;
@@ -56,7 +56,7 @@
             align-items: center;
             justify-content: center;
             font-size: 24px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 5px 12px rgba(9, 75, 135, 0.12);
             flex-shrink: 0;
         }
 
@@ -127,8 +127,8 @@
         }
 
         .bg-success-soft {
-            background: #d4edda;
-            color: #155724;
+            background: #eaf3fb;
+            color: #094b87;
         }
 
         .bg-danger-soft {
@@ -223,9 +223,9 @@
         .fab-main {
             width: 56px;
             height: 56px;
-            background: rgba(27, 122, 111, 0.8);
+            background: linear-gradient(135deg, #0d5eaa 0%, #094b87 100%);
             border-radius: 50%;
-            box-shadow: 0 4px 15px rgba(27, 122, 111, 0.8);
+            box-shadow: 0 10px 24px rgba(9, 75, 135, 0.35);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -307,7 +307,7 @@
             font-size: 12px;
             font-weight: 600;
             margin-right: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 6px 16px rgba(9, 75, 135, 0.12);
             white-space: nowrap;
         }
 
@@ -320,23 +320,23 @@
             justify-content: center;
             color: white;
             font-size: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 6px 14px rgba(9, 75, 135, 0.2);
         }
 
         .bg-grad-blue {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0d5eaa 0%, #094b87 100%);
         }
 
         .bg-grad-red {
-            background: linear-gradient(135deg, #ff512f 0%, #dd2476 100%);
+            background: linear-gradient(135deg, #0f6bc0 0%, #0b4f90 100%);
         }
 
         .bg-grad-orange {
-            background: linear-gradient(135deg, #f09819 0%, #edde5d 100%);
+            background: linear-gradient(135deg, #1f7fcf 0%, #0d5eaa 100%);
         }
 
         .bg-grad-cyan {
-            background: linear-gradient(135deg, #1fa2ff 0%, #12d8fa 100%);
+            background: linear-gradient(135deg, #2f8fdc 0%, #0d5eaa 100%);
         }
 
         @media (max-width: 576px) {
@@ -484,17 +484,17 @@
                         } elseif ($d->status == 'r') {
                             $icon = 'calendar-clear-outline';
                             $bg_color = '#e3fafc';
-                            $text_color = '#0b7285';
+                            $text_color = '#094b87';
                             $label_jenis = 'Roster';
                         } elseif ($d->status == 't') {
                             $icon = 'time-outline';
                             $bg_color = '#e3fafc';
-                            $text_color = '#0c8599';
+                            $text_color = '#0d5eaa';
                             $label_jenis = 'Terlambat';
                         } elseif ($d->status == 'p') {
                             $icon = 'log-out-outline';
                             $bg_color = '#ecebff';
-                            $text_color = '#5f3dc4';
+                            $text_color = '#094b87';
                             $label_jenis = 'Pulang Cepat';
                         }
 
@@ -762,7 +762,7 @@
                             </div>
                             <div class="d-flex align-items-center">
                                 <span
-                                    style="display:inline-block; width:12px; height:12px; background-color:#28a745; border-radius:50%; margin-right:6px;"></span>
+                                    style="display:inline-block; width:12px; height:12px; background-color:#094b87; border-radius:50%; margin-right:6px;"></span>
                                 <span style="color: #333; font-weight: 600;">Disetujui</span>
                             </div>
                             <div class="d-flex align-items-center">
@@ -786,7 +786,7 @@
         <div class="fab-menu" id="fabMenu">
             <a href="/pengajuanizin/createizinpulangcepat" class="fab-item">
                 <span class="fab-label">Izin Pulang Cepat</span>
-                <div class="fab-icon-small" style="background: linear-gradient(135deg, #845ef7, #5f3dc4);">
+                <div class="fab-icon-small" style="background: linear-gradient(135deg, #0d5eaa, #094b87);">
                     <ion-icon name="log-out-outline"></ion-icon>
                 </div>
             </a>
@@ -800,7 +800,7 @@
             </a>
             <a href="/pengajuanizin/createizinroster" class="fab-item">
                 <span class="fab-label">Izin Roster</span>
-                <div class="fab-icon-small" style="background: linear-gradient(135deg, #1098ad, #0b7285);"><ion-icon name="calendar-clear-outline"></ion-icon></div>
+                <div class="fab-icon-small" style="background: linear-gradient(135deg, #1f7fcf, #094b87);"><ion-icon name="calendar-clear-outline"></ion-icon></div>
             </a>
             <a href="/pengajuanizin/createizinsakit" class="fab-item">
                 <span class="fab-label">Izin Sakit</span>
@@ -854,7 +854,7 @@
 
         /* Status Styles */
         #detailCalendar .datepicker table tr td.day-approved {
-            background-color: #28a745 !important;
+            background-color: #094b87 !important;
             color: white !important;
             border-radius: 50%;
             font-weight: bold;
@@ -1070,7 +1070,7 @@
                     text: "Data yang dihapus tidak dapat dikembalikan!",
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#ff512f',
+                    confirmButtonColor: '#094b87',
                     cancelButtonColor: '#333',
                     confirmButtonText: 'Ya, Hapus',
                     cancelButtonText: 'Batal',

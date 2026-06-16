@@ -377,7 +377,7 @@
             gap: 4px;
             font-size: 12px;
             color: #27ae60;
-            background: #ecfdf5;
+            background: #eef6fd;
             padding: 4px 8px;
             border-radius: 6px;
             width: fit-content;
@@ -424,8 +424,8 @@
         }
 
         .status-success {
-            background: #dcfce7;
-            color: #166534;
+            background: #e8f2fb;
+            color: #063a6b;
         }
 
         .status-warning {
@@ -482,7 +482,7 @@
 
         .task-card.checked {
             border-color: #27ae60;
-            background-color: #f0fdf4;
+            background-color: #eef6fd;
         }
 
         .task-header {
@@ -752,13 +752,13 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: linear-gradient(135deg, #2d6ea6 0%, #094b87 100%);
             color: white;
             box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
         }
 
         .btn-submit:active {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            background: linear-gradient(135deg, #094b87 0%, #063a6b 100%);
         }
 
         .btn-add-extra {
@@ -780,7 +780,7 @@
         .btn-add-extra:hover {
             border-color: #27ae60;
             color: #27ae60;
-            background: #f0fdf4;
+            background: #eef6fd;
         }
 
         .extra-card {

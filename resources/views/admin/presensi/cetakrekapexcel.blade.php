@@ -154,7 +154,7 @@
                     <td style="text-align: left; vertical-align: middle;">
                         {{ $d->nama_lengkap }}
                         @if(!empty($d->kenaikan_gaji))
-                            <br><small style="color: #2fb344; font-weight: bold; font-size: 8px;">(KG: +{{ $d->kenaikan_gaji }}%)</small>
+                            <br><small style="color: #094b87; font-weight: bold; font-size: 8px;">(KG: +{{ $d->kenaikan_gaji }}%)</small>
                         @endif
                     </td>
 

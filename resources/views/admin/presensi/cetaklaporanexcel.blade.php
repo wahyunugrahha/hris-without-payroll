@@ -145,7 +145,7 @@
             <tr>
                 <td>Kenaikan Gaji</td>
                 <td>:</td>
-                <td style="font-weight: bold; color: #2fb344;">+{{ $kenaikanGaji->persentase }}% (Disetujui {{ date('d-m-Y', strtotime($kenaikanGaji->approved_at)) }})</td>
+                <td style="font-weight: bold; color: #094b87;">+{{ $kenaikanGaji->persentase }}% (Disetujui {{ date('d-m-Y', strtotime($kenaikanGaji->approved_at)) }})</td>
             </tr>
             @endif
         </table>

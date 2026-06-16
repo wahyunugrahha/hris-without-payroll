@@ -1,4 +1,4 @@
-@extends('layouts.presensi')
+﻿@extends('layouts.presensi')
 
 @section('header')
     <div class="presensi-header">
@@ -309,7 +309,7 @@
             height: 40px;
             margin-bottom: 0;
             border-radius: 50%;
-            background: #1b7a6f;
+            background: #094b87;
             color: #fff;
             border: 3px solid #fff;
             box-shadow: 0 4px 10px rgba(27, 122, 111, 0.3);
@@ -320,7 +320,7 @@
 
         .avatar-edit .btn-upload-icon:hover {
             transform: scale(1.08);
-            background: #156158;
+            background: #063a6b;
         }
 
         /* Modern Inputs */
@@ -336,14 +336,14 @@
         
         .input-group-modern:focus-within {
             background: #fff;
-            border-color: #1b7a6f;
+            border-color: #094b87;
             box-shadow: 0 0 0 4px rgba(27, 122, 111, 0.1);
         }
 
         .input-group-modern .input-group-text {
             border: none;
             background: transparent;
-            color: #1b7a6f;
+            color: #094b87;
             font-size: 20px;
             padding: 10px 10px 10px 15px;
         }
@@ -376,7 +376,7 @@
         }
         textarea.form-control:focus {
             background: #fff;
-            border-color: #1b7a6f;
+            border-color: #094b87;
             box-shadow: 0 0 0 4px rgba(27, 122, 111, 0.1);
         }
 
@@ -386,14 +386,14 @@
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #1b7a6f 0%, #2a8f85 100%);
+            background: linear-gradient(135deg, #094b87 0%, #0d5eaa 100%);
             border: none;
             box-shadow: 0 8px 16px rgba(27, 122, 111, 0.2);
             font-weight: 600;
             letter-spacing: 0.5px;
         }
         .btn-primary:hover {
-            background: linear-gradient(135deg, #156158 0%, #1b7a6f 100%);
+            background: linear-gradient(135deg, #063a6b 0%, #094b87 100%);
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(27, 122, 111, 0.3);
         }
@@ -474,7 +474,7 @@
                         reader.onload = function(e) {
                             imagePreview.style.backgroundImage = `url(${e.target.result})`;
                             imagePreview.style.opacity = '0';
-                            imagePreview.style.borderColor = '#10b981'; // Success border
+                            imagePreview.style.borderColor = '#2d6ea6'; // Success border
                             setTimeout(() => {
                                 imagePreview.style.opacity = '1';
                             }, 100);
@@ -498,3 +498,4 @@
         });
     </script>
 @endpush
+

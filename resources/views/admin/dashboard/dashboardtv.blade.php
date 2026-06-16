@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 
 <head>
@@ -381,15 +381,15 @@
         }
 
         .t-green {
-            color: #22c55e !important;
+            color: #3d87c9 !important;
         }
 
         .b-green {
-            border-top: 4px solid #22c55e;
+            border-top: 4px solid #3d87c9;
         }
 
         .bg-green {
-            background: #22c55e;
+            background: #3d87c9;
         }
 
         .t-orange {
@@ -596,7 +596,7 @@
 
             <div class="h-stats">
                 <div class="hs-item">
-                    <span class="hs-val" style="color:#4ade80">{{ count($dataPresensi) }}</span>
+                    <span class="hs-val" style="color:#a7cae8">{{ count($dataPresensi) }}</span>
                     <span class="hs-lbl">Hadir</span>
                 </div>
                 <div class="hs-item">

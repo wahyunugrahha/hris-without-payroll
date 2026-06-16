@@ -36,8 +36,17 @@
         @import url('https://rsms.me/inter/inter.css');
 
         :root {
-            --tblr-primary: #2fb344;
-            --tblr-primary-rgb: 47, 179, 68;
+            --tblr-primary: #094b87;
+            --tblr-primary-rgb: 9, 75, 135;
+            --tblr-success: #094b87;
+            --tblr-success-rgb: 9, 75, 135;
+            --bs-success: #094b87;
+            --bs-success-rgb: 9, 75, 135;
+            --bs-success-bg-subtle: #eaf3fb;
+            --bs-success-border-subtle: #b9d2ea;
+            --bs-success-text-emphasis: #063a6b;
+            --tblr-info: #0d5eaa;
+            --tblr-info-rgb: 13, 94, 170;
             --admin-header-height: 66px;
         }
 
@@ -212,6 +221,62 @@
 
         .app-header .fw-semibold {
             font-weight: 600;
+        }
+
+        .bg-success,
+        .btn-success,
+        .badge.bg-success,
+        .card.bg-success,
+        .progress-bar.bg-success,
+        .appHeader.bg-success,
+        .extraHeader.bg-success,
+        .bg-success-lt,
+        .badge-soft-success,
+        .bg-success-soft,
+        .status-dot.bg-success,
+        .realtime-delta-badge.bg-success-lt,
+        .text-success,
+        .border-success {
+            border-color: #094b87 !important;
+        }
+
+        .bg-success,
+        .btn-success,
+        .badge.bg-success,
+        .card.bg-success,
+        .progress-bar.bg-success,
+        .appHeader.bg-success,
+        .extraHeader.bg-success,
+        .appHeader.scrolled.bg-success,
+        .appBottomMenu.bg-success {
+            background: linear-gradient(135deg, #0d5eaa 0%, #094b87 100%) !important;
+        }
+
+        .btn-success:hover,
+        .btn-success:focus,
+        .btn-success:active,
+        .btn-success.active {
+            background: linear-gradient(135deg, #094b87 0%, #063a6b 100%) !important;
+        }
+
+        .bg-success-lt,
+        .badge-soft-success,
+        .bg-success-soft,
+        .status-dot.bg-success,
+        .realtime-delta-badge.bg-success-lt,
+        .avatar-icon.bg-success-soft,
+        .icon-box.bg-success,
+        .card.bg-success .card-header,
+        .card.bg-success .card-title,
+        .card.bg-success .card-text {
+            background-color: rgba(9, 75, 135, 0.12) !important;
+            color: #094b87 !important;
+            border-color: rgba(9, 75, 135, 0.18) !important;
+        }
+
+        .text-success,
+        a.text-success {
+            color: #094b87 !important;
         }
 
         [data-bs-theme="dark"] .navbar-vertical {

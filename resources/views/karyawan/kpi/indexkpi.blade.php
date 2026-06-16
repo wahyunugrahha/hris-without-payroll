@@ -154,7 +154,7 @@
 
                                             @if (isset($item->daily_points) && $item->daily_points != 0)
                                                 <span class="badge"
-                                                    style="margin-bottom: 4px; display: inline-block; font-weight: bold; color: {{ $item->daily_points > 0 ? '#059669' : '#dc2626' }}; background: {{ $item->daily_points > 0 ? '#e8f5e9' : '#ffebee' }};">
+                                                    style="margin-bottom: 4px; display: inline-block; font-weight: bold; color: {{ $item->daily_points > 0 ? '#094b87' : '#dc2626' }}; background: {{ $item->daily_points > 0 ? '#e8f5e9' : '#ffebee' }};">
                                                     {{ $item->daily_points > 0 ? '+' : '' }}{{ number_format($item->daily_points) }}
                                                 </span>
                                             @endif
@@ -298,9 +298,9 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
-        /* Header Style (Green) */
+        /* Header Style */
         .presensi-header {
-            background: rgba(27, 122, 111, 1);
+            background: linear-gradient(135deg, #0d5eaa 0%, #094b87 100%);
             padding: 20px 15px;
             display: flex;
             align-items: center;
@@ -309,7 +309,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.25);
+            box-shadow: 0 4px 15px rgba(9, 75, 135, 0.25);
         }
 
         .header-title {
@@ -353,7 +353,7 @@
         }
 
         .btn-theme {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: linear-gradient(135deg, #2d6ea6 0%, #094b87 100%);
             color: white;
             border-radius: 10px;
             font-weight: 500;
@@ -365,7 +365,7 @@
 
         .btn-theme:active {
             transform: scale(0.98);
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            background: linear-gradient(135deg, #094b87 0%, #063a6b 100%);
         }
 
         /* Tombol Input Hari Ini (Dashed Style) */
@@ -385,7 +385,7 @@
 
         .dashed-btn:hover,
         .dashed-btn:active {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: linear-gradient(135deg, #2d6ea6 0%, #094b87 100%);
             color: white;
             border-style: solid;
         }

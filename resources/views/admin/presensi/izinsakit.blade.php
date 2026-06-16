@@ -652,7 +652,7 @@
 
             /* 1. Tanggal Disetujui (HIJAU) */
             .datepicker tbody td.day.day-approved {
-                background: #2fb344 !important;
+                background: #094b87 !important;
                 color: #fff !important;
                 border-color: #fff !important;
             }

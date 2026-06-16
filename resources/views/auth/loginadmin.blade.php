@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 
 <head>
@@ -20,7 +20,7 @@
         @import url('https://rsms.me/inter/inter.css');
 
         :root {
-            --tblr-primary: #2fb344;
+            --tblr-primary: #094b87;
             --tblr-primary-rgb: 47, 179, 68;
         }
 
@@ -222,7 +222,7 @@
                         text: 'Silahkan hubungi tim IT untuk reset password akun Anda.',
                         icon: 'info',
                         confirmButtonText: 'Mengerti',
-                        confirmButtonColor: '#2fb344'
+                        confirmButtonColor: '#094b87'
                     });
                 });
             }

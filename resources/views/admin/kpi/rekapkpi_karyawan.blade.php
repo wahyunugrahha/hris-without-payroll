@@ -425,7 +425,7 @@
                     text: "Tindakan ini akan meng-approve (Final HR) seluruh laporan harian dan penilaian atasan karyawan yang Anda centang.",
                     icon: 'question',
                     showCancelButton: true,
-                    confirmButtonColor: '#2fb344',
+                    confirmButtonColor: '#094b87',
                     cancelButtonColor: '#d33',
                     confirmButtonText: 'Ya, Setujui!',
                     cancelButtonText: 'Batal'

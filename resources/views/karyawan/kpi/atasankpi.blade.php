@@ -1,4 +1,4 @@
-@extends('layouts.presensi')
+﻿@extends('layouts.presensi')
 
 @section('header')
     <div class="presensi-header">
@@ -133,7 +133,7 @@
 
                                             @if (isset($item->daily_points) && $item->daily_points != 0)
                                                 <span class="badge"
-                                                    style="margin-bottom: 4px; display: inline-block; font-weight: bold; color: {{ $item->daily_points > 0 ? '#059669' : '#dc2626' }}; background: {{ $item->daily_points > 0 ? '#e8f5e9' : '#ffebee' }};">
+                                                    style="margin-bottom: 4px; display: inline-block; font-weight: bold; color: {{ $item->daily_points > 0 ? '#094b87' : '#dc2626' }}; background: {{ $item->daily_points > 0 ? '#e8f5e9' : '#ffebee' }};">
                                                     {{ $item->daily_points > 0 ? '+' : '' }}{{ number_format($item->daily_points) }}
                                                 </span>
                                             @endif
@@ -261,7 +261,7 @@
         }
 
         .btn-theme {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: linear-gradient(135deg, #2d6ea6 0%, #094b87 100%);
             color: white;
             border-radius: 10px;
             font-weight: 500;
@@ -273,7 +273,7 @@
 
         .btn-theme:active {
             transform: scale(0.98);
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            background: linear-gradient(135deg, #094b87 0%, #063a6b 100%);
         }
 
         /* List Items Styling */
@@ -411,7 +411,7 @@
                     title: 'Berhasil!',
                     text: @json(Session::get('success')),
                     icon: 'success',
-                    confirmButtonColor: '#1b7a6f'
+                    confirmButtonColor: '#094b87'
                 });
             @endif
         });
@@ -422,7 +422,7 @@
                 title: 'Pilih Karyawan',
                 text: "Silakan pilih nama karyawan pada form pencarian di atas terlebih dahulu sebelum membuat penilaian.",
                 icon: 'info',
-                confirmButtonColor: '#1b7a6f',
+                confirmButtonColor: '#094b87',
                 confirmButtonText: 'Mengerti'
             }).then((result) => {
                 if (result.isConfirmed || result.isDismissed) {
@@ -451,3 +451,4 @@
         }
     </script>
 @endpush
+

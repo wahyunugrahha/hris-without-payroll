@@ -375,7 +375,7 @@
                         text: "Tindakan ini akan menyetujui semua laporan harian beserta penilaian atasan untuk karyawan ini secara permanen.",
                         icon: 'question',
                         showCancelButton: true,
-                        confirmButtonColor: '#2fb344',
+                        confirmButtonColor: '#094b87',
                         cancelButtonColor: '#d33',
                         confirmButtonText: 'Ya, Approve Semua!',
                         cancelButtonText: 'Batal'

@@ -1,4 +1,4 @@
-@extends('layouts.presensi')
+﻿@extends('layouts.presensi')
 
 @section('header')
     <div class="presensi-header">
@@ -100,14 +100,14 @@
 
         .input-group-modern:focus-within {
             background: #fff;
-            border-color: #1b7a6f;
+            border-color: #094b87;
             box-shadow: 0 0 0 4px rgba(27, 122, 111, 0.1);
         }
 
         .input-group-modern .input-group-text {
             border: none;
             background: transparent;
-            color: #1b7a6f;
+            color: #094b87;
             font-size: 20px;
             padding: 10px 10px 10px 15px;
         }
@@ -129,7 +129,7 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #1b7a6f 0%, #2a8f85 100%);
+            background: linear-gradient(135deg, #094b87 0%, #0d5eaa 100%);
             border: none;
             box-shadow: 0 8px 16px rgba(27, 122, 111, 0.2);
             font-weight: 600;
@@ -137,7 +137,7 @@
         }
 
         .btn-primary:hover {
-            background: linear-gradient(135deg, #156158 0%, #1b7a6f 100%);
+            background: linear-gradient(135deg, #063a6b 0%, #094b87 100%);
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(27, 122, 111, 0.3);
         }
@@ -186,3 +186,4 @@
         });
     </script>
 @endpush
+

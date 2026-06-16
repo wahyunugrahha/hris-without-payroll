@@ -21,7 +21,7 @@
                             Hari ini merupakan hari libur sesuai dengan<br>
                             <strong>pengaturan jam kerja Anda</strong>.<br>
                             <br>
-                            <ion-icon name="checkmark-circle" style="color: #10b981; font-size: 24px;"></ion-icon><br>
+                            <ion-icon name="checkmark-circle" style="color: #2d6ea6; font-size: 24px;"></ion-icon><br>
                             Anda tidak perlu melakukan presensi hari ini.<br>
                             Selamat menikmati hari libur! ☀️
                         </p>
@@ -45,7 +45,7 @@
                             </span>
                         @endif
                         <p style="color: #666; margin-top: 20px; line-height: 1.6;">
-                            <ion-icon name="checkmark-circle" style="color: #10b981; font-size: 24px;"></ion-icon><br>
+                            <ion-icon name="checkmark-circle" style="color: #2d6ea6; font-size: 24px;"></ion-icon><br>
                             Karyawan tidak perlu melakukan presensi hari ini.<br>
                             Selamat menikmati hari libur! 🎉
                         </p>

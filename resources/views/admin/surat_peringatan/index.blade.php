@@ -661,7 +661,7 @@
                                 `Menyimpan SP baru akan <strong>menonaktifkan (expired)</strong> SP lama tersebut.<br>Lanjutkan?`,
                             icon: 'warning',
                             showCancelButton: true,
-                            confirmButtonColor: '#28a745',
+                            confirmButtonColor: '#094b87',
                             cancelButtonColor: '#d33',
                             confirmButtonText: 'Ya, Gantikan & Simpan',
                             cancelButtonText: 'Batal'
@@ -731,7 +731,7 @@
                 html: `Yakin ingin memutihkan SP untuk <strong>${nama}</strong>?`,
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#28a745',
+                confirmButtonColor: '#094b87',
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'Ya, Putihkan'
             }).then((result) => {

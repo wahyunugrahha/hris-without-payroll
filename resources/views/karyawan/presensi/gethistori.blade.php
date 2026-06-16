@@ -160,7 +160,7 @@
                                         @foreach ($d->daily_points->point_details as $pts)
                                             @if ($pts != 0)
                                                 <span class="badge"
-                                                    style="font-size: 11px; font-weight: bold; color: {{ $pts > 0 ? '#059669' : '#dc2626' }}; background: {{ $pts > 0 ? '#e8f5e9' : '#ffebee' }}; margin-left: 4px;">
+                                                    style="font-size: 11px; font-weight: bold; color: {{ $pts > 0 ? '#094b87' : '#dc2626' }}; background: {{ $pts > 0 ? '#e8f5e9' : '#ffebee' }}; margin-left: 4px;">
                                                     {{ $pts > 0 ? '+' : '' }}{{ number_format($pts) }}
                                                 </span>
                                             @endif
@@ -220,7 +220,7 @@
         }
 
         .bg-success-soft {
-            background-color: rgba(40, 167, 69, 0.1) !important;
+            background-color: rgba(9, 75, 135, 0.12) !important;
         }
 
         .bg-warning-soft {
@@ -240,7 +240,7 @@
         }
 
         .badge-success-soft {
-            background-color: rgba(40, 167, 69, 0.15);
+            background-color: rgba(9, 75, 135, 0.16);
         }
 
         .badge-danger-soft {

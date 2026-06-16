@@ -5,7 +5,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
     <style>
         .ts-wrapper.multi .ts-control > div {
-            background: var(--tblr-primary, #2fb344) !important;
+            background: var(--tblr-primary, #094b87) !important;
             color: #ffffff !important;
             border-radius: 3px !important;
             border: none !important;
@@ -18,7 +18,7 @@
         }
         .ts-dropdown .active {
             background-color: rgba(var(--tblr-primary-rgb, 47, 179, 68), 0.1) !important;
-            color: var(--tblr-primary, #2fb344) !important;
+            color: var(--tblr-primary, #094b87) !important;
         }
     </style>
 

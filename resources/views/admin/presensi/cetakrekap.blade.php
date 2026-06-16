@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -215,7 +215,7 @@
                             <td style="text-align: left; padding-left: 4px; line-height: 1.2;">
                                 {{ substr($d->nama_lengkap, 0, 20) }}
                                 @if (!empty($d->kenaikan_gaji))
-                                    <div style="font-size: 7px; color: #2fb344; font-weight: bold; margin-top: 2px;">KG:
+                                    <div style="font-size: 7px; color: #094b87; font-weight: bold; margin-top: 2px;">KG:
                                         +{{ $d->kenaikan_gaji }}%</div>
                                 @endif
                             </td>

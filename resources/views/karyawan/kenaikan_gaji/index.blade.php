@@ -13,7 +13,7 @@
 @section('content')
     <div class="section mt-2" id="salary-increase-section" style="margin-bottom: 100px;">
         @if(Session::get('success'))
-            <div class="alert alert-success" style="border: 1px solid #86efac; border-radius: 10px; background: #f0fdf4;">
+            <div class="alert alert-success" style="border: 1px solid #dcecf9; border-radius: 10px; background: #eef6fd;">
                 <ion-icon name="checkmark-circle-outline" style="vertical-align: middle; margin-right: 4px;"></ion-icon>
                 {{ Session::get('success') }}
             </div>
@@ -35,10 +35,10 @@
 
                 <div class="requirements-checklist" style="max-height: 420px; overflow-y: auto; padding: 2px;">
                     <div class="requirement-card p-3 mb-2"
-                        style="border: 1px solid {{ $syaratPoin ? '#bbf7d0' : '#fecaca' }}; background: {{ $syaratPoin ? '#f0fdf4' : '#fef2f2' }}; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                        style="border: 1px solid {{ $syaratPoin ? '#bbf7d0' : '#fecaca' }}; background: {{ $syaratPoin ? '#eef6fd' : '#fef2f2' }}; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
                         <div class="d-flex align-items-center">
                             <ion-icon name="stats-chart-outline"
-                                style="font-size: 20px; margin-right: 10px; color: {{ $syaratPoin ? '#16a34a' : '#dc2626' }};"></ion-icon>
+                                style="font-size: 20px; margin-right: 10px; color: {{ $syaratPoin ? '#094b87' : '#dc2626' }};"></ion-icon>
                             <div style="flex: 1;">
                                 <div style="font-size: 13px; font-weight: 700; color: #1f2937;">Rata-rata Poin (Min.
                                     {{ $targetPoin }} selama {{ $limitBulan }} Bulan)</div>
@@ -51,10 +51,10 @@
                     </div>
 
                     <div class="requirement-card p-3 mb-2"
-                        style="border: 1px solid {{ $syaratKpi ? '#bbf7d0' : '#fecaca' }}; background: {{ $syaratKpi ? '#f0fdf4' : '#fef2f2' }}; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                        style="border: 1px solid {{ $syaratKpi ? '#bbf7d0' : '#fecaca' }}; background: {{ $syaratKpi ? '#eef6fd' : '#fef2f2' }}; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
                         <div class="d-flex align-items-center">
                             <ion-icon name="flash-outline"
-                                style="font-size: 20px; margin-right: 10px; color: {{ $syaratKpi ? '#16a34a' : '#dc2626' }};"></ion-icon>
+                                style="font-size: 20px; margin-right: 10px; color: {{ $syaratKpi ? '#094b87' : '#dc2626' }};"></ion-icon>
                             <div style="flex: 1;">
                                 <div style="font-size: 13px; font-weight: 700; color: #1f2937;">Rata-rata KPI (Min. 80%
                                     selama {{ $limitBulan }} Bulan)</div>
@@ -68,10 +68,10 @@
                     </div>
 
                     <div class="requirement-card p-3 mb-2"
-                        style="border: 1px solid {{ $syaratIzinSakit ? '#bbf7d0' : '#fecaca' }}; background: {{ $syaratIzinSakit ? '#f0fdf4' : '#fef2f2' }}; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                        style="border: 1px solid {{ $syaratIzinSakit ? '#bbf7d0' : '#fecaca' }}; background: {{ $syaratIzinSakit ? '#eef6fd' : '#fef2f2' }}; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
                         <div class="d-flex align-items-center">
                             <ion-icon name="medkit-outline"
-                                style="font-size: 20px; margin-right: 10px; color: {{ $syaratIzinSakit ? '#16a34a' : '#dc2626' }};"></ion-icon>
+                                style="font-size: 20px; margin-right: 10px; color: {{ $syaratIzinSakit ? '#094b87' : '#dc2626' }};"></ion-icon>
                             <div style="flex: 1;">
                                 <div style="font-size: 13px; font-weight: 700; color: #1f2937;">Izin/Sakit (Maks. 6 hari
                                     per bulan)</div>
@@ -84,10 +84,10 @@
                     </div>
 
                     <div class="requirement-card p-3 mb-2"
-                        style="border: 1px solid {{ $syaratSp ? '#bbf7d0' : '#fecaca' }}; background: {{ $syaratSp ? '#f0fdf4' : '#fef2f2' }}; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                        style="border: 1px solid {{ $syaratSp ? '#bbf7d0' : '#fecaca' }}; background: {{ $syaratSp ? '#eef6fd' : '#fef2f2' }}; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
                         <div class="d-flex align-items-center">
                             <ion-icon name="shield-checkmark-outline"
-                                style="font-size: 20px; margin-right: 10px; color: {{ $syaratSp ? '#16a34a' : '#dc2626' }};"></ion-icon>
+                                style="font-size: 20px; margin-right: 10px; color: {{ $syaratSp ? '#094b87' : '#dc2626' }};"></ion-icon>
                             <div style="flex: 1;">
                                 <div style="font-size: 13px; font-weight: 700; color: #1f2937;">Surat Peringatan (SP)
                                 </div>
@@ -99,10 +99,10 @@
                     </div>
 
                     <div class="requirement-card p-3 mb-3"
-                        style="border: 1px solid {{ $syaratJeda ? '#bbf7d0' : '#fecaca' }}; background: {{ $syaratJeda ? '#f0fdf4' : '#fef2f2' }}; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                        style="border: 1px solid {{ $syaratJeda ? '#bbf7d0' : '#fecaca' }}; background: {{ $syaratJeda ? '#eef6fd' : '#fef2f2' }}; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
                         <div class="d-flex align-items-center">
                             <ion-icon name="time-outline"
-                                style="font-size: 20px; margin-right: 10px; color: {{ $syaratJeda ? '#16a34a' : '#dc2626' }};"></ion-icon>
+                                style="font-size: 20px; margin-right: 10px; color: {{ $syaratJeda ? '#094b87' : '#dc2626' }};"></ion-icon>
                             <div style="flex: 1;">
                                 <div style="font-size: 13px; font-weight: 700; color: #1f2937;">Jeda Pengajuan (Min.
                                     {{ $limitBulan }} Bulan)</div>
@@ -169,7 +169,7 @@
                 <div class="history-list">
                     @forelse($historiPengajuan as $h)
                         <div class="card"
-                            style="margin-bottom: 10px; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border: 1px solid @if($h->status == 'approved') #bbf7d0 @elseif($h->status == 'rejected') #fecaca @else #fde68a @endif; background: @if($h->status == 'approved') #f0fdf4 @elseif($h->status == 'rejected') #fef2f2 @else #fffbeb @endif;">
+                            style="margin-bottom: 10px; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border: 1px solid @if($h->status == 'approved') #bbf7d0 @elseif($h->status == 'rejected') #fecaca @else #fde68a @endif; background: @if($h->status == 'approved') #eef6fd @elseif($h->status == 'rejected') #fef2f2 @else #fffbeb @endif;">
                             <div class="card-body" style="padding: 12px;">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span style="font-size: 12px; font-weight: 700; color: #6b7280;">
@@ -185,7 +185,7 @@
                                 </div>
 
                                 <div style="font-size: 13px; color: #1f2937; font-weight: 700;">
-                                    Usulan Kenaikan: <span style="color: #16a34a;">{{ $h->persentase }}%</span>
+                                    Usulan Kenaikan: <span style="color: #094b87;">{{ $h->persentase }}%</span>
                                 </div>
 
                                 @if($h->catatan)

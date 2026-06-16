@@ -555,7 +555,7 @@
             align-items: center;
             justify-content: center;
             width: 100%;
-            color: #16a34a !important;
+            color: #094b87 !important;
             background: #effcf2;
             box-shadow: inset 0 0 0 1px rgba(22, 163, 74, 0.12);
         }
@@ -1609,12 +1609,12 @@
 
         [data-bs-theme="dark"] .leaderboard-score {
             background: #123326;
-            color: #86efac;
+            color: #dcecf9;
         }
 
         [data-bs-theme="dark"] .demography-action-link {
             background: #123126;
-            color: #86efac !important;
+            color: #dcecf9 !important;
             box-shadow: inset 0 0 0 1px rgba(134, 239, 172, 0.2);
         }
 
@@ -1686,7 +1686,7 @@
                     {{-- A. REALTIME STATS (8 Kartu Mini) --}}
                     @php
                         $realtimeCards = [
-                            ['key' => 'hadir', 'label' => 'Hadir', 'value' => (int) ($jmlhadir ?? 0), 'accent' => '#2fb344', 'soft' => '#edf9f0', 'text' => '#1d6f34', 'initial' => 'H', 'goodWhenUp' => true],
+                            ['key' => 'hadir', 'label' => 'Hadir', 'value' => (int) ($jmlhadir ?? 0), 'accent' => '#094b87', 'soft' => '#eef6fd', 'text' => '#063a6b', 'initial' => 'H', 'goodWhenUp' => true],
                             ['key' => 'terlambat', 'label' => 'Telat', 'value' => (int) ($jmlterlambat ?? 0), 'accent' => '#f59f00', 'soft' => '#fff8e6', 'text' => '#8a5800', 'initial' => 'T', 'goodWhenUp' => false],
                             ['key' => 'izin', 'label' => 'Izin', 'value' => (int) ($jmlizin ?? 0), 'accent' => '#0ea5e9', 'soft' => '#e9f7fe', 'text' => '#0b5f89', 'initial' => 'I', 'goodWhenUp' => false],
                             ['key' => 'sakit', 'label' => 'Sakit', 'value' => (int) ($jmlsakit ?? 0), 'accent' => '#e83e8c', 'soft' => '#fdebf5', 'text' => '#9a2c62', 'initial' => 'S', 'goodWhenUp' => false],
@@ -3024,7 +3024,7 @@
 
             initChart('sparkline-hadir', {
                 ...sparkOpts,
-                colors: ['#2fb344'],
+                colors: ['#094b87'],
                 series: [{
                     data: @json($trendHadir ?? [0, 0, 0])
                 }]
@@ -3222,7 +3222,7 @@
                 },
                 series: @json($pendData),
                 labels: ["SMA", "D3", "S1", "S2"],
-                colors: ["#206bc4", "#2fb344", "#f59f00", "#d63939"],
+                colors: ["#206bc4", "#094b87", "#f59f00", "#d63939"],
                 legend: {
                     position: 'right'
                 }

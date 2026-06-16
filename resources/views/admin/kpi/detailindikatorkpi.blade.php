@@ -431,7 +431,7 @@
                         text: "Tindakan ini akan menyetujui Laporan Karyawan dan Penilaian Atasan ini secara final.",
                         icon: 'question',
                         showCancelButton: true,
-                        confirmButtonColor: '#2fb344',
+                        confirmButtonColor: '#094b87',
                         cancelButtonColor: '#d33',
                         confirmButtonText: 'Ya, Setujui!',
                         cancelButtonText: 'Batal'

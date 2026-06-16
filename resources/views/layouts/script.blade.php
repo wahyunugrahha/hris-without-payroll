@@ -2,8 +2,8 @@
 <script src="{{ asset('assets/js/lib/popper.min.js') }}"></script>
 <script src="{{ asset('assets/js/lib/bootstrap.min.js') }}"></script>
 
-<script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
-<script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 
 <script src="{{ asset('assets/js/plugins/owl-carousel/owl.carousel.min.js') }}"></script>
 <script src="{{ asset('assets/js/plugins/jquery-circle-progress/circle-progress.min.js') }}"></script>

@@ -1,4 +1,4 @@
-@extends('layouts.presensi')
+﻿@extends('layouts.presensi')
 @section('header')
     <div class="presensi-header">
         <div class="header-spacer"></div>
@@ -147,7 +147,7 @@
                                     {{ $karyawan->jabatanRel->nama_jabatan ?? '-' }}
                                 </span>
                                 <span class="badge bg-light text-success d-flex align-items-center"
-                                    style="font-weight: 600; font-size: 9px; padding: 4px 8px; border-radius: 6px; border: 1px solid #dcfce7;">
+                                    style="font-weight: 600; font-size: 9px; padding: 4px 8px; border-radius: 6px; border: 1px solid #e8f2fb;">
                                     <ion-icon name="business" class="me-1"></ion-icon>
                                     {{ $karyawan->departemen->nama_dept ?? '-' }}
                                 </span>
@@ -172,7 +172,7 @@
                         <li class="list-group-item d-flex align-items-center py-3 border-bottom px-3"
                             style="border-color: #f3f4f6 !important;">
                             <div class="icon-box mr-2"
-                                style="width: 36px; height: 36px; min-width: 36px; border-radius: 10px; background: #f0fdf4; color: #16a34a; display: flex; align-items: center; justify-content: center;">
+                                style="width: 36px; height: 36px; min-width: 36px; border-radius: 10px; background: #eef6fd; color: #094b87; display: flex; align-items: center; justify-content: center;">
                                 <ion-icon name="logo-whatsapp" style="font-size: 18px;"></ion-icon>
                             </div>
                             <div class="flex-grow-1">
@@ -248,7 +248,7 @@
                     class="settings-item d-flex align-items-center p-3 mb-2 shadow-sm"
                     style="background: white; border-radius: 12px; text-decoration: none; color: inherit;">
                     <div class="icon-box me-3"
-                        style="width: 38px; height: 38px; border-radius: 10px; background: #f8fafc; color: #1b7a6f; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        style="width: 38px; height: 38px; border-radius: 10px; background: #f8fafc; color: #094b87; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                         <ion-icon name="person-circle-outline" style="font-size: 22px;"></ion-icon>
                     </div>
                     <div class="settings-label flex-grow-1 fw-bold" style="font-size: 14px; color: #1e293b;">Akun &
@@ -284,7 +284,7 @@
                     class="settings-item d-flex align-items-center p-3 mb-2 shadow-sm"
                     style="background: white; border-radius: 12px; text-decoration: none; color: inherit;">
                     <div class="icon-box me-3"
-                        style="width: 38px; height: 38px; border-radius: 10px; background: #f0fdf4; color: #16a34a; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        style="width: 38px; height: 38px; border-radius: 10px; background: #eef6fd; color: #094b87; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                         <ion-icon name="trending-up-outline" style="font-size: 22px;"></ion-icon>
                     </div>
                     <div class="settings-label flex-grow-1 fw-bold" style="font-size: 14px; color: #1e293b;">Ajukan Kenaikan Gaji</div>
@@ -330,3 +330,4 @@
 
     </div>
 @endsection
+

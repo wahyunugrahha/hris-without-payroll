@@ -1,4 +1,4 @@
-@extends('layouts.presensi')
+﻿@extends('layouts.presensi')
 
 @section('header')
     <div class="presensi-header">
@@ -166,14 +166,14 @@
 
         .input-group-modern:focus-within {
             background: #fff;
-            border-color: #1b7a6f;
+            border-color: #094b87;
             box-shadow: 0 0 0 4px rgba(27, 122, 111, 0.1);
         }
 
         .input-group-modern .input-group-text {
             border: none;
             background: transparent;
-            color: #1b7a6f;
+            color: #094b87;
             font-size: 20px;
             padding: 10px 10px 10px 15px;
         }
@@ -190,7 +190,7 @@
 
         .form-control:focus {
             background: #fff;
-            border-color: #1b7a6f;
+            border-color: #094b87;
             box-shadow: 0 0 0 4px rgba(27, 122, 111, 0.1);
         }
 
@@ -208,7 +208,7 @@
         .section-title {
             font-size: 15px;
             font-weight: 700;
-            color: #1b7a6f;
+            color: #094b87;
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -239,12 +239,12 @@
         }
 
         .upload-box:hover {
-            border-color: #1b7a6f;
+            border-color: #094b87;
             background: #f0fdfa;
         }
 
         .upload-box:focus-within {
-            border-color: #1b7a6f;
+            border-color: #094b87;
             background: #ffffff;
             box-shadow: 0 0 0 4px rgba(27, 122, 111, 0.1);
         }
@@ -269,7 +269,7 @@
 
         .upload-label ion-icon {
             font-size: 22px;
-            color: #1b7a6f;
+            color: #094b87;
         }
 
         .upload-title {
@@ -288,7 +288,7 @@
             margin-top: 8px;
             background: #f0f9ff;
             border: 1px solid #bae6fd;
-            color: #0f766e;
+            color: #2d6ea6;
             font-size: 12px;
             border-radius: 8px;
             padding: 8px 10px;
@@ -345,7 +345,7 @@
         }
 
         .status-processed {
-            background: #dcfce7;
+            background: #e8f2fb;
             color: #15803d;
         }
 
@@ -365,7 +365,7 @@
         }
 
         .btn-primary {
-            background: #1b7a6f;
+            background: #094b87;
             border: none;
             box-shadow: 0 4px 10px rgba(27, 122, 111, 0.2);
             font-weight: 600;
@@ -373,7 +373,7 @@
         }
 
         .btn-primary:hover {
-            background: #156158;
+            background: #063a6b;
             transform: translateY(-1px);
             box-shadow: 0 6px 12px rgba(27, 122, 111, 0.25);
         }
@@ -458,3 +458,4 @@
         });
     </script>
 @endpush
+

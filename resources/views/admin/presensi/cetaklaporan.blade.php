@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 
 <head>
@@ -275,7 +275,7 @@
                     <tr>
                         <td class="label">Kenaikan Gaji</td>
                         <td class="colon">:</td>
-                        <td style="font-weight: bold; color: #2fb344;">+{{ $kenaikanGaji->persentase }}% (Disetujui {{ date('d-m-Y', strtotime($kenaikanGaji->approved_at)) }})</td>
+                        <td style="font-weight: bold; color: #094b87;">+{{ $kenaikanGaji->persentase }}% (Disetujui {{ date('d-m-Y', strtotime($kenaikanGaji->approved_at)) }})</td>
                     </tr>
                     @endif
                 </table>

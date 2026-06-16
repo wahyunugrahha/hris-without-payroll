@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="id">
 
@@ -152,8 +152,8 @@
 
         /* Color Themes for Stats */
         .theme-success .stat-icon-box {
-            background: #dcfce7;
-            color: #166534;
+            background: #e8f2fb;
+            color: #063a6b;
         }
 
         .theme-danger .stat-icon-box {
@@ -236,8 +236,8 @@
         }
 
         .badge-soft-success {
-            background: #dcfce7;
-            color: #166534;
+            background: #e8f2fb;
+            color: #063a6b;
         }
 
         .badge-soft-danger {

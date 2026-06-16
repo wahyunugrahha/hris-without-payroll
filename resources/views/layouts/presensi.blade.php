@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 
 <head>
@@ -13,7 +13,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#094b87">
     <title>Sistem Absensi wndev</title>
     <meta name="description" content="Sistem Absensi Karyawan wndev">
     <meta name="keywords" content="absensi, karyawan, wndev" />
@@ -76,7 +76,7 @@
         }
 
         .izin-announce-head {
-            background: linear-gradient(135deg, #0f766e 0%, #0ea5a5 100%);
+            background: linear-gradient(135deg, #2d6ea6 0%, #0d5eaa 100%);
             color: #fff;
             padding: 14px 16px;
             position: relative;
@@ -161,8 +161,8 @@
         }
 
         .izin-announce-badge.approved {
-            color: #166534;
-            background: #dcfce7;
+            color: #063a6b;
+            background: #e8f2fb;
         }
 
         .izin-announce-badge.rejected {
@@ -212,7 +212,7 @@
 
         .izin-announce-btn.detail {
             color: #fff;
-            background: #0f766e;
+            background: #2d6ea6;
         }
 
     </style>

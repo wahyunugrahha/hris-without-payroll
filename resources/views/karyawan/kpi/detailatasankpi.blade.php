@@ -1,4 +1,4 @@
-@extends('layouts.presensi')
+﻿@extends('layouts.presensi')
 
 @section('header')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -189,7 +189,7 @@
                                 </div>
                                 <div>
                                     <span class="badge"
-                                        style="background: #ecfdf5; color: #10b981; font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 600; white-space: nowrap;">
+                                        style="background: #eef6fd; color: #2d6ea6; font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 600; white-space: nowrap;">
                                         +{{ $extra->score ?? 10 }} Poin
                                     </span>
                                 </div>
@@ -225,7 +225,7 @@
             @if (isset($indikators) && count($indikators) > 0)
                 <div class="list-wrapper mt-4">
                     <h6 class="mb-2"
-                        style="font-size: 13px; font-weight: 700; color: #1b7a6f; text-transform: uppercase;">
+                        style="font-size: 13px; font-weight: 700; color: #094b87; text-transform: uppercase;">
                         Formulir Penilaian Atasan
                     </h6>
 
@@ -477,8 +477,8 @@
         }
 
         .status-success {
-            background: #dcfce7;
-            color: #166534;
+            background: #e8f2fb;
+            color: #063a6b;
         }
 
         .status-warning {
@@ -523,7 +523,7 @@
             gap: 4px;
             font-size: 12px;
             color: #27ae60;
-            background: #ecfdf5;
+            background: #eef6fd;
             padding: 4px 8px;
             border-radius: 6px;
             width: fit-content;
@@ -568,7 +568,7 @@
 
         .task-card.checked {
             border-color: #27ae60;
-            background-color: #f0fdf4;
+            background-color: #eef6fd;
         }
 
         .task-header {
@@ -832,13 +832,13 @@
         }
 
         .btn-approve {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: linear-gradient(135deg, #2d6ea6 0%, #094b87 100%);
             color: white;
             box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
         }
 
         .btn-approve:active {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            background: linear-gradient(135deg, #094b87 0%, #063a6b 100%);
         }
 
         .btn-reject {
@@ -1043,3 +1043,4 @@
         }
     </script>
 @endpush
+

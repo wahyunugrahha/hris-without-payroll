@@ -201,7 +201,7 @@
                     {{ $statusCount['rejected'] ?? 0 }}
                 ],
                 labels: ["Draft", "Submitted", "Approved", "Rejected"],
-                colors: ['#6c757d', '#206bc4', '#2fb344', '#d63939'],
+                colors: ['#6c757d', '#206bc4', '#094b87', '#d63939'],
                 legend: {
                     position: 'bottom',
                     offsetY: 0

@@ -1,4 +1,4 @@
-﻿@extends('layouts.presensi')
+@extends('layouts.presensi')
 @section('content')
     @php
         $user = Auth::guard('karyawan')->user();
@@ -11,7 +11,7 @@
     <style>
         .modern-header {
             border-radius: 0 0 18px 18px;
-            background: linear-gradient(135deg, #2f8f85 0%, #2a988d 55%, #34a39a 100%);
+            background: linear-gradient(135deg, #0d5eaa 0%, #094b87 58%, #063a6b 100%);
             box-shadow: 0 8px 20px rgba(15, 23, 42, 0.14);
             overflow: hidden;
         }
@@ -92,8 +92,8 @@
         }
 
         .header-badge {
-            background-color: rgba(202, 233, 228, 0.88);
-            color: #324b4a;
+            background-color: rgba(234, 243, 251, 0.92);
+            color: #063a6b;
             padding: 5px 10px;
             border-radius: 999px;
             display: inline-flex;
@@ -251,7 +251,7 @@
         }
 
         .menu-icon.cs {
-            background: linear-gradient(135deg, #2a988d, #1e7169);
+            background: linear-gradient(135deg, #0d5eaa, #094b87);
             color: #fff;
         }
 
@@ -260,7 +260,7 @@
         }
 
         .cs-modal .sp-header {
-            background: linear-gradient(135deg, #2a988d 0%, #1e7169 100%);
+            background: linear-gradient(135deg, #0d5eaa 0%, #094b87 100%);
             position: relative;
             overflow: hidden;
         }
@@ -277,9 +277,9 @@
         }
 
         .cs-notice {
-            background: #e6f4f2 !important;
-            border: 1px solid #b5e2dd !important;
-            color: #1e7169 !important;
+            background: #eaf3fb !important;
+            border: 1px solid #b9d2ea !important;
+            color: #094b87 !important;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -312,8 +312,8 @@
         .cs-agent-card:hover {
             transform: translateY(-2px);
             background: #ffffff;
-            border-color: #2a988d;
-            box-shadow: 0 6px 16px rgba(42, 152, 141, 0.08);
+            border-color: #094b87;
+            box-shadow: 0 6px 16px rgba(9, 75, 135, 0.08);
         }
 
         .cs-agent-info {
@@ -328,15 +328,15 @@
             width: 36px;
             height: 36px;
             border-radius: 10px;
-            background: #e6f4f2;
-            color: #2a988d;
+            background: #eaf3fb;
+            color: #094b87;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 13px;
             font-weight: 700;
             flex-shrink: 0;
-            box-shadow: inset 0 2px 4px rgba(42, 152, 141, 0.06);
+            box-shadow: inset 0 2px 4px rgba(9, 75, 135, 0.06);
             letter-spacing: 0.5px;
         }
 
@@ -368,9 +368,9 @@
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background-color: #10b981;
+            background-color: #094b87;
             display: inline-block;
-            box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+            box-shadow: 0 0 8px rgba(9, 75, 135, 0.55);
             animation: statusPulse 2s infinite ease-in-out;
         }
 
@@ -428,11 +428,11 @@
         }
 
         .cs-btn-wa {
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: linear-gradient(135deg, #0d5eaa, #094b87);
         }
 
         .cs-btn-wa:hover {
-            background: linear-gradient(135deg, #059669, #047857);
+            background: linear-gradient(135deg, #094b87, #063a6b);
         }
 
         .cs-modal .btn-sp-confirm {
@@ -457,7 +457,7 @@
             justify-content: space-between;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
-            border-left: 4px solid #2a8f85;
+            border-left: 4px solid #094b87;
         }
 
         .performance-bonus-card::before {
@@ -467,14 +467,14 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: radial-gradient(circle at top right, rgba(42, 143, 133, 0.03) 0%, transparent 60%);
+            background: radial-gradient(circle at top right, rgba(9, 75, 135, 0.03) 0%, transparent 60%);
             pointer-events: none;
             z-index: 1;
         }
 
         .performance-bonus-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(42, 143, 133, 0.08);
+            box-shadow: 0 8px 24px rgba(9, 75, 135, 0.08);
         }
 
         .bonus-card-content {
@@ -550,7 +550,7 @@
         .bonus-amount {
             font-size: 16px;
             font-weight: 800;
-            color: #10b981;
+            color: #094b87;
             letter-spacing: 0.2px;
             line-height: 1.2;
         }
@@ -609,8 +609,8 @@
 
             .bonus-right {
                 width: 100%;
-                background: rgba(42, 143, 133, 0.04);
-                border: 1px solid rgba(42, 143, 133, 0.08);
+                background: rgba(9, 75, 135, 0.04);
+                border: 1px solid rgba(9, 75, 135, 0.08);
                 border-radius: 12px;
                 padding: 10px 14px;
                 margin: 0;
@@ -760,7 +760,7 @@
                 @endcan
                 @can('kenaikan_gaji-view-karyawan')
                     <a href="{{ route('karyawan.kenaikan_gaji.index') }}" class="menu-card">
-                        <div class="menu-icon" style="background: linear-gradient(135deg, #10b981, #047857); color: #fff;">
+                        <div class="menu-icon" style="background: linear-gradient(135deg, #2d6ea6, #063a6b); color: #fff;">
                             <ion-icon name="trending-up-outline"></ion-icon>
                         </div>
                         <span class="menu-name" style="font-size: 10px;">Kenaikan Gaji</span>
@@ -1167,7 +1167,7 @@
                                                             <span class="badge"
                                                                 onclick="alert('{{ $label }}: {{ $pts > 0 ? '+' : '' }}{{ $pts }}')"
                                                                 title="{{ $label }}"
-                                                                style="cursor: pointer; font-size: 11px; font-weight: bold; color: {{ $pts > 0 ? '#059669' : '#dc2626' }}; background: {{ $pts > 0 ? '#e8f5e9' : '#ffebee' }}; margin-left: 4px;">
+                                                                style="cursor: pointer; font-size: 11px; font-weight: bold; color: {{ $pts > 0 ? '#094b87' : '#dc2626' }}; background: {{ $pts > 0 ? '#e8f5e9' : '#ffebee' }}; margin-left: 4px;">
                                                                 {{ $pts > 0 ? '+' : '' }}{{ number_format($pts) }}
                                                             </span>
                                                         @endif

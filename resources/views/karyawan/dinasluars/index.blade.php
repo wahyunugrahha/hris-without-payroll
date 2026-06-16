@@ -87,14 +87,14 @@
                 @endphp
 
                 <div class="card" style="margin-bottom: 12px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid 
-                    @if ($d->status_acc === 'acc') #dcfce7 @elseif ($d->status_acc === 'tolak') #fee2e2 @else #fef3c7 @endif;">
+                    @if ($d->status_acc === 'acc') #e8f2fb @elseif ($d->status_acc === 'tolak') #fee2e2 @else #fef3c7 @endif;">
                     <div class="card-body" style="padding: 14px;">
                         {{-- Header Section with Date, Status, Duration and Expand Button --}}
                         <div style="display: grid; grid-template-columns: 2fr 1.2fr 0.8fr 0.4fr; gap: 12px; margin-bottom: 0; align-items: center; justify-items: start;">
                             {{-- Date Column --}}
                             <div style="text-align: left; width: 100%;">
                                 <div style="font-weight: 700; font-size: 13px; color: #1f2937; display: flex; align-items: flex-start; gap: 6px;">
-                                    <ion-icon name="calendar-outline" style="color: #16a34a; font-size: 16px; flex-shrink: 0; margin-top: 1px;"></ion-icon>
+                                    <ion-icon name="calendar-outline" style="color: #094b87; font-size: 16px; flex-shrink: 0; margin-top: 1px;"></ion-icon>
                                     <span style="line-height: 1.4;">
                                         @if ($d->tgl_mulai == $d->tgl_selesai)
                                             {{ date('d M Y', strtotime($d->tgl_mulai)) }}
@@ -137,7 +137,7 @@
                                         {{-- Alasan --}}
                                         <div style="margin-bottom: 12px;">
                                             <label style="display: block; font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">
-                                                <ion-icon name="checkmark-circle-outline" style="color: #16a34a; margin-right: 4px;"></ion-icon>Alasan
+                                                <ion-icon name="checkmark-circle-outline" style="color: #094b87; margin-right: 4px;"></ion-icon>Alasan
                                             </label>
                                             <div style="font-size: 13px; color: #374151; font-weight: 500;">
                                                 {{ $d->alasan }}

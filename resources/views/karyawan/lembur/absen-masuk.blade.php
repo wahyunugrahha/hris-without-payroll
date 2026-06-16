@@ -90,7 +90,7 @@
             <input type="hidden" id="jam_mulai" name="jam_mulai">
             
             <div class="ios-form-card">
-                <div style="background-color: #f0fdf4; padding: 12px; border-radius: 8px; border-left: 4px solid #16a34a;">
+                <div style="background-color: #eef6fd; padding: 12px; border-radius: 8px; border-left: 4px solid #094b87;">
                     <div style="display: flex; align-items: start; gap: 8px;">
                         <ion-icon name="information-circle-outline" style="color: #15803d; font-size: 20px; margin-top: 2px;"></ion-icon>
                         <div>

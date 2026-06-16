@@ -86,7 +86,7 @@
 
                 <div class="card"
                     style="margin-bottom: 12px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid 
-                    @if ($l->status_approved == 1) #dcfce7 @elseif ($l->status_approved == 2) #fee2e2 @else #fef3c7 @endif;">
+                    @if ($l->status_approved == 1) #e8f2fb @elseif ($l->status_approved == 2) #fee2e2 @else #fef3c7 @endif;">
                     <div class="card-body" style="padding: 14px;">
                         {{-- Header Section with Date, Status, Duration and Expand Button --}}
                         <div
@@ -96,7 +96,7 @@
                                 <div
                                     style="font-weight: 700; font-size: 13px; color: #1f2937; display: flex; align-items: flex-start; gap: 6px;">
                                     <ion-icon name="calendar-outline"
-                                        style="color: #16a34a; font-size: 16px; flex-shrink: 0; margin-top: 1px;"></ion-icon>
+                                        style="color: #094b87; font-size: 16px; flex-shrink: 0; margin-top: 1px;"></ion-icon>
                                     <span style="line-height: 1.4;">
                                         {{ \Carbon\Carbon::parse($l->tanggal_lembur)->format('d M Y') }}
                                     </span>
@@ -142,7 +142,7 @@
                                             <label
                                                 style="display: block; font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">
                                                 <ion-icon name="briefcase-outline"
-                                                    style="color: #16a34a; margin-right: 4px;"></ion-icon>Pekerjaan
+                                                    style="color: #094b87; margin-right: 4px;"></ion-icon>Pekerjaan
                                             </label>
                                             <div style="font-size: 13px; color: #374151; font-weight: 500;">
                                                 {{ $l->pekerjaan }}
