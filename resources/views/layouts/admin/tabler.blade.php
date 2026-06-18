@@ -49,47 +49,59 @@
             --tblr-info: #0d5eaa;
             --tblr-info-rgb: 13, 94, 170;
             --admin-header-height: 66px;
+            --admin-sidebar-width: 260px;
         }
 
         html, body {
             margin: 0;
             padding: 0;
             background: #f8fafc;
+            overflow-x: hidden;
         }
 
         .page {
             min-height: 100vh;
-            display: flex;
-            flex-direction: row !important;
-            flex-wrap: nowrap;
+            width: 100%;
+            margin: 0;
+            padding: 0;
             align-items: stretch;
         }
 
         .page > .navbar-vertical {
             margin: 0;
-            flex: 0 0 auto;
-            width: 260px;
         }
 
         .page > .page-wrapper {
-            flex: 1 1 auto;
             min-width: 0;
-            margin: 0;
-            padding: 0;
+            padding: 0 !important;
+            background: transparent;
         }
 
         .page > .page-wrapper > .page-wrapper {
-            margin: 0;
-            padding: 0;
+            margin: 0 !important;
+            padding: 0 !important;
+            min-height: 0;
+        }
+
+        .page > .page-wrapper > .app-header {
+            margin-top: 0 !important;
         }
 
         @media (max-width: 1199.98px) {
             .page {
-                flex-direction: row !important;
+                display: block;
             }
 
             .page > .navbar-vertical {
-                width: 260px;
+                width: 100%;
+                min-height: auto;
+                border-right: 0;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            }
+
+            .page > .page-wrapper {
+                width: 100%;
+                margin-left: 0 !important;
             }
         }
 
@@ -283,6 +295,12 @@
         [data-bs-theme="dark"] .navbar-vertical {
             background-color: #1e293b !important;
             border-right-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        [data-bs-theme="dark"] html,
+        [data-bs-theme="dark"] body,
+        [data-bs-theme="dark"] .page {
+            background-color: #0f172a !important;
         }
 
         [data-bs-theme="dark"] .navbar-vertical .admin-sidebar-logo {
