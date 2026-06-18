@@ -3,6 +3,9 @@
 
 <head>
     <meta charset="utf-8">
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/logo.png') }}?v=20260618" sizes="32x32">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/img/logo.png') }}?v=20260618">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/img/logo.png') }}?v=20260618">
     <style>
         body {
             font-family: 'Times New Roman', Times, serif;

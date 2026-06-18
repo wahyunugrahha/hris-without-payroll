@@ -17,9 +17,9 @@
 
     $sourceMap = [
         'sidebar' => asset('assets/img/logo-horizontal.png'),
-        'square' => asset('assets/img/logo-main.png'),
-        'print-square' => asset('assets/img/logo-main.png'),
-        'icon' => asset('assets/img/favicon.png'),
+        'square' => asset('assets/img/logo.png'),
+        'print-square' => asset('assets/img/logo.png'),
+        'icon' => asset('assets/img/logo.png'),
         'vertical' => asset('assets/img/logo.png'),
         'landscape' => asset('assets/img/logo.png'),
         'horizontal' => asset('assets/img/logo.png'),

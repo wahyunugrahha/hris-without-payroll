@@ -7,7 +7,10 @@
         content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#2d6ea6">
     <title>Verifikasi Token | Sistem Absensi wndev</title>
-    <link rel="icon" type="image/png" href="{{ asset('assets/img/logo.png') }}" sizes="32x32">
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/logo.png') }}?v=20260618" sizes="32x32">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/img/logo.png') }}?v=20260618">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/img/logo.png') }}?v=20260618">
+    <link rel="manifest" href="{{ asset('__manifest.json') }}?v=20260618">
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <style>
         :root {
