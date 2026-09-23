@@ -1,0 +1,561 @@
+/* Hallmark · genre: modern-minimal · macrostructure: Workbench · theme: custom (brand navy) · design-system: design.md · designed-as-app
+ * paper oklch(98.4% 0.004 250) · accent oklch(41% 0.12 254) navy · font: Inter (tidak diubah)
+ * Semua halaman admin (layouts.admin.tabler) memakai file ini. Warna lewat token, jangan hex lepas.
+ */
+
+/* ── Token ─────────────────────────────────────────────────────────── */
+:root,
+[data-bs-theme=light] {
+    --color-paper: oklch(98.4% 0.004 250);
+    --color-surface: oklch(100% 0 0);
+    --color-surface-2: oklch(97% 0.006 252);
+    --color-ink: oklch(24% 0.02 258);
+    --color-ink-2: oklch(34% 0.018 257);
+    --color-muted: oklch(52% 0.018 257);
+    --color-rule: oklch(92% 0.008 255);
+    --color-rule-2: oklch(86% 0.01 255);
+    --color-accent: oklch(41% 0.12 254);          /* #094b87 brand */
+    --color-accent-rgb: 9, 75, 135;
+    --color-accent-hover: oklch(35% 0.11 254);
+    --color-accent-tint: oklch(95% 0.02 254);
+    --color-accent-ink: oklch(99% 0 0);
+    --color-focus: oklch(58% 0.16 254);
+    --shadow-lift: 0 1px 2px oklch(24% 0.02 258 / 0.05);
+    --shadow-menu: 0 8px 24px oklch(24% 0.02 258 / 0.08), 0 1px 2px oklch(24% 0.02 258 / 0.06);
+
+    --radius-control: 6px;
+    --radius-card: 8px;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --dur-short: 150ms;
+
+    --admin-header-height: 66px;
+    --admin-sidebar-width: 260px;
+
+    /* Petakan ke variabel Tabler supaya seluruh komponen ikut. */
+    --tblr-primary: var(--color-accent);
+    --tblr-primary-rgb: var(--color-accent-rgb);
+    --tblr-primary-fg: var(--color-accent-ink);
+    --tblr-primary-darken: var(--color-accent-hover);
+    --tblr-primary-lt: var(--color-accent-tint);
+    --tblr-link-color: var(--color-accent);
+    --tblr-link-color-rgb: var(--color-accent-rgb);
+    --tblr-body-bg: var(--color-paper);
+    --tblr-body-color: var(--color-ink-2);
+    --tblr-emphasis-color: var(--color-ink);
+    --tblr-secondary: var(--color-muted);
+    --tblr-muted: var(--color-muted);
+    --tblr-bg-surface: var(--color-surface);
+    --tblr-bg-surface-secondary: var(--color-paper);
+    --tblr-bg-surface-tertiary: var(--color-surface-2);
+    --tblr-bg-forms: var(--color-surface);
+    --tblr-border-color: var(--color-rule);
+    --tblr-border-color-translucent: var(--color-rule);
+    --tblr-border-radius: var(--radius-control);
+    --tblr-border-radius-lg: var(--radius-card);
+    --tblr-shadow-card: var(--shadow-lift);
+    --tblr-focus-ring-color: color-mix(in oklab, var(--color-focus) 35%, transparent);
+}
+
+[data-bs-theme=dark] {
+    --color-paper: oklch(17% 0.015 258);
+    --color-surface: oklch(21% 0.016 258);
+    --color-surface-2: oklch(24% 0.017 258);
+    --color-ink: oklch(96% 0.005 255);
+    --color-ink-2: oklch(87% 0.01 255);
+    --color-muted: oklch(70% 0.015 255);
+    --color-rule: oklch(29% 0.018 258);
+    --color-rule-2: oklch(35% 0.02 258);
+    --color-accent: oklch(58% 0.14 254);
+    --color-accent-rgb: 45, 125, 205;
+    --color-accent-hover: oklch(64% 0.14 254);
+    --color-accent-tint: oklch(28% 0.05 254);
+    --color-accent-ink: oklch(99% 0 0);
+    --color-focus: oklch(70% 0.14 254);
+    --shadow-lift: none;
+    --shadow-menu: 0 8px 24px oklch(0% 0 0 / 0.35);
+
+    --tblr-primary: var(--color-accent);
+    --tblr-primary-rgb: var(--color-accent-rgb);
+    --tblr-primary-darken: var(--color-accent-hover);
+    --tblr-primary-lt: var(--color-accent-tint);
+    --tblr-link-color: oklch(74% 0.11 254);
+    --tblr-body-bg: var(--color-paper);
+    --tblr-body-color: var(--color-ink-2);
+    --tblr-emphasis-color: var(--color-ink);
+    --tblr-secondary: var(--color-muted);
+    --tblr-muted: var(--color-muted);
+    --tblr-bg-surface: var(--color-surface);
+    --tblr-bg-surface-secondary: var(--color-paper);
+    --tblr-bg-surface-tertiary: var(--color-surface-2);
+    --tblr-bg-forms: var(--color-paper);
+    --tblr-border-color: var(--color-rule);
+    --tblr-border-color-translucent: var(--color-rule);
+}
+
+/* ── Kerangka halaman ──────────────────────────────────────────────── */
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background: var(--color-paper);
+    overflow-x: clip;
+}
+
+.page {
+    min-height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    align-items: stretch;
+    background: var(--color-paper);
+}
+
+.page > .navbar-vertical {
+    margin: 0;
+}
+
+.page > .page-wrapper {
+    min-width: 0;
+    padding: 0 !important;
+    background: transparent;
+}
+
+.page > .page-wrapper > .page-wrapper {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 0;
+    background: transparent;
+}
+
+.page > .page-wrapper > .app-header {
+    margin-top: 0 !important;
+}
+
+.page-title {
+    color: var(--color-ink);
+}
+
+.page-pretitle {
+    color: var(--color-muted);
+}
+
+/* ── Sidebar ───────────────────────────────────────────────────────── */
+.navbar-vertical {
+    background-color: var(--color-surface) !important;
+    border-right: 1px solid var(--color-rule) !important;
+    min-height: 100vh;
+}
+
+.navbar-vertical .navbar-brand {
+    border-bottom: 1px solid var(--color-rule);
+    background: transparent;
+    min-height: var(--admin-header-height);
+    height: var(--admin-header-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin-bottom: 0;
+    overflow: visible;
+}
+
+.navbar-vertical .navbar-brand > a {
+    width: 100%;
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.navbar-vertical .admin-sidebar-logo {
+    width: min(150px, calc(100% - 16px)) !important;
+    max-width: min(150px, calc(100% - 16px)) !important;
+    min-width: 124px;
+    height: auto !important;
+    max-height: 52px !important;
+    object-fit: contain !important;
+    object-position: center center;
+}
+
+[data-bs-theme=dark] .navbar-vertical .admin-sidebar-logo {
+    filter: brightness(0) invert(1);
+}
+
+.navbar-vertical .navbar-nav {
+    padding-inline: 0.375rem;
+}
+
+.navbar-vertical .navbar-nav > .nav-item > .nav-link {
+    padding-inline: 0.625rem;
+}
+
+.navbar-vertical .nav-link,
+.navbar-vertical .dropdown-menu .dropdown-item {
+    color: var(--color-ink-2) !important;
+    border-radius: var(--radius-control);
+    transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out);
+}
+
+.navbar-vertical .nav-link .icon {
+    color: var(--color-muted);
+}
+
+.navbar-vertical .nav-link:hover,
+.navbar-vertical .dropdown-menu .dropdown-item:hover {
+    background-color: var(--color-surface-2) !important;
+    color: var(--color-ink) !important;
+}
+
+.navbar-vertical .nav-link.active,
+.navbar-vertical .dropdown-item.active {
+    color: var(--color-accent) !important;
+    background-color: var(--color-accent-tint) !important;
+    font-weight: 500;
+}
+
+.navbar-vertical .nav-link.active .icon {
+    color: var(--color-accent);
+}
+
+[data-bs-theme=dark] .navbar-vertical .nav-link.active,
+[data-bs-theme=dark] .navbar-vertical .dropdown-item.active,
+[data-bs-theme=dark] .navbar-vertical .nav-link.active .icon {
+    color: var(--color-ink) !important;
+}
+
+.navbar-vertical .dropdown-menu {
+    background: transparent !important;
+    border: 0;
+    box-shadow: none;
+}
+
+@media (max-width: 1199.98px) {
+    .page {
+        display: block;
+    }
+
+    .page > .navbar-vertical {
+        width: 100%;
+        min-height: auto;
+        border-right: 0 !important;
+        border-bottom: 1px solid var(--color-rule);
+    }
+
+    .page > .page-wrapper {
+        width: 100%;
+        margin-left: 0 !important;
+    }
+
+    .navbar-vertical .navbar-brand {
+        border-bottom: 0;
+    }
+
+    .navbar-vertical .admin-sidebar-logo {
+        width: min(138px, calc(100% - 16px)) !important;
+        max-width: min(138px, calc(100% - 16px)) !important;
+        min-width: 116px;
+        max-height: 48px !important;
+    }
+}
+
+/* ── Header ────────────────────────────────────────────────────────── */
+.app-header {
+    background-color: var(--color-surface) !important;
+    border-bottom: 1px solid var(--color-rule) !important;
+    min-height: var(--admin-header-height);
+    margin: 0;
+}
+
+.app-header .container-xl {
+    width: 100%;
+    max-width: 100%;
+    padding-inline: 1rem;
+    margin: 0;
+}
+
+.app-header .nav-link {
+    color: var(--color-muted) !important;
+    border-radius: var(--radius-control);
+}
+
+.app-header .nav-link:hover {
+    color: var(--color-ink) !important;
+    background-color: var(--color-surface-2) !important;
+}
+
+.app-header .icon-1 {
+    width: 20px;
+    height: 20px;
+}
+
+.app-header .avatar {
+    box-shadow: 0 0 0 1px var(--color-rule-2);
+}
+
+/* ── Kartu ─────────────────────────────────────────────────────────── */
+.card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-lift);
+}
+
+.card.shadow,
+.card.shadow-sm,
+.card.shadow-lg {
+    box-shadow: var(--shadow-lift) !important;
+}
+
+.card-header,
+.card-footer {
+    background-color: transparent;
+    border-color: var(--color-rule);
+}
+
+.card-header.bg-transparent {
+    background-color: transparent !important;
+}
+
+.card-title {
+    color: var(--color-ink);
+}
+
+/* ── Tombol ────────────────────────────────────────────────────────── */
+.btn {
+    border-radius: var(--radius-control);
+    box-shadow: none;
+}
+
+.btn.shadow,
+.btn.shadow-sm {
+    box-shadow: none !important;
+}
+
+.btn-primary {
+    --tblr-btn-bg: var(--color-accent);
+    --tblr-btn-border-color: var(--color-accent);
+    --tblr-btn-hover-bg: var(--color-accent-hover);
+    --tblr-btn-hover-border-color: var(--color-accent-hover);
+    --tblr-btn-active-bg: var(--color-accent-hover);
+    --tblr-btn-active-border-color: var(--color-accent-hover);
+    --tblr-btn-color: var(--color-accent-ink);
+    --tblr-btn-hover-color: var(--color-accent-ink);
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.btn:disabled,
+.btn.disabled {
+    opacity: 0.5;
+}
+
+/* Focus ring tampil instan, tanpa animasi. */
+.btn:focus-visible,
+.nav-link:focus-visible,
+.dropdown-item:focus-visible,
+a:focus-visible,
+.form-check-input:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+/* ── Form ──────────────────────────────────────────────────────────── */
+.form-control,
+.form-select,
+.input-group-text {
+    border-color: var(--color-rule-2);
+    border-radius: var(--radius-control);
+}
+
+.form-control,
+.form-select {
+    background-color: var(--tblr-bg-forms);
+    color: var(--color-ink);
+}
+
+.form-control::placeholder {
+    color: var(--color-muted);
+    opacity: 1;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--color-focus);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-focus) 20%, transparent);
+}
+
+.input-group-text,
+.input-group-text.bg-white,
+.input-group-text.date-filter-addon,
+.input-icon-addon {
+    background-color: var(--color-surface-2) !important;
+    color: var(--color-muted) !important;
+    border-color: var(--color-rule-2) !important;
+}
+
+.form-label {
+    color: var(--color-ink);
+}
+
+/* Select2 disamakan dengan input bawaan. */
+.select2-container--bootstrap-5 .select2-selection {
+    border-color: var(--color-rule-2);
+    border-radius: var(--radius-control);
+    background-color: var(--tblr-bg-forms);
+    color: var(--color-ink);
+}
+
+.select2-container--bootstrap-5.select2-container--focus .select2-selection,
+.select2-container--bootstrap-5.select2-container--open .select2-selection {
+    border-color: var(--color-focus);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-focus) 20%, transparent);
+}
+
+.select2-container--bootstrap-5 .select2-dropdown {
+    border-color: var(--color-rule-2);
+    background-color: var(--color-surface);
+}
+
+.select2-container--bootstrap-5 .select2-dropdown .select2-results__options .select2-results__option.select2-results__option--highlighted {
+    background-color: var(--color-accent-tint);
+    color: var(--color-ink);
+}
+
+.select2-container--bootstrap-5 .select2-dropdown .select2-results__options .select2-results__option.select2-results__option--selected {
+    background-color: var(--color-accent);
+    color: var(--color-accent-ink);
+}
+
+/* ── Tabel ─────────────────────────────────────────────────────────── */
+.table {
+    --tblr-table-color: var(--color-ink-2);
+    --tblr-table-border-color: var(--color-rule);
+    --tblr-table-hover-bg: var(--color-surface-2);
+    --tblr-table-hover-color: var(--color-ink);
+    color: var(--color-ink-2);
+}
+
+.table thead th {
+    background: var(--color-surface-2);
+    color: var(--color-muted);
+    border-bottom-color: var(--color-rule);
+}
+
+.table td {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── Menu, modal, badge ────────────────────────────────────────────── */
+.dropdown-menu {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-menu);
+}
+
+.dropdown-item {
+    color: var(--color-ink-2);
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background-color: var(--color-surface-2);
+    color: var(--color-ink);
+}
+
+.modal-content {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-menu);
+}
+
+.modal-header,
+.modal-footer {
+    border-color: var(--color-rule);
+}
+
+.badge {
+    border-radius: var(--radius-control);
+    font-weight: 500;
+}
+
+.nav-tabs {
+    border-bottom-color: var(--color-rule);
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--color-accent);
+    border-color: var(--color-rule) var(--color-rule) var(--color-surface);
+}
+
+.pagination .page-link {
+    border-radius: var(--radius-control);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-accent-ink);
+}
+
+/* SweetAlert: tombol konfirmasi ikut warna brand (default-nya ungu). */
+.swal2-popup {
+    border-radius: var(--radius-card) !important;
+    background: var(--color-surface) !important;
+    color: var(--color-ink-2) !important;
+}
+
+.swal2-title {
+    color: var(--color-ink) !important;
+}
+
+.swal2-styled.swal2-confirm {
+    background-color: var(--color-accent) !important;
+    border-radius: var(--radius-control) !important;
+}
+
+.swal2-styled:focus-visible {
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-focus) 35%, transparent) !important;
+}
+
+/* ── Utilitas bawaan view yang di-hardcode (bg-white, text-dark, dst.) ── */
+[data-bs-theme=dark] .bg-white,
+[data-bs-theme=dark] .bg-light {
+    background-color: var(--color-surface) !important;
+}
+
+[data-bs-theme=dark] .text-dark,
+[data-bs-theme=dark] .text-body,
+[data-bs-theme=dark] .form-control-plaintext {
+    color: var(--color-ink) !important;
+}
+
+[data-bs-theme=dark] .text-muted,
+[data-bs-theme=dark] .text-secondary {
+    color: var(--color-muted) !important;
+}
+
+[data-bs-theme=dark] .form-control[readonly] {
+    background-color: var(--color-paper) !important;
+    color: var(--color-ink) !important;
+}
+
+/* ── Gerak ─────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+
+    .btn:active:not(:disabled) {
+        transform: none;
+    }
+}
