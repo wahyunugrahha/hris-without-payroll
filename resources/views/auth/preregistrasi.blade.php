@@ -11,7 +11,7 @@
     <link rel="shortcut icon" type="image/png" href="{{ asset('assets/img/logo.png') }}?v=20260618">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/img/logo.png') }}?v=20260618">
     <link rel="manifest" href="{{ asset('__manifest.json') }}?v=20260618">
-    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset_v('assets/css/style.css') }}">
     <style>
         :root {
             --theme-color: #2a988d;

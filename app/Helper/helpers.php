@@ -132,3 +132,16 @@ if (! function_exists('get_setting')) {
         });
     }
 }
+
+if (! function_exists('asset_v')) {
+    /**
+     * URL aset di folder public dengan versi dari waktu modifikasi file,
+     * sehingga browser otomatis memuat ulang CSS/JS setelah file berubah (tanpa hard refresh).
+     */
+    function asset_v(string $path): string
+    {
+        $file = public_path($path);
+
+        return asset($path).(is_file($file) ? '?v='.filemtime($file) : '');
+    }
+}
