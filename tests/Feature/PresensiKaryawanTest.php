@@ -80,4 +80,12 @@ class PresensiKaryawanTest extends TestCase
         $this->absen(['lokasi' => '0,0'])->assertStatus(409);
         $this->assertSame(1, Presensi::count());
     }
+
+    public function test_histori_tanpa_data_selesai_dimuat(): void
+    {
+        // Regresi: iterator tanggal immutable membuat loop harian tidak pernah berhenti (loading terus).
+        foreach ([now()->subMonthNoOverflow(), now()] as $bulan) {
+            $this->post('/presensi/gethistori', ['bulan' => $bulan->month, 'tahun' => $bulan->year])->assertOk();
+        }
+    }
 }

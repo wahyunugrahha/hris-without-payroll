@@ -370,8 +370,9 @@ class PresensiController extends Controller
         }
 
         $periode = PeriodeKerja::bulan($bulan, $tahun);
-        $periodStart = $periode->mulai;
-        $periodEnd = $periode->selesai->endOfDay();
+        // Mutable: dipakai sebagai iterator harian (addDay) di bawah.
+        $periodStart = $periode->mulai->toMutable();
+        $periodEnd = $periode->selesai->toMutable()->endOfDay();
 
         $histori_presensi = Presensi::with(['jamKerja:kode_jam_kerja,jam_masuk'])
             ->whereBetween('tgl_presensi', [$periodStart->format('Y-m-d'), $periodEnd->format('Y-m-d')])
