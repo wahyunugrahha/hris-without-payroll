@@ -322,6 +322,7 @@
                                                         </svg>
                                                     </a>
 
+                                                    @can('karyawan-edit-admin')
                                                     {{-- Tombol Set Jam Kerja --}}
                                                     <a href="{{ route('konfigurasi.setjamkerja', $data->nik) }}"
                                                         class="btn btn-ghost-info btn-icon" title="Set Jam Kerja">
@@ -343,6 +344,7 @@
                                                             <path d="M20.733 20l1.3 .75" />
                                                         </svg>
                                                     </a>
+                                                    @endcan
                                                 </div>
                                             </td>
                                         </tr>

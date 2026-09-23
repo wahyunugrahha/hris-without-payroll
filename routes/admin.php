@@ -419,12 +419,11 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
                 ->name('konfigurasi.deletejamkerjadept');
 
             // Jam Kerja Personal
-            Route::get('/{nik}/setjamkerja', 'setjamkerja')
-                ->name('konfigurasi.setjamkerja');
-            Route::post('/setstorejamkerja', 'setstorejamkerja')
-                ->name('konfigurasi.setstorejamkerja');
-            Route::post('/updatesetjamkerja', 'updatesetjamkerja')
-                ->name('konfigurasi.updatesetjamkerja');
+            Route::middleware('permission:karyawan-edit-admin,user')->group(function () {
+                Route::get('/{nik}/setjamkerja', 'setjamkerja')->name('konfigurasi.setjamkerja');
+                Route::post('/setstorejamkerja', 'setstorejamkerja')->name('konfigurasi.setstorejamkerja');
+                Route::post('/updatesetjamkerja', 'updatesetjamkerja')->name('konfigurasi.updatesetjamkerja');
+            });
         });
 
         // Konfigurasi Umum

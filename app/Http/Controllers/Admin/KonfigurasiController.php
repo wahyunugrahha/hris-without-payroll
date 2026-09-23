@@ -397,6 +397,12 @@ class KonfigurasiController extends Controller
 
     public function setstorejamkerja(Request $request)
     {
+        $request->validate([
+            'nik' => 'required|string|exists:karyawan,nik',
+            'hari' => 'required|array',
+            'kode_jam_kerja' => 'required|array',
+        ]);
+
         $nik = $request->nik;
         $hari = $request->hari;
         $kode_jam_kerja = $request->kode_jam_kerja;
@@ -450,7 +456,7 @@ class KonfigurasiController extends Controller
     public function updatesetjamkerja(Request $request)
     {
         $request->validate([
-            'nik' => 'required|string',
+            'nik' => 'required|string|exists:karyawan,nik',
             'hari' => 'required|array',
             'kode_jam_kerja' => 'required|array',
         ]);

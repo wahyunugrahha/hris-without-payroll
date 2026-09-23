@@ -139,4 +139,17 @@ class SecurityAuditTest extends TestCase
 
         $this->assertTrue(Hash::check('rahasia123', $admin->fresh()->password));
     }
+
+    public function test_set_jam_kerja_karyawan_butuh_permission_edit_karyawan(): void
+    {
+        $this->karyawan('1001');
+        Permission::create(['name' => 'dashboard-view-admin', 'guard_name' => 'user']);
+        $owner = User::create(['name' => 'Owner', 'email' => 'owner@test.id', 'password' => Hash::make('rahasia123')]);
+        $owner->givePermissionTo('dashboard-view-admin');
+
+        $this->actingAs($owner, 'user')->get('/konfigurasi/1001/setjamkerja')->assertForbidden();
+        $this->actingAs($owner, 'user')
+            ->post('/konfigurasi/updatesetjamkerja', ['nik' => '1001', 'hari' => ['Senin'], 'kode_jam_kerja' => ['LIBUR']])
+            ->assertForbidden();
+    }
 }
