@@ -1,13 +1,14 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "wndev/hris-without-payroll",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "HRIS: presensi, izin/cuti, lembur, dinas luar, dan KPI karyawan.",
     "keywords": [
         "laravel",
-        "framework"
+        "hris",
+        "presensi"
     ],
-    "license": "MIT",
+    "license": "proprietary",
     "require": {
         "php": "^8.2",
         "laravel/framework": "^12.0",

@@ -35,8 +35,9 @@ class SecurityAuditTest extends TestCase
 
     public function test_dashboard_tv_dan_overview_tidak_bisa_dibuka_tanpa_login(): void
     {
-        $this->get('/dashboard-tv')->assertRedirect();
-        $this->get('/overview')->assertRedirect();
+        $this->get('/dashboard-tv')->assertRedirect(route('loginadmin'));
+        $this->get('/overview')->assertRedirect(route('loginadmin'));
+        $this->get('/dashboard')->assertRedirect(route('login'));
     }
 
     public function test_karyawan_tidak_bisa_mengubah_izin_milik_orang_lain(): void
