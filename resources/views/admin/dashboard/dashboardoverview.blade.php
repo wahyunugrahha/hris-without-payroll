@@ -491,19 +491,9 @@
                                 <select name="periode" id="periodeSelect"
                                     class="form-select border-0 bg-light fw-semibold" style="max-width: 250px;">
                                     <option value="">-- Pilih Bulan --</option>
-                                    @for ($i = 0; $i < 12; $i++)
-                                        @php
-                                            $monthDate = \Carbon\Carbon::now()->subMonths($i)->day(26);
-                                            $label =
-                                                $monthDate->translatedFormat('d F') .
-                                                ' - ' .
-                                                $monthDate->copy()->addMonth()->day(25)->translatedFormat('d F Y');
-                                            $value = $monthDate->format('Y-m-26');
-                                        @endphp
-                                        <option value="{{ $value }}"
-                                            {{ request('periode') == $value ? 'selected' : '' }}>{{ $label }}
-                                        </option>
-                                    @endfor
+                                    @foreach ($periodeOptions as $value => $label)
+                                        <option value="{{ $value }}" @selected(request('periode') == $value)>{{ $label }}</option>
+                                    @endforeach
                                 </select>
                                 <div class="ms-auto text-end d-none d-md-block">
                                     <span class="text-muted small text-uppercase fw-bold ls-1">Periode Aktif</span>

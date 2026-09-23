@@ -20,7 +20,9 @@ use App\Models\Presensi;
 use App\Models\RegistrationToken;
 use App\Models\RekapBulanan;
 use App\Models\SalaryIncrease;
+use App\Support\PeriodeKerja;
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -144,7 +146,8 @@ class DashboardController extends Controller
                 'kpiLeaderboardsByCabang',
                 'kpiLeaderboardsByCabangMonthly'
             ),
-            ['periodeLabel' => $periodInfo['label'], 'startDate' => $periodInfo['startDate'], 'endDate' => $periodInfo['endDate']]
+            ['periodeLabel' => $periodInfo['label'], 'startDate' => $periodInfo['startDate'], 'endDate' => $periodInfo['endDate']],
+            ['periodeOptions' => $this->getPeriodeOptions()]
         ));
     }
 
@@ -191,32 +194,36 @@ class DashboardController extends Controller
      */
     private function getPeriodRange(Request $request)
     {
-        $hariini = date('Y-m-d');
-        $currentDate = Carbon::parse($hariini);
-        $requestedPeriod = $request->query('periode');
+        $hariIni = CarbonImmutable::today();
+        $requested = (string) $request->query('periode', '');
 
-        if ($requestedPeriod) {
-            $startDate = $requestedPeriod;
-            $periodDate = Carbon::parse($requestedPeriod);
-            $endOfMonth = $periodDate->copy()->addMonth()->day(25)->format('Y-m-d');
-            $endDate = Carbon::parse($endOfMonth)->gt($currentDate) ? $hariini : $endOfMonth;
-        } else {
-            if ($currentDate->day >= 26) {
-                $startDate = $currentDate->copy()->day(26)->format('Y-m-d');
-                $endDate = $currentDate->copy()->addMonth()->day(25)->format('Y-m-d');
-            } else {
-                $startDate = $currentDate->copy()->subMonth()->day(26)->format('Y-m-d');
-                $endDate = $currentDate->copy()->day(25)->format('Y-m-d');
-            }
-            // Jika end date masa depan, set ke hari ini
-            if (Carbon::parse($endDate)->gt($currentDate)) {
-                $endDate = $hariini;
-            }
-        }
+        // Parameter "periode" berisi tanggal awal periode (Y-m-d); selain itu pakai periode berjalan.
+        $periode = preg_match('/^\d{4}-\d{2}-\d{2}$/', $requested)
+            ? PeriodeKerja::dari($requested)
+            : PeriodeKerja::dari($hariIni);
 
-        $label = Carbon::parse($startDate)->translatedFormat('d F').' - '.Carbon::parse($endDate)->translatedFormat('d F Y');
+        $startDate = $periode->mulai->toDateString();
+        $endDate = $periode->selesai->min($hariIni)->toDateString();
+        $label = $periode->mulai->translatedFormat('d F').' - '.CarbonImmutable::parse($endDate)->translatedFormat('d F Y');
 
         return compact('startDate', 'endDate', 'label');
+    }
+
+    /**
+     * 12 periode terakhir (terbaru dulu) untuk dropdown filter: [tanggal mulai => label].
+     */
+    private function getPeriodeOptions(): array
+    {
+        $bulanIni = PeriodeKerja::dari()->selesai;
+
+        return collect(range(0, 11))
+            ->mapWithKeys(function ($i) use ($bulanIni) {
+                $bulan = $bulanIni->subMonthsNoOverflow($i);
+                $periode = PeriodeKerja::bulan($bulan->month, $bulan->year);
+
+                return [$periode->mulai->toDateString() => $periode->mulai->translatedFormat('d F').' - '.$periode->selesai->translatedFormat('d F Y')];
+            })
+            ->all();
     }
 
     /**
@@ -437,13 +444,8 @@ class DashboardController extends Controller
      */
     private function getKpiVisualStats($ctx, $userCtx)
     {
-        $today = Carbon::parse($ctx['today']);
-        if ($today->day >= 26) {
-            $startDate = $today->copy()->day(26)->format('Y-m-d');
-        } else {
-            $startDate = $today->copy()->subMonth()->day(26)->format('Y-m-d');
-        }
-        $endDate = $today->format('Y-m-d');
+        $startDate = PeriodeKerja::dari($ctx['today'])->mulai->toDateString();
+        $endDate = $ctx['today'];
 
         $baseKpiQuery = KpiLeaderboardSnapshot::query()
             ->whereBetween('kpi_leaderboard_snapshots.date', [$startDate, $endDate]);

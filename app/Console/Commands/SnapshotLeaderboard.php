@@ -13,6 +13,8 @@ use App\Models\LeaderboardSnapshot;
 use App\Models\Presensi;
 use App\Models\Setjamkerja;
 use App\Models\SuratPeringatan;
+use App\Services\JadwalKerjaService;
+use App\Support\PeriodeKerja;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
@@ -30,14 +32,9 @@ class SnapshotLeaderboard extends Command
         $hariini = date('Y-m-d');
         $hariIniCarbon = Carbon::parse($hariini);
 
-        if ($hariIniCarbon->day >= 26) {
-            $tglAwal = Carbon::create($hariIniCarbon->year, $hariIniCarbon->month, 26, 0, 0, 0);
-            $tglAkhir = $tglAwal->copy()->addMonthsNoOverflow(1)->day(25)->format('Y-m-d');
-        } else {
-            $tglAkhirCarbon = Carbon::create($hariIniCarbon->year, $hariIniCarbon->month, 25, 0, 0, 0);
-            $tglAwal = $tglAkhirCarbon->copy()->subMonthsNoOverflow(1)->day(26);
-            $tglAkhir = $tglAkhirCarbon->format('Y-m-d');
-        }
+        $periode = PeriodeKerja::dari($hariIniCarbon);
+        $tglAwal = $periode->mulai->toMutable();
+        $tglAkhir = $periode->selesai->toDateString();
 
         $datesToProcess = [];
         for ($date = $tglAwal->copy(); $date->lte($hariIniCarbon); $date->addDay()) {
@@ -110,12 +107,7 @@ class SnapshotLeaderboard extends Command
                 return $mulai <= $processDate && $selesai >= $processDate;
             })->pluck('nik')->toArray();
 
-            $namaHariInggris = date('D', strtotime($processDate));
-            $namaHariIndonesia = [
-                'Sun' => 'Minggu', 'Mon' => 'Senin', 'Tue' => 'Selasa',
-                'Wed' => 'Rabu', 'Thu' => 'Kamis', 'Fri' => 'Jumat', 'Sat' => 'Sabtu',
-            ];
-            $hariIniStr = $namaHariIndonesia[$namaHariInggris];
+            $hariIniStr = app(JadwalKerjaService::class)->namaHari(date('D', strtotime($processDate)));
 
             // 3. AMBIL PRESENSI HARI INI UNTUK SEMUA KARYAWAN
             $presensiHarian = Presensi::select(

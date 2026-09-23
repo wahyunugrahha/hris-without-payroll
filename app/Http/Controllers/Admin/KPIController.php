@@ -17,6 +17,7 @@ use App\Models\KPIMaster;
 use App\Models\KPIMasterAtasan;
 use App\Models\KPIMasterDetail;
 use App\Models\KPIReport;
+use App\Support\PeriodeKerja;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -415,7 +416,7 @@ class KPIController extends Controller
 
         $karyawan = Karyawan::with(['jabatanRel', 'departemen', 'cabang'])->where('nik', $nik)->firstOrFail();
 
-        [$tglAwal, $tglAkhir] = $this->getCycleDateRange($reqBulan, $reqTahun);
+        [$tglAwal, $tglAkhir] = PeriodeKerja::bulan($reqBulan, $reqTahun)->range();
 
         $riwayatKPI = KPIDaily::with(['kpiDailyDetail', 'kpiDailyExtra'])
             ->where('nik', $nik)
@@ -479,15 +480,9 @@ class KPIController extends Controller
 
         $canEdit = $isHR && $kpiDaily->status != 'approved_by_hr';
 
-        $kpiDate = Carbon::parse($kpiDaily->tanggal);
-        if ($kpiDate->day >= 26) {
-            $cycleDate = $kpiDate->copy()->addMonth();
-            $bulanBack = $cycleDate->format('m');
-            $tahunBack = $cycleDate->format('Y');
-        } else {
-            $bulanBack = $kpiDate->format('m');
-            $tahunBack = $kpiDate->format('Y');
-        }
+        $periodeKpi = PeriodeKerja::dari($kpiDaily->tanggal);
+        $bulanBack = $periodeKpi->selesai->format('m');
+        $tahunBack = $periodeKpi->selesai->format('Y');
 
         return view('admin.kpi.detailindikatorkpi', compact(
             'kpiDaily', 'kpiMaster', 'isHR', 'canEdit', 'bulanBack', 'tahunBack',
@@ -665,12 +660,9 @@ class KPIController extends Controller
     // ==========================================
     public function rekapKPIKaryawan(Request $request)
     {
-        $hariIni = Carbon::now();
-        if ($hariIni->day >= 26) {
-            $hariIni->addMonth();
-        }
-        $defaultBulan = $hariIni->format('n');
-        $defaultTahun = $hariIni->format('Y');
+        $periodeIni = PeriodeKerja::dari();
+        $defaultBulan = $periodeIni->bulanKe();
+        $defaultTahun = $periodeIni->tahun();
         $bulan = $request->input('bulan', $defaultBulan);
         $tahun = $request->input('tahun', $defaultTahun);
         $kode_dept = $request->input('kode_dept');
@@ -696,7 +688,7 @@ class KPIController extends Controller
 
             $periodeList[$i] = "26 $nama_bln_lalu - 25 $nama_bln_ini";
         }
-        [$tglAwal, $tglAkhir] = $this->getCycleDateRange($bulan, $tahun);
+        [$tglAwal, $tglAkhir] = PeriodeKerja::bulan($bulan, $tahun)->range();
         $nik_pencarian = $request->input('nik_pencarian');
 
         $karyawanQuery = Karyawan::with(['departemen', 'cabang'])
@@ -787,7 +779,7 @@ class KPIController extends Controller
         $karyawans = $karyawanQuery->orderBy('nama_lengkap')->get();
         $nikList = $karyawans->pluck('nik');
 
-        [$tglAwal, $tglAkhir] = $this->getCycleDateRange($bulan, $tahun);
+        [$tglAwal, $tglAkhir] = PeriodeKerja::bulan($bulan, $tahun)->range();
         $strAwal = Carbon::parse($tglAwal)->translatedFormat('d F Y');
         $strAkhir = Carbon::parse($tglAkhir)->translatedFormat('d F Y');
         $periodeString = "$strAwal - $strAkhir";
@@ -921,12 +913,9 @@ class KPIController extends Controller
             $periodeList[$i] = '26 '.$namabulan[$bulan_lalu].' - 25 '.$namabulan[$i];
         }
 
-        $hariIni = Carbon::now();
-        if ($hariIni->day >= 26) {
-            $hariIni->addMonth();
-        }
-        $defaultBulan = $hariIni->format('n');
-        $defaultTahun = $hariIni->format('Y');
+        $periodeIni = PeriodeKerja::dari();
+        $defaultBulan = $periodeIni->bulanKe();
+        $defaultTahun = $periodeIni->tahun();
 
         $jabatan = Jabatan::orderBy('nama_jabatan')->get();
         $departemen = Departemen::orderBy('nama_dept')->get();
@@ -952,7 +941,7 @@ class KPIController extends Controller
             'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
         ];
 
-        [$tglAwal, $tglAkhir] = $this->getCycleDateRange($bulan, $tahun);
+        [$tglAwal, $tglAkhir] = PeriodeKerja::bulan($bulan, $tahun)->range();
         $periodeString = $namabulan[(int) $bulan].' '.$tahun;
 
         // 1. FILTER KARYAWAN
@@ -1182,26 +1171,6 @@ class KPIController extends Controller
         return view('admin.kpi.cetakreportkpi', $data);
     }
 
-    private function getCycleDateRange($bulan, $tahun)
-    {
-        $bulanB = str_pad($bulan, 2, '0', STR_PAD_LEFT);
-        $tahunB = $tahun;
-
-        $bulanA = $bulan - 1;
-        $tahunA = $tahun;
-
-        if ($bulanA == 0) {
-            $bulanA = 12;
-            $tahunA = $tahun - 1;
-        }
-        $bulanA = str_pad($bulanA, 2, '0', STR_PAD_LEFT);
-
-        $tanggalAwal = "$tahunA-$bulanA-26";
-        $tanggalAkhir = "$tahunB-$bulanB-25";
-
-        return [$tanggalAwal, $tanggalAkhir];
-    }
-
     public function bulkApproveHR(Request $request)
     {
         $request->validate([
@@ -1215,7 +1184,7 @@ class KPIController extends Controller
         $user = Auth::guard('user')->user();
         $hrIdentifier = (string) $user->id;
 
-        [$tglAwal, $tglAkhir] = $this->getCycleDateRange($request->bulan, $request->tahun);
+        [$tglAwal, $tglAkhir] = PeriodeKerja::bulan($request->bulan, $request->tahun)->range();
 
         DB::beginTransaction();
         try {

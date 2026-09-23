@@ -7,20 +7,22 @@ use App\Models\DinasLuar;
 use App\Models\HariLibur;
 use App\Models\Izin;
 use App\Models\Karyawan;
-use App\Models\KonfigurasiJkDeptDetail;
 use App\Models\KpiLeaderboardSnapshot;
 use App\Models\LeaderboardSnapshot;
 use App\Models\Pengumuman;
 use App\Models\Presensi;
 use App\Models\RekapBulanan;
-use App\Models\Setjamkerja;
 use App\Models\SuratPeringatan;
+use App\Services\JadwalKerjaService;
+use App\Support\PeriodeKerja;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    public function __construct(private JadwalKerjaService $jadwalKerja) {}
+
     public function index()
     {
         $hariini = date('Y-m-d');
@@ -44,16 +46,7 @@ class DashboardController extends Controller
             ->where('tgl_presensi', $hariini)
             ->first();
 
-        $currentDate = Carbon::parse($hariini);
-
-        if ($currentDate->day >= 26) {
-            $startDate = Carbon::create($currentDate->year, $currentDate->month, 26, 0, 0, 0)->format('Y-m-d');
-            $endDate = Carbon::create($currentDate->year, $currentDate->month, 26, 0, 0, 0)->addMonthsNoOverflow(1)->day(25)->format('Y-m-d');
-        } else {
-            $endDateCarbon = Carbon::create($currentDate->year, $currentDate->month, 25, 0, 0, 0);
-            $startDate = $endDateCarbon->copy()->subMonthsNoOverflow(1)->day(26)->format('Y-m-d');
-            $endDate = $endDateCarbon->format('Y-m-d');
-        }
+        [$startDate, $endDate] = PeriodeKerja::dari($hariini)->range();
 
         $tanggalPulangCepatBulanIni = Izin::where('nik', $nik)
             ->where('status', 'p')
@@ -186,8 +179,8 @@ class DashboardController extends Controller
                 if (! $existsInPresensi && ! $existsInNormalized) {
                     // Verifikasi Jam Kerja dan Hari Libur
                     $isHariLiburNasional = HariLibur::isHariLibur($tgl, $kode_cabang, $kode_dept);
-                    $namaHari = $this->gethari(date('D', strtotime($tgl)));
-                    [$jkObj, $isLiburJamKerja, $source] = $this->resolveJamKerja($nik, $kode_dept, $kode_cabang, $namaHari);
+                    $namaHari = $this->jadwalKerja->namaHari(date('D', strtotime($tgl)));
+                    [$jkObj, $isLiburJamKerja, $source] = $this->jadwalKerja->untukHari($nik, $kode_dept, $kode_cabang, $namaHari);
 
                     // Logika Hari Libur yang lebih ketat
                     $isHoliday = $isHariLiburNasional || $isLiburJamKerja || ($namaHari == 'Minggu' && $source == 'none');
@@ -242,8 +235,8 @@ class DashboardController extends Controller
                 if ($item->status == 'a') {
                     $tgl = date('Y-m-d', strtotime($item->tgl_presensi));
                     $isHariLiburNasional = HariLibur::isHariLibur($tgl, $kode_cabang, $kode_dept);
-                    $namaHari = $this->gethari(date('D', strtotime($tgl)));
-                    [$jkObj, $isLiburJamKerja, $source] = $this->resolveJamKerja($nik, $kode_dept, $kode_cabang, $namaHari);
+                    $namaHari = $this->jadwalKerja->namaHari(date('D', strtotime($tgl)));
+                    [$jkObj, $isLiburJamKerja, $source] = $this->jadwalKerja->untukHari($nik, $kode_dept, $kode_cabang, $namaHari);
 
                     if ($isHariLiburNasional || $isLiburJamKerja || ($namaHari == 'Minggu' && $source == 'none')) {
                         return false;
@@ -513,50 +506,6 @@ class DashboardController extends Controller
             'userRank',
             'bonusPeriodText'
         ));
-    }
-
-    public function gethari($hari)
-    {
-        switch ($hari) {
-            case 'Sun': return 'Minggu';
-            case 'Mon': return 'Senin';
-            case 'Tue': return 'Selasa';
-            case 'Wed': return 'Rabu';
-            case 'Thu': return 'Kamis';
-            case 'Fri': return 'Jumat';
-            case 'Sat': return 'Sabtu';
-            default: return 'Tidak diketahui';
-        }
-    }
-
-    private function resolveJamKerja(string $nik, string $kodeDept, string $kodeCabang, string $hari): array
-    {
-        $hariNormal = strtolower(trim($hari));
-
-        $setJamKerja = Setjamkerja::with('jamKerja')
-            ->where('nik', $nik)
-            ->where(DB::raw('LOWER(hari)'), $hariNormal)
-            ->first();
-
-        if ($setJamKerja) {
-            $isLibur = is_null($setJamKerja->kode_jam_kerja) || $setJamKerja->kode_jam_kerja === 'LIBUR';
-
-            return [$setJamKerja->jamKerja, $isLibur, 'personal'];
-        }
-
-        $setJamKerjaDept = KonfigurasiJkDeptDetail::with(['jamKerja', 'konfigurasi'])
-            ->where(DB::raw('LOWER(hari)'), $hariNormal)
-            ->whereHas('konfigurasi', function ($query) use ($kodeDept, $kodeCabang) {
-                $query->where('kode_dept', $kodeDept)->where('kode_cabang', $kodeCabang);
-            })->first();
-
-        if ($setJamKerjaDept) {
-            $isLibur = is_null($setJamKerjaDept->kode_jam_kerja) || $setJamKerjaDept->kode_jam_kerja === 'LIBUR';
-
-            return [$setJamKerjaDept->jamKerja, $isLibur, 'dept'];
-        }
-
-        return [null, false, 'none'];
     }
 
     /**

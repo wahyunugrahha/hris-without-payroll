@@ -6,6 +6,7 @@ use App\Models\HariLibur;
 use App\Models\Karyawan;
 use App\Models\LeaderboardSnapshot;
 use App\Models\SuratPeringatan;
+use App\Support\PeriodeKerja;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Console\Command;
@@ -24,11 +25,9 @@ class EvaluateSuratPeringatan extends Command
         $hariIniTanggal = $today->day;
 
         // 1. Tentukan Periode Siklus
-        $startPeriod = $hariIniTanggal < 26
-            ? Carbon::create($today->year, $today->month, 26)->subMonth()
-            : Carbon::create($today->year, $today->month, 26);
-
-        $endPeriod = $startPeriod->copy()->addMonthsNoOverflow(1)->day(25);
+        $periode = PeriodeKerja::dari($today);
+        $startPeriod = $periode->mulai->toMutable();
+        $endPeriod = $periode->selesai->toMutable();
 
         $this->info('Memulai Evaluasi SP. Siklus Berjalan: '.$startPeriod->toDateString().' s/d '.$endPeriod->toDateString());
 

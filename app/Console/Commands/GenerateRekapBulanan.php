@@ -12,6 +12,7 @@ use App\Models\KPIReport;
 use App\Models\LeaderboardSnapshot;
 use App\Models\Presensi;
 use App\Models\RekapBulanan;
+use App\Support\PeriodeKerja;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Console\Command;
@@ -52,8 +53,9 @@ class GenerateRekapBulanan extends Command
     private function generateForMonth($bulan, $tahun)
     {
         $bulanPad = str_pad($bulan, 2, '0', STR_PAD_LEFT);
-        $tglAwal = Carbon::create($tahun, $bulan, 26)->subMonth();
-        $tglAkhir = Carbon::create($tahun, $bulan, 25);
+        $periode = PeriodeKerja::bulan($bulan, $tahun);
+        $tglAwal = $periode->mulai->toMutable();
+        $tglAkhir = $periode->selesai->toMutable();
 
         $tglAwalStr = $tglAwal->format('Y-m-d');
         $tglAkhirStr = $tglAkhir->format('Y-m-d');
@@ -228,8 +230,9 @@ class GenerateRekapBulanan extends Command
     private function generateKpiReportForMonth($bulan, $tahun)
     {
         $bulanPad = str_pad($bulan, 2, '0', STR_PAD_LEFT);
-        $tglAwal = Carbon::create($tahun, $bulan, 26)->subMonth();
-        $tglAkhir = Carbon::create($tahun, $bulan, 25);
+        $periode = PeriodeKerja::bulan($bulan, $tahun);
+        $tglAwal = $periode->mulai->toMutable();
+        $tglAkhir = $periode->selesai->toMutable();
 
         $tglAwalStr = $tglAwal->format('Y-m-d');
         $tglAkhirStr = $tglAkhir->format('Y-m-d');

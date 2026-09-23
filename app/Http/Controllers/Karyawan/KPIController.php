@@ -19,6 +19,7 @@ use App\Models\KPIMasterAtasan;
 use App\Models\KPIMasterDetail;
 use App\Models\Presensi;
 use App\Models\User;
+use App\Support\PeriodeKerja;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -258,15 +259,9 @@ class KPIController extends Controller
         $details = $kpiAtasanDaily ? $kpiAtasanDaily->details->keyBy('kpi_master_atasan_id') : collect();
         $isApproved = in_array($kpiDaily->status, ['approved_by_atasan', 'approved_by_hr']);
 
-        $kpiDate = Carbon::parse($kpiDaily->tanggal);
-        if ($kpiDate->day >= 26) {
-            $cycleDate = $kpiDate->copy()->addMonth();
-            $bulanBack = $cycleDate->format('m');
-            $tahunBack = $cycleDate->format('Y');
-        } else {
-            $bulanBack = $kpiDate->format('m');
-            $tahunBack = $kpiDate->format('Y');
-        }
+        $periodeKpi = PeriodeKerja::dari($kpiDaily->tanggal);
+        $bulanBack = $periodeKpi->selesai->format('m');
+        $tahunBack = $periodeKpi->selesai->format('Y');
 
         return view('karyawan.kpi.detailatasankpi', [
             'kpiDaily' => $kpiDaily,
@@ -343,15 +338,9 @@ class KPIController extends Controller
 
             DB::commit();
 
-            $kpiDate = Carbon::parse($kpiDaily->tanggal);
-            if ($kpiDate->day >= 26) {
-                $cycleDate = $kpiDate->copy()->addMonth();
-                $bulan = $cycleDate->format('m');
-                $tahun = $cycleDate->format('Y');
-            } else {
-                $bulan = $kpiDate->format('m');
-                $tahun = $kpiDate->format('Y');
-            }
+            $periodeKpi = PeriodeKerja::dari($kpiDaily->tanggal);
+            $bulan = $periodeKpi->selesai->format('m');
+            $tahun = $periodeKpi->selesai->format('Y');
 
             return redirect()->route('kpi.atasan.index', [
                 'nik' => $kpiDaily->nik, 'bulan' => $bulan, 'tahun' => $tahun,
@@ -385,15 +374,9 @@ class KPIController extends Controller
             'alasan_reject' => $request->alasan_reject,
         ]);
 
-        $kpiDate = Carbon::parse($kpiDaily->tanggal);
-        if ($kpiDate->day >= 26) {
-            $cycleDate = $kpiDate->copy()->addMonth();
-            $bulan = $cycleDate->format('m');
-            $tahun = $cycleDate->format('Y');
-        } else {
-            $bulan = $kpiDate->format('m');
-            $tahun = $kpiDate->format('Y');
-        }
+        $periodeKpi = PeriodeKerja::dari($kpiDaily->tanggal);
+        $bulan = $periodeKpi->selesai->format('m');
+        $tahun = $periodeKpi->selesai->format('Y');
 
         return redirect()->route('kpi.atasan.index', [
             'nik' => $kpiDaily->nik, 'bulan' => $bulan, 'tahun' => $tahun,
@@ -662,32 +645,11 @@ class KPIController extends Controller
         });
     }
 
-    private function getCycleDateRange($bulan, $tahun)
-    {
-        $bulanB = str_pad($bulan, 2, '0', STR_PAD_LEFT);
-        $tahunB = $tahun;
-
-        $bulanA = $bulan - 1;
-        $tahunA = $tahun;
-
-        if ($bulanA == 0) {
-            $bulanA = 12;
-            $tahunA = $tahun - 1;
-        }
-        $bulanA = str_pad($bulanA, 2, '0', STR_PAD_LEFT);
-
-        return ["$tahunA-$bulanA-26", "$tahunB-$bulanB-25"];
-    }
-
     private function getPeriodeData($reqBulan = null, $reqTahun = null)
     {
-        $hariIni = Carbon::now();
-        if ($hariIni->day >= 26) {
-            $hariIni->addMonth();
-        }
-
-        $bulan = $reqBulan ?: $hariIni->format('n');
-        $tahun = $reqTahun ?: $hariIni->format('Y');
+        $periodeIni = PeriodeKerja::dari();
+        $bulan = $reqBulan ?: $periodeIni->bulanKe();
+        $tahun = $reqTahun ?: $periodeIni->tahun();
 
         $namabulan = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
         $periodeList = [];
@@ -697,7 +659,7 @@ class KPIController extends Controller
             $periodeList[$i] = "26 {$namabulan[$bulan_lalu]} - 25 {$namabulan[$i]}";
         }
 
-        [$tglAwal, $tglAkhir] = $this->getCycleDateRange($bulan, $tahun);
+        [$tglAwal, $tglAkhir] = PeriodeKerja::bulan($bulan, $tahun)->range();
 
         return compact('bulan', 'tahun', 'periodeList', 'tglAwal', 'tglAkhir', 'namabulan');
     }

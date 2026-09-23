@@ -12,11 +12,12 @@ use App\Models\Izin;
 use App\Models\Jabatan;
 use App\Models\JamKerja;
 use App\Models\Karyawan;
-use App\Models\KonfigurasiJkDeptDetail;
 use App\Models\Presensi;
 use App\Models\RekapBulanan;
 use App\Models\SalaryIncrease;
 use App\Models\Setjamkerja;
+use App\Services\JadwalKerjaService;
+use App\Support\PeriodeKerja;
 use DateInterval;
 use DatePeriod;
 use DateTime;
@@ -30,6 +31,8 @@ use Illuminate\Support\Facades\Storage;
 
 class PresensiController extends Controller
 {
+    public function __construct(private JadwalKerjaService $jadwalKerja) {}
+
     private const IZIN_TERLAMBAT_DEDUCTION_MINUTES = 10;
 
     private function isMultiDateIzinStatus(?string $status): bool
@@ -193,7 +196,7 @@ class PresensiController extends Controller
         $kode_cabang = $isAdminCabang ? ($loggedInUser->kode_cabang ?? null) : $request->kode_cabang;
 
         $search = $request->search;
-        $hariNama = $this->gethari(date('D', strtotime($tanggal)));
+        $hariNama = $this->jadwalKerja->namaHari(date('D', strtotime($tanggal)));
 
         // Hindari duplikasi baris akibat multi-record izin/dinas pada tanggal yang sama.
         $dinasLuarSubquery = DB::table('dinas_luar')
@@ -326,7 +329,7 @@ class PresensiController extends Controller
 
                 // Cari Jam Kerja Default jika kosong
                 if (empty($item->jam_masuk)) {
-                    [$jkObj, $isLiburShift] = $this->resolveJamKerja($item->nik, $item->kode_dept, $item->kode_cabang, $hariNama);
+                    [$jkObj, $isLiburShift] = $this->jadwalKerja->untukHari($item->nik, $item->kode_dept, $item->kode_cabang, $hariNama);
                     if ($jkObj) {
                         $item->jam_masuk = $jkObj->jam_masuk;
                         $item->akhir_jam_masuk = $jkObj->akhir_jam_masuk;
@@ -365,7 +368,7 @@ class PresensiController extends Controller
             }
             // Jika data presensi ada tapi jam kerja tidak ter-join, fallback ke konfigurasi jadwal
             elseif (empty($item->jam_masuk)) {
-                [$jkObj, $isLiburShift] = $this->resolveJamKerja($item->nik, $item->kode_dept, $item->kode_cabang, $hariNama);
+                [$jkObj, $isLiburShift] = $this->jadwalKerja->untukHari($item->nik, $item->kode_dept, $item->kode_cabang, $hariNama);
                 if ($jkObj) {
                     $item->jam_masuk = $jkObj->jam_masuk;
                     $item->akhir_jam_masuk = $jkObj->akhir_jam_masuk;
@@ -404,12 +407,9 @@ class PresensiController extends Controller
             $list_periode[$i] = "26 $nama_bln_lalu - 25 $nama_bln_ini";
         }
 
-        $hariIni = \Carbon\Carbon::now();
-        if ($hariIni->day >= 26) {
-            $hariIni->addMonth();
-        }
-        $defaultBulan = $hariIni->format('n');
-        $defaultTahun = $hariIni->format('Y');
+        $periodeIni = PeriodeKerja::dari();
+        $defaultBulan = $periodeIni->bulanKe();
+        $defaultTahun = $periodeIni->tahun();
 
         $user = Auth::guard('user')->user();
         $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
@@ -455,18 +455,13 @@ class PresensiController extends Controller
             return Redirect::back()->with(['warning' => 'Akses ditolak.']);
         }
 
-        $bulan_int = (int) $bulan;
-        $tahun_int = (int) $tahun;
-        if ($bulan_int == 1) {
-            $bulan_awal = 12;
-            $tahun_awal = $tahun_int - 1;
-        } else {
-            $bulan_awal = $bulan_int - 1;
-            $tahun_awal = $tahun_int;
-        }
-
-        $tgl_awal = "$tahun_awal-".str_pad($bulan_awal, 2, '0', STR_PAD_LEFT).'-26';
-        $tgl_akhir = "$tahun_int-".str_pad($bulan_int, 2, '0', STR_PAD_LEFT).'-25';
+        $periode = PeriodeKerja::bulan($bulan, $tahun);
+        [$tgl_awal, $tgl_akhir] = $periode->range();
+        // Dipakai view cetak.
+        $bulan_int = $periode->bulanKe();
+        $tahun_int = $periode->tahun();
+        $bulan_awal = $periode->mulai->month;
+        $tahun_awal = $periode->mulai->year;
 
         // Sesuaikan tanggal efektif jika karyawan baru join setelah tanggal awal periode (TMT)
         if ($karyawan->tmt && $karyawan->tmt->format('Y-m-d') > $tgl_awal) {
@@ -529,8 +524,8 @@ class PresensiController extends Controller
                 continue;
             }
 
-            $hariNama = $this->gethari($dt->format('D'));
-            [$jkObj, $isLiburShift] = $this->resolveJamKerja($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $hariNama);
+            $hariNama = $this->jadwalKerja->namaHari($dt->format('D'));
+            [$jkObj, $isLiburShift] = $this->jadwalKerja->untukHari($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $hariNama);
 
             $isMinggu = $dt->format('w') == 0;
             $isLiburNasional = in_array($dateStr, $hariLiburNasional ?? []);
@@ -645,12 +640,9 @@ class PresensiController extends Controller
             $list_periode[$i] = "26 $nama_bln_lalu - 25 $nama_bln_ini";
         }
 
-        $hariIni = \Carbon\Carbon::now();
-        if ($hariIni->day >= 26) {
-            $hariIni->addMonth();
-        }
-        $defaultBulan = $hariIni->format('n');
-        $defaultTahun = $hariIni->format('Y');
+        $periodeIni = PeriodeKerja::dari();
+        $defaultBulan = $periodeIni->bulanKe();
+        $defaultTahun = $periodeIni->tahun();
 
         $departemen = Departemen::orderBy('nama_dept')->get();
         $cabang = Cabang::orderBy('nama_cabang')->get();
@@ -688,17 +680,13 @@ class PresensiController extends Controller
         $namabulan = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
         $cabang = $kode_cabang ? Cabang::where('kode_cabang', $kode_cabang)->first() : null;
 
-        $bulan_int = (int) $bulan;
-        $tahun_int = (int) $tahun;
-        if ($bulan_int == 1) {
-            $bulan_awal = 12;
-            $tahun_awal = $tahun_int - 1;
-        } else {
-            $bulan_awal = $bulan_int - 1;
-            $tahun_awal = $tahun_int;
-        }
-        $tgl_awal = "$tahun_awal-".str_pad($bulan_awal, 2, '0', STR_PAD_LEFT).'-26';
-        $tgl_akhir = "$tahun_int-".str_pad($bulan_int, 2, '0', STR_PAD_LEFT).'-25';
+        $periode = PeriodeKerja::bulan($bulan, $tahun);
+        [$tgl_awal, $tgl_akhir] = $periode->range();
+        // Dipakai view cetak.
+        $bulan_int = $periode->bulanKe();
+        $tahun_int = $periode->tahun();
+        $bulan_awal = $periode->mulai->month;
+        $tahun_awal = $periode->mulai->year;
 
         // PERBAIKAN: Hanya mengambil karyawan yang statusnya aktif
         $karyawanQuery = Karyawan::query()
@@ -826,7 +814,7 @@ class PresensiController extends Controller
                     continue;
                 }
 
-                $hariNamaNorm = strtolower(trim($this->gethari($dt->format('D'))));
+                $hariNamaNorm = strtolower(trim($this->jadwalKerja->namaHari($dt->format('D'))));
                 $dayPresensi = $presensiByDate->get($dateStr);
 
                 $personalKey = $karyawan->nik.'-'.$hariNamaNorm;
@@ -1079,8 +1067,8 @@ class PresensiController extends Controller
                         }
                     }
 
-                    $namahari = $this->gethari(date('D', strtotime($tgl)));
-                    [$jamKerja] = $this->resolveJamKerja($izin->nik, $izin->karyawan->kode_dept, $izin->karyawan->kode_cabang, $namahari);
+                    $namahari = $this->jadwalKerja->namaHari(date('D', strtotime($tgl)));
+                    [$jamKerja] = $this->jadwalKerja->untukHari($izin->nik, $izin->karyawan->kode_dept, $izin->karyawan->kode_cabang, $namahari);
 
                     $kode_jam_kerja = $jamKerja ? $jamKerja->kode_jam_kerja : 'JK01';
                     $jamMasukJadwal = $jamKerja ? $jamKerja->jam_masuk : '00:00:00';
@@ -1480,27 +1468,6 @@ class PresensiController extends Controller
     }
 
     // --- Helper Functions ---
-    public function gethari($hari)
-    {
-        switch ($hari) {
-            case 'Sun':
-                return 'Minggu';
-            case 'Mon':
-                return 'Senin';
-            case 'Tue':
-                return 'Selasa';
-            case 'Wed':
-                return 'Rabu';
-            case 'Thu':
-                return 'Kamis';
-            case 'Fri':
-                return 'Jumat';
-            case 'Sat':
-                return 'Sabtu';
-            default:
-                return 'Minggu';
-        }
-    }
 
     private function getHariLiburData($tgl_awal, $tgl_akhir, $kode_cabang = null, $kode_dept = null)
     {
@@ -1557,42 +1524,6 @@ class PresensiController extends Controller
         return $hariLiburQuery->get()->map(function ($item) {
             return date('Y-m-d', strtotime($item->tanggal_libur));
         })->toArray();
-    }
-
-    private function resolveJamKerja(?string $nik, ?string $kodeDept, ?string $kodeCabang, string $hari): array
-    {
-        if (empty($nik) || empty($kodeDept) || empty($kodeCabang)) {
-            return [null, false];
-        }
-
-        $hariNormal = strtolower(trim($hari));
-
-        // 1. Cek Personal Dulu
-        $setJamKerja = Setjamkerja::with('jamKerja')
-            ->where('nik', $nik)
-            ->where(DB::raw('LOWER(hari)'), $hariNormal)
-            ->first();
-
-        if ($setJamKerja) {
-            $isLibur = is_null($setJamKerja->kode_jam_kerja) || $setJamKerja->kode_jam_kerja === 'LIBUR';
-
-            return [$setJamKerja->jamKerja, $isLibur];
-        }
-
-        // 2. Cek Departemen jika personal tidak ada
-        $setJamKerjaDept = KonfigurasiJkDeptDetail::with(['jamKerja', 'konfigurasi'])
-            ->where(DB::raw('LOWER(hari)'), $hariNormal)
-            ->whereHas('konfigurasi', function ($query) use ($kodeDept, $kodeCabang) {
-                $query->where('kode_dept', $kodeDept)->where('kode_cabang', $kodeCabang);
-            })->first();
-
-        if ($setJamKerjaDept) {
-            $isLibur = is_null($setJamKerjaDept->kode_jam_kerja) || $setJamKerjaDept->kode_jam_kerja === 'LIBUR';
-
-            return [$setJamKerjaDept->jamKerja, $isLibur];
-        }
-
-        return [null, false];
     }
 
     private function setEmptyPresensi($item)

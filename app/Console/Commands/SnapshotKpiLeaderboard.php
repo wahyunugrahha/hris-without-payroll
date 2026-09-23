@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Cabang;
 use App\Models\KPIDaily;
 use App\Models\KpiLeaderboardSnapshot;
+use App\Support\PeriodeKerja;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
@@ -20,14 +21,9 @@ class SnapshotKpiLeaderboard extends Command
         $hariIniCarbon = Carbon::parse($hariini);
 
         // Penentuan Awal Siklus: Tanggal 26
-        if ($hariIniCarbon->day >= 26) {
-            $tglAwal = Carbon::create($hariIniCarbon->year, $hariIniCarbon->month, 26, 0, 0, 0);
-            $tglAkhir = $tglAwal->copy()->addMonthsNoOverflow(1)->day(25)->format('Y-m-d');
-        } else {
-            $tglAkhirCarbon = Carbon::create($hariIniCarbon->year, $hariIniCarbon->month, 25, 0, 0, 0);
-            $tglAwal = $tglAkhirCarbon->copy()->subMonthsNoOverflow(1)->day(26);
-            $tglAkhir = $tglAkhirCarbon->format('Y-m-d');
-        }
+        $periode = PeriodeKerja::dari($hariIniCarbon);
+        $tglAwal = $periode->mulai->toMutable();
+        $tglAkhir = $periode->selesai->toDateString();
 
         $datesToProcess = [];
         for ($date = $tglAwal->copy(); $date->lte($hariIniCarbon); $date->addDay()) {

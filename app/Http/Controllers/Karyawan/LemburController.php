@@ -4,10 +4,9 @@ namespace App\Http\Controllers\Karyawan;
 
 use App\Http\Controllers\Controller;
 use App\Models\HariLibur;
-use App\Models\KonfigurasiJkDeptDetail;
-use App\Models\Lembur; // Wajib untuk Transaction
-use App\Models\Presensi;
-use App\Models\Setjamkerja;
+use App\Models\Lembur;
+use App\Models\Presensi; // Wajib untuk Transaction
+use App\Services\JadwalKerjaService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +15,8 @@ use Illuminate\Support\Facades\Storage;
 
 class LemburController extends Controller
 {
+    public function __construct(private JadwalKerjaService $jadwalKerja) {}
+
     public function index(Request $request)
     {
         $nik = auth('karyawan')->user()->nik;
@@ -256,8 +257,8 @@ class LemburController extends Controller
                 $jam_selesai = date('H:i', strtotime($presensi->jam_in));
                 $waktuSelesai = Carbon::parse($tglPresensi.' '.$jam_selesai);
 
-                $dayNamePresensi = $this->gethari(date('D', strtotime($tglPresensi)));
-                [$jamkerja, $isLibur] = $this->resolveJamKerja($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $dayNamePresensi);
+                $dayNamePresensi = $this->jadwalKerja->namaHari(date('D', strtotime($tglPresensi)));
+                [$jamkerja, $isLibur] = $this->jadwalKerja->untukHari($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $dayNamePresensi);
                 $isHariLiburNasional = HariLibur::isHariLibur($tglPresensi, $karyawan->kode_cabang, $karyawan->kode_dept);
 
                 if ($jamkerja && ! $isLibur && ! $isHariLiburNasional) {
@@ -288,8 +289,8 @@ class LemburController extends Controller
         if ($errorMsg = $this->cekBatasUpdateLembur($lembur)) {
             // Jika batas update habis dan belum absen keluar, auto-close agar modal tidak looping
             if (empty($lembur->jam_selesai)) {
-                $hariIni = $this->gethari(date('D'));
-                [$jamkerjaA, $isLiburA] = $this->resolveJamKerja($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $hariIni);
+                $hariIni = $this->jadwalKerja->namaHari(date('D'));
+                [$jamkerjaA, $isLiburA] = $this->jadwalKerja->untukHari($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $hariIni);
 
                 // Secara default, jika tidak ditemukan jadwal, gunakan jam mulai (0 jam)
                 $jam_selesai_fallback = date('H:i', strtotime($lembur->jam_mulai));
@@ -350,7 +351,7 @@ class LemburController extends Controller
 
             // STOP OTOMATIS JIKA OVERLAP KE JAM KERJA
             $karyawan = auth('karyawan')->user();
-            [$jamkerja, $isLibur] = $this->resolveJamKerja($karyawan->nik, $karyawan->kode_dept, $karyawan->kode_cabang, $this->gethari(date('D')));
+            [$jamkerja, $isLibur] = $this->jadwalKerja->untukHari($karyawan->nik, $karyawan->kode_dept, $karyawan->kode_cabang, $this->jadwalKerja->namaHari(date('D')));
             $isHariLiburNasional = HariLibur::isHariLibur($tanggal, $karyawan->kode_cabang, $karyawan->kode_dept);
 
             if ($jamkerja && ! $isLibur && ! $isHariLiburNasional) {
@@ -446,8 +447,8 @@ class LemburController extends Controller
         $now = Carbon::now();
 
         if ($today > $tanggal_lembur) {
-            $namaHariLembur = $this->gethari(date('D', strtotime($tanggal_lembur)));
-            [$jamKerjaLembur, $isLiburLembur] = $this->resolveJamKerja($karyawan->nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namaHariLembur);
+            $namaHariLembur = $this->jadwalKerja->namaHari(date('D', strtotime($tanggal_lembur)));
+            [$jamKerjaLembur, $isLiburLembur] = $this->jadwalKerja->untukHari($karyawan->nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namaHariLembur);
 
             $isLintasHari = ($jamKerjaLembur && $jamKerjaLembur->lintashari == 1);
 
@@ -459,8 +460,8 @@ class LemburController extends Controller
                     return 'Tidak dapat diproses: Batas waktu perpanjangan lembur lintas hari maksimal H+1.';
                 }
 
-                $namaHariIni = $this->gethari(date('D'));
-                [$jamKerjaHariIni, $isLiburHariIni] = $this->resolveJamKerja($karyawan->nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namaHariIni);
+                $namaHariIni = $this->jadwalKerja->namaHari(date('D'));
+                [$jamKerjaHariIni, $isLiburHariIni] = $this->jadwalKerja->untukHari($karyawan->nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namaHariIni);
 
                 if ($jamKerjaHariIni && ! $isLiburHariIni) {
                     $batasUpdate = Carbon::parse($today.' '.$jamKerjaHariIni->jam_masuk);
@@ -478,14 +479,14 @@ class LemburController extends Controller
     {
         $today = date('Y-m-d');
         $now = date('H:i');
-        $dayName = $this->gethari(date('D'));
+        $dayName = $this->jadwalKerja->namaHari(date('D'));
 
         // Jika hari libur nasional, anggap tidak di dalam jam kerja regular
         if (HariLibur::isHariLibur($today, $karyawan->kode_cabang, $karyawan->kode_dept)) {
             return false;
         }
 
-        [$jamkerja, $isLibur] = $this->resolveJamKerja($karyawan->nik, $karyawan->kode_dept, $karyawan->kode_cabang, $dayName);
+        [$jamkerja, $isLibur] = $this->jadwalKerja->untukHari($karyawan->nik, $karyawan->kode_dept, $karyawan->kode_cabang, $dayName);
 
         // Jika tidak ada jadwal atau sedang libur jadwal
         if (! $jamkerja || $isLibur) {
@@ -508,50 +509,6 @@ class LemburController extends Controller
         }
 
         return false;
-    }
-
-    private function resolveJamKerja(string $nik, string $kodeDept, string $kodeCabang, string $hari): array
-    {
-        $hariNormal = strtolower(trim($hari));
-
-        $setJamKerja = Setjamkerja::with('jamKerja')
-            ->where('nik', $nik)
-            ->where(DB::raw('LOWER(hari)'), $hariNormal)
-            ->first();
-
-        if ($setJamKerja) {
-            $isLibur = is_null($setJamKerja->kode_jam_kerja) || $setJamKerja->kode_jam_kerja === 'LIBUR';
-
-            return [$setJamKerja->jamKerja, $isLibur, 'personal'];
-        }
-
-        $setJamKerjaDept = KonfigurasiJkDeptDetail::with(['jamKerja', 'konfigurasi'])
-            ->where(DB::raw('LOWER(hari)'), $hariNormal)
-            ->whereHas('konfigurasi', function ($query) use ($kodeDept, $kodeCabang) {
-                $query->where('kode_dept', $kodeDept)->where('kode_cabang', $kodeCabang);
-            })->first();
-
-        if ($setJamKerjaDept) {
-            $isLibur = is_null($setJamKerjaDept->kode_jam_kerja) || $setJamKerjaDept->kode_jam_kerja === 'LIBUR';
-
-            return [$setJamKerjaDept->jamKerja, $isLibur, 'dept'];
-        }
-
-        return [null, false, 'none'];
-    }
-
-    public function gethari($hari)
-    {
-        switch ($hari) {
-            case 'Sun': return 'Minggu';
-            case 'Mon': return 'Senin';
-            case 'Tue': return 'Selasa';
-            case 'Wed': return 'Rabu';
-            case 'Thu': return 'Kamis';
-            case 'Fri': return 'Jumat';
-            case 'Sat': return 'Sabtu';
-            default: return 'Tidak diketahui';
-        }
     }
 
     private function autoSyncWithPresensi($nik)
@@ -583,9 +540,9 @@ class LemburController extends Controller
                         continue;
                     }
 
-                    $dayNamePresensi = $this->gethari(date('D', strtotime($tglPresensi)));
+                    $dayNamePresensi = $this->jadwalKerja->namaHari(date('D', strtotime($tglPresensi)));
                     $karyawan = $lembur->karyawan;
-                    [$jamkerja, $isLibur] = $this->resolveJamKerja($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $dayNamePresensi);
+                    [$jamkerja, $isLibur] = $this->jadwalKerja->untukHari($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $dayNamePresensi);
                     $isHariLiburNasional = HariLibur::isHariLibur($tglPresensi, $karyawan->kode_cabang, $karyawan->kode_dept);
 
                     if ($jamkerja && ! $isLibur && ! $isHariLiburNasional) {

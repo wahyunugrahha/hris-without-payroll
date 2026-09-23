@@ -5,16 +5,14 @@ namespace App\Http\Controllers\Karyawan;
 use App\Http\Controllers\Controller;
 use App\Models\HariLibur;
 use App\Models\Izin;
-use App\Models\KonfigurasiJkDeptDetail;
 use App\Models\MasterCuti;
 use App\Models\Presensi;
-use App\Models\Setjamkerja;
 use App\Models\SuratPeringatan;
+use App\Services\JadwalKerjaService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -22,6 +20,8 @@ use Illuminate\Validation\ValidationException;
 
 class PengajuanIzinController extends Controller
 {
+    public function __construct(private JadwalKerjaService $jadwalKerja) {}
+
     private const CUTI_DATES_META_PREFIX = '[CUTI_DATES:';
 
     private function isMultiDateStatus(?string $status): bool
@@ -540,8 +540,8 @@ class PengajuanIzinController extends Controller
                     continue;
                 }
 
-                $namahari = $this->gethari(date('D', strtotime($dateStr)));
-                [$jkObj, $isLiburShift] = $this->resolveJamKerja($nik, $kodeDept, $kodeCabang, $namahari);
+                $namahari = $this->jadwalKerja->namaHari(date('D', strtotime($dateStr)));
+                [$jkObj, $isLiburShift] = $this->jadwalKerja->untukHari($nik, $kodeDept, $kodeCabang, $namahari);
 
                 if (isset($holidayLookup[$dateStr]) || $isLiburShift) {
                     continue;
@@ -896,11 +896,11 @@ class PengajuanIzinController extends Controller
 
         $selectedHolidayDates = $selectedDates->intersect($holidayDates)->values();
 
-        // Cek Libur Shift Khusus menggunakan resolveJamKerja (Filter "Terima Beres")
+        // Cek Libur Shift Khusus menggunakan JadwalKerjaService (Filter "Terima Beres")
         $finalSelectedDates = collect();
         foreach ($selectedDates as $sd) {
-            $namahari = $this->gethari(date('D', strtotime($sd)));
-            [$jkObj, $isLiburShift] = $this->resolveJamKerja($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namahari);
+            $namahari = $this->jadwalKerja->namaHari(date('D', strtotime($sd)));
+            [$jkObj, $isLiburShift] = $this->jadwalKerja->untukHari($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namahari);
             if (! $isLiburShift && ! $selectedHolidayDates->contains($sd)) {
                 $finalSelectedDates->push($sd);
             }
@@ -1004,8 +1004,8 @@ class PengajuanIzinController extends Controller
 
         $finalSelectedDates = collect();
         foreach ($selectedDates as $selectedDate) {
-            $namaHari = $this->gethari(date('D', strtotime($selectedDate)));
-            [$jamKerja, $isLiburShift] = $this->resolveJamKerja($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namaHari);
+            $namaHari = $this->jadwalKerja->namaHari(date('D', strtotime($selectedDate)));
+            [$jamKerja, $isLiburShift] = $this->jadwalKerja->untukHari($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namaHari);
 
             if (! $isLiburShift && ! in_array($selectedDate, $holidayDates, true)) {
                 $finalSelectedDates->push($selectedDate);
@@ -1141,8 +1141,8 @@ class PengajuanIzinController extends Controller
 
             foreach ($daterange as $dt) {
                 $d = $dt->format('Y-m-d');
-                $namahari = $this->gethari($dt->format('D'));
-                [$jkObj, $isLiburShift] = $this->resolveJamKerja($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namahari);
+                $namahari = $this->jadwalKerja->namaHari($dt->format('D'));
+                [$jkObj, $isLiburShift] = $this->jadwalKerja->untukHari($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namahari);
 
                 if ($isLiburShift || (strtolower($namahari) === 'minggu' && ! $jkObj)) {
                     $shiftLiburDates[] = $d;
@@ -1610,8 +1610,8 @@ class PengajuanIzinController extends Controller
 
         $finalSelectedDates = collect();
         foreach ($selectedDates as $selectedDate) {
-            $namaHari = $this->gethari(date('D', strtotime($selectedDate)));
-            [$jamKerja, $isLiburShift] = $this->resolveJamKerja($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namaHari);
+            $namaHari = $this->jadwalKerja->namaHari(date('D', strtotime($selectedDate)));
+            [$jamKerja, $isLiburShift] = $this->jadwalKerja->untukHari($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namaHari);
 
             if (! $isLiburShift && ! in_array($selectedDate, $holidayDates, true)) {
                 $finalSelectedDates->push($selectedDate);
@@ -1683,51 +1683,5 @@ class PengajuanIzinController extends Controller
         } catch (\Exception $e) {
             return redirect('/presensi/izin')->with('error', $this->failMessage('Gagal menghapus data pengajuan.', $e));
         }
-    }
-
-    private function gethari($hari)
-    {
-        switch ($hari) {
-            case 'Sun': return 'Minggu';
-            case 'Mon': return 'Senin';
-            case 'Tue': return 'Selasa';
-            case 'Wed': return 'Rabu';
-            case 'Thu': return 'Kamis';
-            case 'Fri': return 'Jumat';
-            case 'Sat': return 'Sabtu';
-            default: return 'Tidak diketahui';
-        }
-    }
-
-    private function resolveJamKerja(string $nik, ?string $kodeDept, ?string $kodeCabang, string $hari): array
-    {
-        $hariNormal = strtolower(trim($hari));
-
-        $setJamKerja = Setjamkerja::with('jamKerja')
-            ->where('nik', $nik)
-            ->where(DB::raw('LOWER(hari)'), $hariNormal)
-            ->first();
-
-        if ($setJamKerja) {
-            $isLibur = is_null($setJamKerja->kode_jam_kerja) || $setJamKerja->kode_jam_kerja === 'LIBUR';
-
-            return [$setJamKerja->jamKerja, $isLibur];
-        }
-
-        if ($kodeDept && $kodeCabang) {
-            $setJamKerjaDept = KonfigurasiJkDeptDetail::with(['jamKerja', 'konfigurasi'])
-                ->where(DB::raw('LOWER(hari)'), $hariNormal)
-                ->whereHas('konfigurasi', function ($query) use ($kodeDept, $kodeCabang) {
-                    $query->where('kode_dept', $kodeDept)->where('kode_cabang', $kodeCabang);
-                })->first();
-
-            if ($setJamKerjaDept) {
-                $isLibur = is_null($setJamKerjaDept->kode_jam_kerja) || $setJamKerjaDept->kode_jam_kerja === 'LIBUR';
-
-                return [$setJamKerjaDept->jamKerja, $isLibur];
-            }
-        }
-
-        return [null, false];
     }
 }

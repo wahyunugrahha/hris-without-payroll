@@ -7,6 +7,7 @@ use App\Models\Cabang;
 use App\Models\Departemen;
 use App\Models\Jabatan;
 use App\Models\Lembur;
+use App\Support\PeriodeKerja;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -249,12 +250,9 @@ class LemburController extends Controller
             $list_periode[$i] = "26 $nama_bln_lalu - 25 $nama_bln_ini";
         }
 
-        $hariIni = Carbon::now();
-        if ($hariIni->day >= 26) {
-            $hariIni->addMonth();
-        }
-        $defaultBulan = $hariIni->format('n');
-        $defaultTahun = $hariIni->format('Y');
+        $periodeIni = PeriodeKerja::dari();
+        $defaultBulan = $periodeIni->bulanKe();
+        $defaultTahun = $periodeIni->tahun();
 
         $departemen = Departemen::orderBy('nama_dept')->get();
 
@@ -288,17 +286,7 @@ class LemburController extends Controller
         $bulan = $request->bulan;
         $tahun = $request->tahun;
 
-        // Tanggal mulai: Tanggal 26 bulan sebelumnya
-        if ($bulan == 1) {
-            $bulanSebelum = 12;
-            $tahunSebelum = $tahun - 1;
-        } else {
-            $bulanSebelum = $bulan - 1;
-            $tahunSebelum = $tahun;
-        }
-
-        $tanggalMulai = sprintf('%04d-%02d-26', $tahunSebelum, $bulanSebelum);
-        $tanggalSelesai = sprintf('%04d-%02d-25', $tahun, $bulan);
+        [$tanggalMulai, $tanggalSelesai] = PeriodeKerja::bulan($bulan, $tahun)->range();
 
         // Query data lembur yang sudah disetujui (status 1)
         $query = Lembur::with('karyawan')

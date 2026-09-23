@@ -8,6 +8,7 @@ use App\Models\KPIMaster;
 use App\Models\RekapBulanan;
 use App\Models\SalaryIncrease;
 use App\Models\SuratPeringatan;
+use App\Support\PeriodeKerja;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -231,10 +232,9 @@ class KenaikanGajiController extends Controller
             $firstRekap = $sortedRekap->first();
             $lastRekap = $sortedRekap->last();
 
-            // Tanggal awal cycle bulan terlama (26 bulan sebelumnya)
-            $tglAwal = Carbon::create($firstRekap->tahun, $firstRekap->bulan, 26)->subMonth()->startOfDay();
-            // Tanggal akhir cycle bulan terbaru (25 bulan berjalan)
-            $tglAkhir = Carbon::create($lastRekap->tahun, $lastRekap->bulan, 25)->endOfDay();
+            // Dari awal periode rekap terlama s/d akhir periode rekap terbaru.
+            $tglAwal = PeriodeKerja::bulan($firstRekap->bulan, $firstRekap->tahun)->mulai;
+            $tglAkhir = PeriodeKerja::bulan($lastRekap->bulan, $lastRekap->tahun)->selesai->endOfDay();
 
             // Query daily points dari KpiLeaderboardSnapshot
             $kpiSnapshots = KpiLeaderboardSnapshot::where('nik', $nik)

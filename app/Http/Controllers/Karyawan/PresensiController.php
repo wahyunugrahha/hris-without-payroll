@@ -9,13 +9,13 @@ use App\Models\DinasLuar;
 use App\Models\HariLibur;
 use App\Models\Izin;
 use App\Models\Karyawan;
-use App\Models\KonfigurasiJkDeptDetail;
 use App\Models\KPIDaily;
 use App\Models\KPIMaster;
 use App\Models\LeaderboardSnapshot;
 use App\Models\Lembur;
 use App\Models\Presensi;
-use App\Models\Setjamkerja;
+use App\Services\JadwalKerjaService;
+use App\Support\PeriodeKerja;
 use Carbon\Carbon;
 use DateInterval;
 use DatePeriod;
@@ -29,6 +29,8 @@ use Illuminate\Support\Facades\Storage;
 
 class PresensiController extends Controller
 {
+    public function __construct(private JadwalKerjaService $jadwalKerja) {}
+
     public function create()
     {
         $nik = Auth::guard('karyawan')->user()->nik;
@@ -72,8 +74,8 @@ class PresensiController extends Controller
                 ->first();
         }
 
-        $namaHariSekarang = $this->gethari(date('D', strtotime($tanggal_sekarang)));
-        [$jkObj, $isLiburJamKerja] = $this->resolveJamKerja($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namaHariSekarang);
+        $namaHariSekarang = $this->jadwalKerja->namaHari(date('D', strtotime($tanggal_sekarang)));
+        [$jkObj, $isLiburJamKerja] = $this->jadwalKerja->untukHari($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namaHariSekarang);
 
         if ($isHariLiburNasional || $isLiburJamKerja || ($namaHariSekarang == 'Minggu' && empty($jkObj))) {
             $jenisLibur = $isHariLiburNasional ? 'nasional' : 'jam_kerja';
@@ -113,7 +115,7 @@ class PresensiController extends Controller
             ->where('status', '!=', 'x')
             ->orderByDesc('id')
             ->first();
-        $namahari = $this->gethari(date('D', strtotime($harini)));
+        $namahari = $this->jadwalKerja->namaHari(date('D', strtotime($harini)));
 
         if (! Auth::guard('karyawan')->check()) {
             return redirect('/login')->with('error', 'Silakan login terlebih dahulu.');
@@ -149,7 +151,7 @@ class PresensiController extends Controller
             ]);
         }
 
-        [$jamkerja] = $this->resolveJamKerja($nik, $karyawan->kode_dept, $kode_cabang_user, $namahari);
+        [$jamkerja] = $this->jadwalKerja->untukHari($nik, $karyawan->kode_dept, $kode_cabang_user, $namahari);
 
         if ($jamkerja == null) {
             return view('karyawan.presensi.notifjadwal');
@@ -221,8 +223,8 @@ class PresensiController extends Controller
             }
 
             $isHariLiburNasional = HariLibur::isHariLibur($tanggal_sekarang, $karyawan->kode_cabang, $karyawan->kode_dept);
-            $namaHariSekarang = $this->gethari(date('D', strtotime($tanggal_sekarang)));
-            [$jkObj, $isLiburJamKerja] = $this->resolveJamKerja($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namaHariSekarang);
+            $namaHariSekarang = $this->jadwalKerja->namaHari(date('D', strtotime($tanggal_sekarang)));
+            [$jkObj, $isLiburJamKerja] = $this->jadwalKerja->untukHari($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namaHariSekarang);
 
             // Tambahan blok validasi libur hari ini
             if ($isHariLiburNasional || $isLiburJamKerja || ($namaHariSekarang == 'Minggu' && empty($jkObj))) {
@@ -253,8 +255,8 @@ class PresensiController extends Controller
                 }
             }
 
-            $namahari = $this->gethari(date('D', strtotime($tgl_presensi)));
-            [$jamkerja] = $this->resolveJamKerja($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namahari);
+            $namahari = $this->jadwalKerja->namaHari(date('D', strtotime($tgl_presensi)));
+            [$jamkerja] = $this->jadwalKerja->untukHari($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namahari);
 
             if ($jamkerja == null) {
                 return response()->json(['success' => false, 'error' => 'Jadwal kerja tidak ditemukan.'], 400);
@@ -520,8 +522,9 @@ class PresensiController extends Controller
             return view('karyawan.presensi.gethistori', ['histori' => collect([])]);
         }
 
-        $periodEnd = Carbon::create($tahun, $bulan, 25)->endOfDay();
-        $periodStart = Carbon::create($tahun, $bulan, 26)->subMonth()->startOfDay();
+        $periode = PeriodeKerja::bulan($bulan, $tahun);
+        $periodStart = $periode->mulai;
+        $periodEnd = $periode->selesai->endOfDay();
 
         $histori_presensi = Presensi::with(['jamKerja:kode_jam_kerja,jam_masuk'])
             ->whereBetween('tgl_presensi', [$periodStart->format('Y-m-d'), $periodEnd->format('Y-m-d')])
@@ -665,8 +668,8 @@ class PresensiController extends Controller
                 if (! $existsInPresensi && ! $existsInNormalized) {
                     // Verifikasi Jam Kerja dan Hari Libur
                     $isHariLiburNasional = HariLibur::isHariLibur($tgl, $kode_cabang, $kode_dept);
-                    $namaHari = $this->gethari(date('D', strtotime($tgl)));
-                    [$jkObj, $isLiburJamKerja, $source] = $this->resolveJamKerja($nik, $kode_dept, $kode_cabang, $namaHari);
+                    $namaHari = $this->jadwalKerja->namaHari(date('D', strtotime($tgl)));
+                    [$jkObj, $isLiburJamKerja, $source] = $this->jadwalKerja->untukHari($nik, $kode_dept, $kode_cabang, $namaHari);
 
                     $isHoliday = $isHariLiburNasional || $isLiburJamKerja || ($namaHari == 'Minggu' && $source == 'none');
 
@@ -726,20 +729,6 @@ class PresensiController extends Controller
 
     // --- Helper Functions ---
     private $batasLintasHari = '08:00';
-
-    public function gethari($hari)
-    {
-        switch ($hari) {
-            case 'Sun': return 'Minggu';
-            case 'Mon': return 'Senin';
-            case 'Tue': return 'Selasa';
-            case 'Wed': return 'Rabu';
-            case 'Thu': return 'Kamis';
-            case 'Fri': return 'Jumat';
-            case 'Sat': return 'Sabtu';
-            default: return 'Tidak diketahui';
-        }
-    }
 
     private function distance($lat1, $lon1, $lat2, $lon2)
     {
@@ -806,36 +795,6 @@ class PresensiController extends Controller
                 return date('Y-m-d', strtotime($item->tanggal_libur));
             })
             ->toArray();
-    }
-
-    private function resolveJamKerja(string $nik, string $kodeDept, string $kodeCabang, string $hari): array
-    {
-        $hariNormal = strtolower(trim($hari));
-
-        $setJamKerja = Setjamkerja::with('jamKerja')
-            ->where('nik', $nik)
-            ->where(DB::raw('LOWER(hari)'), $hariNormal)
-            ->first();
-
-        if ($setJamKerja) {
-            $isLibur = is_null($setJamKerja->kode_jam_kerja) || $setJamKerja->kode_jam_kerja === 'LIBUR';
-
-            return [$setJamKerja->jamKerja, $isLibur, 'personal'];
-        }
-
-        $setJamKerjaDept = KonfigurasiJkDeptDetail::with(['jamKerja', 'konfigurasi'])
-            ->where(DB::raw('LOWER(hari)'), $hariNormal)
-            ->whereHas('konfigurasi', function ($query) use ($kodeDept, $kodeCabang) {
-                $query->where('kode_dept', $kodeDept)->where('kode_cabang', $kodeCabang);
-            })->first();
-
-        if ($setJamKerjaDept) {
-            $isLibur = is_null($setJamKerjaDept->kode_jam_kerja) || $setJamKerjaDept->kode_jam_kerja === 'LIBUR';
-
-            return [$setJamKerjaDept->jamKerja, $isLibur, 'dept'];
-        }
-
-        return [null, false, 'none'];
     }
 
     private function setEmptyPresensi($item)
