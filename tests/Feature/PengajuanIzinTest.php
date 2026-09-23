@@ -112,4 +112,22 @@ class PengajuanIzinTest extends TestCase
 
         $this->assertSame('asli', $izin->fresh()->keterangan);
     }
+
+    public function test_ubah_cuti_juga_melewati_hari_libur(): void
+    {
+        DB::table('hari_libur')->insert(['tanggal_libur' => '2026-09-02', 'keterangan' => 'Libur']);
+        Izin::create([
+            'kode_izin' => 'IZ09260001', 'nik' => '1001', 'status' => 'c', 'kode_cuti' => 'CTH', 'status_approved' => 0,
+            'tgl_izin_dari' => '2026-09-01', 'tgl_izin_sampai' => '2026-09-01',
+            'keterangan' => CutiDatesMeta::append('awal', ['2026-09-01']),
+        ]);
+
+        $this->put('/pengajuanizin/IZ09260001/updateizincuti', [
+            'kode_cuti' => 'CTH',
+            'selected_dates' => '2026-09-01,2026-09-02,2026-09-03',
+            'keterangan' => 'revisi',
+        ])->assertSessionHas('success');
+
+        $this->assertSame(['2026-09-01', '2026-09-03'], Izin::find('IZ09260001')->tanggalDiajukan());
+    }
 }

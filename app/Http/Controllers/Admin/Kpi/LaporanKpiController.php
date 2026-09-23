@@ -335,10 +335,11 @@ class LaporanKpiController extends Controller
             ->keyBy('nik');
 
         // B. Ambil KPI Harian (Workbook & Extra)
+        // Draft & KPI yang ditolak tidak dihitung (aturan sama dengan leaderboard & rekap bulanan).
         $kpiDailies = KPIDaily::with(['kpiDailyDetail', 'kpiDailyExtra'])
+            ->dihitung()
             ->whereIn('nik', $nikList)
             ->whereBetween('tanggal', [$tglAwal, $tglAkhir])
-            // ->where('status', 'approved_by_hr')
             ->get()
             ->groupBy('nik');
 

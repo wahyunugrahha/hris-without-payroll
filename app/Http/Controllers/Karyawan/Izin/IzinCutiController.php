@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Karyawan\Izin;
 
 use App\Http\Requests\Karyawan\Izin\IzinCutiRequest;
-use App\Models\HariLibur;
 use App\Models\Izin;
 use App\Models\MasterCuti;
 use App\Models\SuratPeringatan;
@@ -84,20 +83,18 @@ class IzinCutiController extends IzinController
         $karyawan = $this->karyawan();
         $this->tolakJikaAdaSpAktif($karyawan->nik, 'mengupdate');
 
-        $tanggal = $request->tanggalDipilih();
+        // Sama seperti saat mengajukan: hari libur & libur shift otomatis dikeluarkan.
+        $tanggal = $this->izin->tanggalHariKerja($karyawan, $request->tanggalDipilih());
 
-        // ponytail: berbeda dengan store (libur dikeluarkan otomatis), update menolak tanggal libur.
-        // Perilaku lama dipertahankan; samakan jika bisnis menginginkan.
-        $libur = $tanggal->intersect(HariLibur::tanggalBerlaku($karyawan->kode_cabang, $karyawan->kode_dept, $tanggal->first(), $tanggal->last()));
-        if ($libur->isNotEmpty()) {
-            $this->tolak('selected_dates', 'Tanggal '.$libur->join(', ').' adalah hari libur dan tidak dapat diajukan cuti.');
+        if ($tanggal->isEmpty()) {
+            $this->tolak('selected_dates', 'Seluruh tanggal yang dipilih bertepatan dengan libur / shift libur.');
         }
 
         if ($this->izin->tanggalBentrok($karyawan->nik, $tanggal, $kode_izin)) {
             $this->tolak('selected_dates', 'Sebagian tanggal yang dipilih bentrok dengan presensi/pengajuan izin lain.');
         }
 
-        $this->tolakJikaMelebihiJatah($request->kode_cuti, $tanggal->count(), 'hari yang diajukan', $kode_izin);
+        $this->tolakJikaMelebihiJatah($request->kode_cuti, $tanggal->count(), 'hari efektif yang diajukan', $kode_izin);
 
         try {
             $izin->update([

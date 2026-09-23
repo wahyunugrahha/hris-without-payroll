@@ -253,7 +253,9 @@ class GenerateRekapBulanan extends Command
             ->keyBy('nik');
 
         // 2. Ambil KPI Harian (Workbook & Extra)
+        // Draft & KPI yang ditolak tidak dihitung (aturan sama dengan leaderboard).
         $kpiDailies = KPIDaily::with(['kpiDailyDetail', 'kpiDailyExtra'])
+            ->dihitung()
             ->whereIn('nik', $nikList)
             ->whereBetween('tanggal', [$tglAwalStr, $tglAkhirStr])
             ->get()
