@@ -68,13 +68,6 @@
         @json(['success' => session('success'), 'warning' => session('warning'), 'errors' => $errors->all()])
     </script>
 
-    <dialog id="admin-palette" class="admin-palette" aria-label="Cari menu">
-        <input type="search" placeholder="Ketik nama menu…" autocomplete="off" spellcheck="false"
-            role="combobox" aria-expanded="true" aria-controls="admin-palette-list" aria-autocomplete="list" />
-        <ul id="admin-palette-list" role="listbox"></ul>
-        <p class="admin-palette-hint"><kbd>↑</kbd><kbd>↓</kbd> pilih · <kbd>Enter</kbd> buka · <kbd>Esc</kbd> tutup</p>
-    </dialog>
-
     <script src="{{ asset_v('assets/js/admin.js') }}"></script>
     @stack('myscript')
 </body>

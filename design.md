@@ -7,7 +7,7 @@ bila sistem perlu berkembang, jangan override per halaman.
 Implementasi:
 - `public/assets/css/admin-tokens.css` — token warna/spasi/radius (+ pemetaan ke variabel Tabler).
 - `public/assets/css/admin-theme.css` — gaya layout & komponen admin.
-- `public/assets/js/admin.js` — perilaku global (tema, flash, command palette).
+- `public/assets/js/admin.js` — perilaku global (tema, flash).
 
 Cakupan: semua view `resources/views/admin/**`, layout `layouts/admin/*`, login admin,
 Dashboard Overview & TV (HTML mandiri, memuat `admin-tokens.css`; TV dikunci mode gelap).
@@ -47,8 +47,7 @@ Font **tidak diubah**: Inter (rsms.me/inter) bawaan Tabler. Angka di tabel memak
 ## Kerangka (layout admin)
 - **Sidebar**: latar `--color-sidebar` (sedikit lebih gelap dari konten), item 36px,
   submenu dengan garis panduan vertikal; item aktif = garis navy 2px + tint.
-- **Header**: sticky 56px, blur tipis; kiri tombol "Cari menu… Ctrl K" (command
-  palette dari link sidebar, `public/assets/js/admin.js`), kanan tema/notifikasi/akun.
+- **Header**: sticky 56px, blur tipis; kanan tema/notifikasi/akun.
 - **Judul halaman** (`.page-header`): pita putih penuh + garis bawah; pretitle kecil,
   judul 1.375rem/600, ikon judul navy.
 - **Toolbar judul**: hanya `btn-primary` yang berwarna; tombol lain otomatis netral
@@ -56,7 +55,7 @@ Font **tidak diubah**: Inter (rsms.me/inter) bawaan Tabler. Angka di tabel memak
 - **Badge status** di konten: tint lembut dari warna status, bukan blok penuh.
 
 ## JavaScript
-- Perilaku global admin di `public/assets/js/admin.js` (tema, flash, palette).
+- Perilaku global admin di `public/assets/js/admin.js` (tema, flash).
 - Data server ke JS lewat `<script type="application/json">` + `@json`, bukan
   interpolasi Blade di dalam string JS.
 
