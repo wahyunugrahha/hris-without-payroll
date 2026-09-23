@@ -14,7 +14,9 @@ use App\Http\Controllers\Admin\KaryawanController;
 use App\Http\Controllers\Admin\KenaikanGajiController;
 use App\Http\Controllers\Admin\KonfigurasiController;
 use App\Http\Controllers\Admin\KonfigurasiUmumController;
-use App\Http\Controllers\Admin\KPIController;
+use App\Http\Controllers\Admin\Kpi\LaporanKpiController;
+use App\Http\Controllers\Admin\Kpi\MasterKpiController;
+use App\Http\Controllers\Admin\Kpi\VerifikasiKpiController;
 use App\Http\Controllers\Admin\LaporanPresensiController;
 use App\Http\Controllers\Admin\LemburController;
 use App\Http\Controllers\Admin\PengumumanController;
@@ -321,82 +323,46 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
     });
 
     // KPI Management
-    Route::prefix('kpi')
-        ->controller(KPIController::class)
-        ->group(function () {
-            Route::get('/dashboardkpi', 'dashboardKPI')
-                ->middleware('permission:kpi-view-admin,user')
-                ->name('kpi.dashboard');
-
+    Route::prefix('kpi')->group(function () {
+        Route::controller(MasterKpiController::class)->group(function () {
             Route::prefix('masterkpi')->name('kpi.master.')->group(function () {
-                Route::get('/', 'masterKPI')
-                    ->middleware('permission:kpi-view-admin,user')
-                    ->name('index');
-                Route::post('/store', 'storeMasterKPI')
-                    ->middleware('permission:kpi-create-admin,user')
-                    ->name('store');
-                Route::get('/{id}/edit', 'editMasterKPI')
-                    ->middleware('permission:kpi-edit-admin,user')
-                    ->name('edit');
-                Route::put('/{id}/update', 'updateMasterKPI')
-                    ->middleware('permission:kpi-edit-admin,user')
-                    ->name('update');
-                Route::delete('/{id}/delete', 'deleteMasterKPI')
-                    ->middleware('permission:kpi-delete-admin,user')
-                    ->name('delete');
+                Route::get('/', 'masterKPI')->middleware('permission:kpi-view-admin,user')->name('index');
+                Route::post('/store', 'storeMasterKPI')->middleware('permission:kpi-create-admin,user')->name('store');
+                Route::get('/{id}/edit', 'editMasterKPI')->middleware('permission:kpi-edit-admin,user')->name('edit');
+                Route::put('/{id}/update', 'updateMasterKPI')->middleware('permission:kpi-edit-admin,user')->name('update');
+                Route::delete('/{id}/delete', 'deleteMasterKPI')->middleware('permission:kpi-delete-admin,user')->name('delete');
             });
 
             Route::prefix('detailmasterkpi')->name('kpi.master.detail.')->group(function () {
-                Route::get('/{kpi_master_id}', 'detailMasterKPI')
-                    ->middleware('permission:kpi-view-admin,user')
-                    ->name('index');
-                Route::post('/{kpi_master_id}/store', 'storeDetailMasterKPI')
-                    ->middleware('permission:kpi-create-admin,user')
-                    ->name('store');
-                Route::put('/update', 'updateDetailMasterKPI')
-                    ->middleware('permission:kpi-edit-admin,user')
-                    ->name('update');
-                Route::delete('/{detail_id}/{jenis}/delete', 'deleteDetailMasterKPI')
-                    ->middleware('permission:kpi-delete-admin,user')
-                    ->name('delete');
+                Route::get('/{kpi_master_id}', 'detailMasterKPI')->middleware('permission:kpi-view-admin,user')->name('index');
+                Route::post('/{kpi_master_id}/store', 'storeDetailMasterKPI')->middleware('permission:kpi-create-admin,user')->name('store');
+                Route::put('/update', 'updateDetailMasterKPI')->middleware('permission:kpi-edit-admin,user')->name('update');
+                Route::delete('/{detail_id}/{jenis}/delete', 'deleteDetailMasterKPI')->middleware('permission:kpi-delete-admin,user')->name('delete');
             });
+        });
 
+        // Verifikasi HR: hak per record diperiksa KPIDailyPolicy (role & cabang).
+        Route::controller(VerifikasiKpiController::class)->group(function () {
             Route::prefix('indikatorkpi')->name('kpi.indikator.')->group(function () {
-                Route::get('/', 'indikatorKPI')
-                    ->middleware('permission:kpi-view-admin,user')
-                    ->name('index');
-                Route::get('/{kpi_daily_id}', 'detailIndikatorKPI')
-                    ->middleware('permission:kpi-view-admin,user')
-                    ->name('detail.index');
-                Route::put('/{kpi_daily_id}/update', 'updateDetailIndikatorKPI')
-                    ->middleware('permission:kpi-edit-admin,user')
-                    ->name('detail.update');
-                Route::put('/{kpi_daily_id}/approve', 'approveKPI')
-                    ->middleware('permission:kpi-view-admin,user')
-                    ->name('approve');
-                Route::put('/{kpi_daily_id}/reject', 'rejectKPI')
-                    ->middleware('permission:kpi-view-admin,user')
-                    ->name('reject');
-
-                Route::put('/extra/{id}/update', 'updateExtra')
-                    ->middleware('permission:kpi-edit-admin,user')
-                    ->name('extra.update');
-                Route::delete('/extra/{id}/destroy', 'destroyExtra')
-                    ->middleware('permission:kpi-edit-admin,user')
-                    ->name('extra.destroy');
+                Route::get('/', 'indikatorKPI')->middleware('permission:kpi-view-admin,user')->name('index');
+                Route::get('/{kpi_daily_id}', 'detailIndikatorKPI')->middleware('permission:kpi-view-admin,user')->name('detail.index');
+                Route::put('/{kpi_daily_id}/update', 'updateDetailIndikatorKPI')->middleware('permission:kpi-edit-admin,user')->name('detail.update');
+                Route::put('/{kpi_daily_id}/approve', 'approveKPI')->middleware('permission:kpi-view-admin,user')->name('approve');
+                Route::put('/{kpi_daily_id}/reject', 'rejectKPI')->middleware('permission:kpi-view-admin,user')->name('reject');
+                Route::put('/extra/{id}/update', 'updateExtra')->middleware('permission:kpi-edit-admin,user')->name('extra.update');
+                Route::delete('/extra/{id}/destroy', 'destroyExtra')->middleware('permission:kpi-edit-admin,user')->name('extra.destroy');
             });
 
-            Route::get('/rekap/karyawan', 'rekapKPIKaryawan')
-                ->middleware('permission:laporan-view-admin,user')
-                ->name('kpi.rekap.karyawan');
-            Route::get('/report', 'reportKPI')
-                ->middleware('permission:laporan-view-admin,user')
-                ->name('kpi.report');
+            Route::post('/rekap/karyawan/bulk-approve', 'bulkApproveHR')->middleware('permission:kpi-edit-admin,user')->name('kpi.rekap.karyawan.bulk_approve');
+        });
 
-            Route::post('/rekap/karyawan/bulk-approve', [KPIController::class, 'bulkApproveHR'])->name('kpi.rekap.karyawan.bulk_approve');
+        Route::controller(LaporanKpiController::class)->middleware('permission:laporan-view-admin,user')->group(function () {
+            Route::get('/rekap/karyawan', 'rekapKPIKaryawan')->name('kpi.rekap.karyawan');
             Route::post('/rekap/cetakKPI/karyawan', 'cetakRekapKPIKaryawan')->name('kpi.rekap.karyawan.cetak');
+            Route::get('/report', 'reportKPI')->name('kpi.report');
             Route::post('/report/cetakKPI/', 'cetakReportKPI')->name('kpi.report.cetak');
         });
+    });
 
     // Konfigurasi Jam Kerja
     Route::prefix('konfigurasi')->group(function () {
