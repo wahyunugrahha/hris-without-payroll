@@ -35,6 +35,19 @@ class PengajuanIzinController extends Controller
         private IzinService $izin,
     ) {}
 
+    /**
+     * Halaman utama izin (/presensi/izin): seluruh riwayat pengajuan karyawan, terbaru dulu.
+     */
+    public function riwayat()
+    {
+        $data_izin = Izin::with('masterCuti')
+            ->milik(Auth::guard('karyawan')->user()->nik)
+            ->orderByDesc('tgl_izin_dari')
+            ->get();
+
+        return view('karyawan.presensi.izin', compact('data_izin'));
+    }
+
     public function index(Request $request)
     {
         $bulanInput = $request->input('bulan');

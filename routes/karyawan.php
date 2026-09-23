@@ -30,7 +30,7 @@ Route::middleware(['auth:karyawan'])->group(function () {
         ->middleware(['permission:presensi-create-karyawan,karyawan', 'wajib_presensi'])
         ->name('karyawan.presensi.create');
     Route::post('/presensi/store', [PresensiController::class, 'store'])
-        ->middleware('wajib_presensi')
+        ->middleware(['permission:presensi-create-karyawan,karyawan', 'wajib_presensi'])
         ->name('karyawan.presensi.store');
 
     // PROFILE
@@ -60,7 +60,7 @@ Route::middleware(['auth:karyawan'])->group(function () {
     Route::post('/proseslogout', [KaryawanAuthController::class, 'logout'])->name('proseslogout');
 
     // IZIN / SAKIT / CUTI
-    Route::get('/presensi/izin', [PresensiController::class, 'formizin'])
+    Route::get('/presensi/izin', [PengajuanIzinController::class, 'riwayat'])
         ->middleware('permission:izin-view-karyawan,karyawan')
         ->name('karyawan.izin.index');
     Route::get('/pengajuanizin/index', [PengajuanIzinController::class, 'index'])
@@ -207,10 +207,4 @@ Route::middleware(['auth:karyawan'])->group(function () {
         ->middleware('permission:kenaikan_gaji-view-karyawan,karyawan')
         ->name('karyawan.kenaikan_gaji.store');
 
-    // Sudah tidak digunakan???
-    Route::get('/presensi/buatizin', [PresensiController::class, 'buatizin'])
-        ->middleware('permission:izin-create-karyawan,karyawan')
-        ->name('karyawan.izin.create');
-    Route::post('/presensi/storeizin', [PresensiController::class, 'storeizin'])
-        ->name('karyawan.izin.store');
 });

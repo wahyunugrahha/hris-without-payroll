@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Karyawan;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cabang;
-use App\Models\CabangLokasi;
 use App\Models\DinasLuar;
 use App\Models\HariLibur;
 use App\Models\Izin;
@@ -15,6 +14,7 @@ use App\Models\LeaderboardSnapshot;
 use App\Models\Lembur;
 use App\Models\Presensi;
 use App\Services\JadwalKerjaService;
+use App\Services\PresensiService;
 use App\Support\PeriodeKerja;
 use Carbon\Carbon;
 use DateInterval;
@@ -29,12 +29,15 @@ use Illuminate\Support\Facades\Storage;
 
 class PresensiController extends Controller
 {
-    public function __construct(private JadwalKerjaService $jadwalKerja) {}
+    public function __construct(
+        private JadwalKerjaService $jadwalKerja,
+        private PresensiService $presensi,
+    ) {}
 
     public function create()
     {
-        $nik = Auth::guard('karyawan')->user()->nik;
         $karyawan = Auth::guard('karyawan')->user();
+        $nik = $karyawan->nik;
 
         if ((int) $karyawan->is_whitelist === 1) {
             return redirect()
@@ -49,66 +52,23 @@ class PresensiController extends Controller
         }
 
         $tanggal_sekarang = date('Y-m-d');
-        $jamsekarang = date('H:i');
-        $tgl_sebelumnya = date('Y-m-d', strtotime('-1 days', strtotime($tanggal_sekarang)));
+        $libur = $this->presensi->statusLibur($karyawan, $tanggal_sekarang);
 
-        // Cek Libur
-        $isHariLiburNasional = HariLibur::isHariLibur($tanggal_sekarang, $karyawan->kode_cabang, $karyawan->kode_dept);
-        $hariLiburInfo = null;
-
-        if ($isHariLiburNasional) {
-            $hariLiburInfo = HariLibur::where('tanggal_libur', $tanggal_sekarang)
-                ->where(function ($query) use ($karyawan) {
-                    $query->whereNull('kode_cabang')
-                        ->orWhere('kode_cabang', '')
-                        ->orWhereRaw("concat(',', kode_cabang, ',') like ?", ["%,{$karyawan->kode_cabang},%"])
-                        ->orWhere('kode_cabang', $karyawan->kode_cabang);
-                })
-                ->where(function ($query) use ($karyawan) {
-                    $query->whereNull('kode_dept')
-                        ->orWhere('kode_dept', '')
-                        ->orWhereRaw("concat(',', kode_dept, ',') like ?", ["%,{$karyawan->kode_dept},%"])
-                        ->orWhere('kode_dept', $karyawan->kode_dept);
-                })
-                ->orderByRaw("(case when kode_cabang is null or kode_cabang = '' then 0 else 1 end + case when kode_dept is null or kode_dept = '' then 0 else 1 end) desc")
-                ->first();
-        }
-
-        $namaHariSekarang = $this->jadwalKerja->namaHari(date('D', strtotime($tanggal_sekarang)));
-        [$jkObj, $isLiburJamKerja] = $this->jadwalKerja->untukHari($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namaHariSekarang);
-
-        if ($isHariLiburNasional || $isLiburJamKerja || ($namaHariSekarang == 'Minggu' && empty($jkObj))) {
-            $jenisLibur = $isHariLiburNasional ? 'nasional' : 'jam_kerja';
+        if ($libur['libur']) {
+            // Tampilkan keterangan libur yang paling spesifik (cabang+dept > cabang/dept > umum).
+            $hariLiburInfo = $libur['nasional']
+                ? HariLibur::where('tanggal_libur', $tanggal_sekarang)
+                    ->berlakuUntuk($karyawan->kode_cabang, $karyawan->kode_dept)
+                    ->orderByRaw("(case when kode_cabang is null or kode_cabang = '' then 0 else 1 end + case when kode_dept is null or kode_dept = '' then 0 else 1 end) desc")
+                    ->first()
+                : null;
+            $jenisLibur = $libur['nasional'] ? 'nasional' : 'jam_kerja';
+            $isLiburJamKerja = $libur['shift'];
 
             return view('karyawan.presensi.harilibur', compact('hariLiburInfo', 'jenisLibur', 'isLiburJamKerja'));
         }
 
-        // Lintas Hari Check
-        $cekpresensi_sebelumnya = Presensi::with('jamKerja')
-            ->where('tgl_presensi', $tgl_sebelumnya)
-            ->where('nik', $nik)
-            ->orderByDesc('id')
-            ->first();
-
-        $ceklintashari_presensi = $cekpresensi_sebelumnya && $cekpresensi_sebelumnya->jamKerja
-            ? $cekpresensi_sebelumnya->jamKerja->lintashari : 0;
-
-        $harini = $tanggal_sekarang;
-        if ($ceklintashari_presensi == 1) {
-            $nowTs = strtotime(date('Y-m-d H:i'));
-            if (! empty($cekpresensi_sebelumnya->jamKerja->jam_pulang)) {
-                $waktuPulangPrevTs = strtotime($tgl_sebelumnya.' '.$cekpresensi_sebelumnya->jamKerja->jam_pulang) + 24 * 60 * 60;
-                if ($nowTs <= $waktuPulangPrevTs) {
-                    $harini = $tgl_sebelumnya;
-                } elseif ($jamsekarang < $this->batasLintasHari) {
-                    $harini = $tgl_sebelumnya;
-                }
-            } else {
-                if ($jamsekarang < $this->batasLintasHari) {
-                    $harini = $tgl_sebelumnya;
-                }
-            }
-        }
+        $harini = $this->presensi->tanggalPresensiAktif($nik);
 
         $cek = Presensi::where('nik', $nik)
             ->where('tgl_presensi', $harini)
@@ -117,10 +77,6 @@ class PresensiController extends Controller
             ->first();
         $namahari = $this->jadwalKerja->namaHari(date('D', strtotime($harini)));
 
-        if (! Auth::guard('karyawan')->check()) {
-            return redirect('/login')->with('error', 'Silakan login terlebih dahulu.');
-        }
-
         $kode_cabang_user = $karyawan->kode_cabang;
         $lokasi_kantor_cabang = Cabang::find($kode_cabang_user);
 
@@ -128,28 +84,7 @@ class PresensiController extends Controller
             return redirect('/dashboard')->with('error', 'Konfigurasi lokasi kantor belum diatur!');
         }
 
-        // Lokasi
-        $lokasi_list = CabangLokasi::where('kode_cabang', $kode_cabang_user)->where('aktif', true)->get()
-            ->map(function ($lok) {
-                return [
-                    'lat' => (float) $lok->latitude,
-                    'lon' => (float) $lok->longitude,
-                    'radius' => (int) $lok->radius,
-                    'nama' => $lok->nama_lokasi,
-                ];
-            });
-
-        if ($lokasi_list->isEmpty() && ! empty($lokasi_kantor_cabang->lokasi_kantor)) {
-            $lok = explode(',', $lokasi_kantor_cabang->lokasi_kantor);
-            $lokasi_list = collect([
-                [
-                    'lat' => (float) ($lok[0] ?? 0),
-                    'lon' => (float) ($lok[1] ?? 0),
-                    'radius' => (int) ($lokasi_kantor_cabang->radius ?? 0),
-                    'nama' => 'Lokasi Utama',
-                ],
-            ]);
-        }
+        $lokasi_list = $this->presensi->lokasiKantor($kode_cabang_user);
 
         [$jamkerja] = $this->jadwalKerja->untukHari($nik, $karyawan->kode_dept, $kode_cabang_user, $namahari);
 
@@ -203,57 +138,27 @@ class PresensiController extends Controller
                 ], 403);
             }
 
-            $tanggal_sekarang = date('Y-m-d');
             $jam = date('H:i:s');
             $jamsekarang = date('H:i');
-            $lokasi = $request->lokasi;
-            $image = $request->image;
-            $tgl_sebelumnya = date('Y-m-d', strtotime('-1 days', strtotime($tanggal_sekarang)));
+            $lokasi = (string) $request->lokasi;
+            $koordinat = explode(',', $lokasi);
 
-            if (empty($lokasi) || strpos($lokasi, ',') === false) {
+            if (count($koordinat) < 2 || ! is_numeric(trim($koordinat[0])) || ! is_numeric(trim($koordinat[1]))) {
                 return response()->json(['success' => false, 'error' => 'Data lokasi tidak valid.'], 400);
             }
-            $image_parts = explode(';base64,', $image);
-            if (! isset($image_parts[1])) {
-                return response()->json(['success' => false, 'error' => 'Data gambar tidak valid.'], 400);
-            }
-            $image_base64 = base64_decode($image_parts[1]);
-            if ($image_base64 === false) {
+
+            // Foto selfie dikirim sebagai data URL base64; pastikan isinya benar-benar gambar.
+            $image_parts = explode(';base64,', (string) $request->image);
+            $image_base64 = isset($image_parts[1]) ? base64_decode($image_parts[1], true) : false;
+            if ($image_base64 === false || @getimagesizefromstring($image_base64) === false) {
                 return response()->json(['success' => false, 'error' => 'Data gambar tidak valid.'], 400);
             }
 
-            $isHariLiburNasional = HariLibur::isHariLibur($tanggal_sekarang, $karyawan->kode_cabang, $karyawan->kode_dept);
-            $namaHariSekarang = $this->jadwalKerja->namaHari(date('D', strtotime($tanggal_sekarang)));
-            [$jkObj, $isLiburJamKerja] = $this->jadwalKerja->untukHari($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namaHariSekarang);
-
-            // Tambahan blok validasi libur hari ini
-            if ($isHariLiburNasional || $isLiburJamKerja || ($namaHariSekarang == 'Minggu' && empty($jkObj))) {
+            if ($this->presensi->statusLibur($karyawan, date('Y-m-d'))['libur']) {
                 return response()->json(['success' => false, 'error' => 'Tidak dapat melakukan presensi pada hari libur!'], 403);
             }
 
-            $cekpresensi_sebelumnya = Presensi::with('jamKerja')
-                ->where('tgl_presensi', $tgl_sebelumnya)
-                ->where('nik', $nik)
-                ->orderByDesc('id')
-                ->first();
-            $ceklintashari_presensi = $cekpresensi_sebelumnya && $cekpresensi_sebelumnya->jamKerja ? $cekpresensi_sebelumnya->jamKerja->lintashari : 0;
-
-            $tgl_presensi = $tanggal_sekarang;
-            if ($ceklintashari_presensi == 1) {
-                $nowTs = strtotime(date('Y-m-d H:i'));
-                if (! empty($cekpresensi_sebelumnya->jamKerja->jam_pulang)) {
-                    $waktuPulangPrevTs = strtotime($tgl_sebelumnya.' '.$cekpresensi_sebelumnya->jamKerja->jam_pulang) + 24 * 60 * 60;
-                    if ($nowTs <= $waktuPulangPrevTs) {
-                        $tgl_presensi = $tgl_sebelumnya;
-                    } elseif ($jamsekarang < $this->batasLintasHari) {
-                        $tgl_presensi = $tgl_sebelumnya;
-                    }
-                } else {
-                    if ($jamsekarang < $this->batasLintasHari) {
-                        $tgl_presensi = $tgl_sebelumnya;
-                    }
-                }
-            }
+            $tgl_presensi = $this->presensi->tanggalPresensiAktif($nik);
 
             $namahari = $this->jadwalKerja->namaHari(date('D', strtotime($tgl_presensi)));
             [$jamkerja] = $this->jadwalKerja->untukHari($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namahari);
@@ -276,35 +181,9 @@ class PresensiController extends Controller
             }
 
             if (! $dinasLuarAktif) {
-                $lokasi_cabang_list = CabangLokasi::where('kode_cabang', $karyawan->kode_cabang)->where('aktif', true)->get();
-                if ($lokasi_cabang_list->isEmpty()) {
-                    $cabang = Cabang::find($karyawan->kode_cabang);
-                    if ($cabang && ! empty($cabang->lokasi_kantor)) {
-                        $lok = explode(',', $cabang->lokasi_kantor);
-                        $obj = new CabangLokasi;
-                        $obj->latitude = $lok[0] ?? 0;
-                        $obj->longitude = $lok[1] ?? 0;
-                        $obj->radius = $cabang->radius ?? 0;
-                        $lokasi_cabang_list = collect([$obj]);
-                    }
-                }
+                $lokasiKantor = $this->presensi->lokasiKantor($karyawan->kode_cabang);
 
-                $lokasi_user = explode(',', $lokasi);
-                $lat_user = $lokasi_user[0];
-                $lon_user = $lokasi_user[1];
-                $terdekat = null;
-
-                foreach ($lokasi_cabang_list as $lok) {
-                    $jarak = $this->distance((float) $lok->latitude, (float) $lok->longitude, $lat_user, $lon_user)['meters'];
-                    if ($terdekat === null || $jarak < $terdekat['meters']) {
-                        $terdekat = ['meters' => $jarak, 'radius' => (int) $lok->radius];
-                    }
-                    if ($jarak <= (int) $lok->radius) {
-                        break;
-                    }
-                }
-
-                if ($terdekat === null || $terdekat['meters'] > $terdekat['radius']) {
+                if (! $this->presensi->dalamRadius($lokasiKantor, (float) $koordinat[0], (float) $koordinat[1])) {
                     return response()->json(['success' => false, 'error' => 'Anda berada di luar radius!'], 403);
                 }
 
@@ -369,7 +248,7 @@ class PresensiController extends Controller
                 $tgl_presensi,
                 (string) $absenType,
                 (string) $lokasi,
-                hash('sha256', (string) $image),
+                hash('sha256', (string) $request->image),
             ]));
             $idempotencyKey = 'presensi_idempotency_'.$idempotencyFingerprint;
             if (! Cache::add($idempotencyKey, 1, now()->addSeconds(8))) {
@@ -435,7 +314,7 @@ class PresensiController extends Controller
                 Storage::disk('public')->put($folderPath.$fileName, $imageBase64);
 
                 // AUTO CLOSE LEMBUR JIKA ADA
-                $this->autoCloseLembur($nik, $tgl_presensi, $jam, $fileName, $jamkerja);
+                $this->presensi->tutupLemburTerbuka($nik, $tgl_presensi, $jam, $fileName, $jamkerja);
 
                 DB::commit();
 
@@ -473,33 +352,6 @@ class PresensiController extends Controller
 
             return response()->json(['success' => false, 'error' => 'Gagal menyimpan data.'], 500);
         }
-    }
-
-    public function formizin()
-    {
-        $nik = auth('karyawan')->user()->nik;
-        $data_izin = Izin::with('masterCuti')->where('nik', $nik)->orderByDesc('tgl_izin_dari')->get();
-
-        return view('karyawan.presensi.izin', compact('data_izin'));
-    }
-
-    public function buatizin()
-    {
-        return view('karyawan.presensi.buatizin');
-    }
-
-    public function storeizin(Request $request)
-    {
-        $nik = auth('karyawan')->user()->nik;
-        $tgl_izin_dari = $request->tgl_izin_dari;
-        $status = $request->status;
-        $keterangan = $request->keterangan;
-        if (empty($tgl_izin_dari) || empty($status) || empty($keterangan)) {
-            return redirect('/presensi/izin')->with('error', 'Semua kolom wajib diisi!');
-        }
-        Izin::create(['nik' => $nik, 'tgl_izin_dari' => $tgl_izin_dari, 'tgl_izin_sampai' => $tgl_izin_dari, 'status' => $status, 'keterangan' => $keterangan, 'status_approved' => 0]);
-
-        return redirect('/presensi/izin')->with('success', 'Data pengajuan berhasil disimpan, menunggu approval.');
     }
 
     public function histori()
@@ -728,128 +580,5 @@ class PresensiController extends Controller
     }
 
     // --- Helper Functions ---
-    private $batasLintasHari = '08:00';
 
-    private function distance($lat1, $lon1, $lat2, $lon2)
-    {
-        $theta = $lon1 - $lon2;
-        $miles = (sin(deg2rad($lat1)) * sin(deg2rad($lat2)) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta)));
-        $miles = acos($miles);
-        $miles = rad2deg($miles);
-        $miles = $miles * 60 * 1.1515;
-        $kilometers = $miles * 1.609344;
-        $meters = $kilometers * 1000;
-
-        return compact('meters');
-    }
-
-    private function getHariLiburData($tgl_awal, $tgl_akhir, $kode_cabang = null, $kode_dept = null)
-    {
-        $hariLiburQuery = HariLibur::whereBetween('tanggal_libur', [$tgl_awal, $tgl_akhir]);
-
-        $hariLiburQuery->where(function ($query) use ($kode_cabang, $kode_dept) {
-            $query->where(function ($q) {
-                $q->where(function ($c) {
-                    $c->whereNull('kode_cabang')
-                        ->orWhere('kode_cabang', '')
-                        ->orWhere('kode_cabang', 'Semua Cabang');
-                })->where(function ($d) {
-                    $d->whereNull('kode_dept')
-                        ->orWhere('kode_dept', '')
-                        ->orWhere('kode_dept', 'Semua Departemen');
-                });
-            });
-
-            if (! empty($kode_cabang)) {
-                $query->orWhere(function ($q) use ($kode_cabang) {
-                    $q->where('kode_cabang', $kode_cabang)
-                        ->where(function ($d) {
-                            $d->whereNull('kode_dept')
-                                ->orWhere('kode_dept', '')
-                                ->orWhere('kode_dept', 'Semua Departemen');
-                        });
-                });
-            }
-
-            if (! empty($kode_dept)) {
-                $query->orWhere(function ($q) use ($kode_dept) {
-                    $q->where('kode_dept', $kode_dept)
-                        ->where(function ($c) {
-                            $c->whereNull('kode_cabang')
-                                ->orWhere('kode_cabang', '')
-                                ->orWhere('kode_cabang', 'Semua Cabang');
-                        });
-                });
-            }
-
-            if (! empty($kode_cabang) && ! empty($kode_dept)) {
-                $query->orWhere(function ($q) use ($kode_cabang, $kode_dept) {
-                    $q->where('kode_cabang', $kode_cabang)
-                        ->where('kode_dept', $kode_dept);
-                });
-            }
-        });
-
-        return $hariLiburQuery->get()
-            ->map(function ($item) {
-                return date('Y-m-d', strtotime($item->tanggal_libur));
-            })
-            ->toArray();
-    }
-
-    private function setEmptyPresensi($item)
-    {
-        $item->jam_in = '00:00:00';
-        $item->jam_out = '00:00:00';
-        $item->foto_in = '-';
-        $item->foto_out = '-';
-        $item->lokasi_in = '999,999';
-        $item->lokasi_out = '999,999';
-    }
-
-    private function autoCloseLembur($nik, $tgl_presensi, $jam_presensi, $foto_presensi, $jamkerja_shift)
-    {
-        try {
-            $tgl_kemarin = date('Y-m-d', strtotime('-1 days', strtotime($tgl_presensi)));
-            $lembur = Lembur::where('nik', $nik)
-                ->whereNull('jam_selesai')
-                ->whereIn('tanggal_lembur', [$tgl_kemarin, $tgl_presensi])
-                ->orderByDesc('tanggal_lembur')
-                ->orderByDesc('id')
-                ->first();
-
-            if ($lembur) {
-                $tanggalLembur = Carbon::parse($lembur->tanggal_lembur)->format('Y-m-d');
-                $waktuMulai = Carbon::parse($tanggalLembur.' '.$lembur->jam_mulai);
-                $jam_selesai = date('H:i', strtotime($jam_presensi));
-                $waktuSelesai = Carbon::parse($tgl_presensi.' '.$jam_selesai);
-
-                if ($jamkerja_shift) {
-                    $karyawan = Karyawan::where('nik', $nik)->first();
-                    $isHariLiburNasional = HariLibur::isHariLibur($tgl_presensi, $karyawan->kode_cabang, $karyawan->kode_dept);
-
-                    if (! $isHariLiburNasional) {
-                        $waktuShiftMulai = Carbon::parse($tgl_presensi.' '.$jamkerja_shift->jam_masuk);
-                        if ($waktuMulai->lt($waktuShiftMulai) && $waktuSelesai->gt($waktuShiftMulai)) {
-                            $waktuSelesai = $waktuShiftMulai;
-                            $jam_selesai = $waktuSelesai->format('H:i');
-                        }
-                    }
-                }
-
-                if ($waktuSelesai->lt($waktuMulai)) {
-                    $waktuSelesai->addDay();
-                }
-                $totalJam = $waktuMulai->floatDiffInHours($waktuSelesai);
-
-                $lembur->update([
-                    'jam_selesai' => $jam_selesai,
-                    'total_jam' => round($totalJam, 2),
-                    'foto_keluar' => $foto_presensi,
-                ]);
-            }
-        } catch (\Exception $e) {
-            Log::error('AutoCloseLembur Error: '.$e->getMessage());
-        }
-    }
 }
