@@ -86,7 +86,7 @@
             <div class="mb-3">
                 <label class="form-label required">Pilih Cabang (Checklist)</label>
                 <div
-                    style="border: 1px solid #dee2e6; border-radius: 6px; padding: 12px; max-height: 250px; overflow-y: auto;">
+                    style="border: 1px solid var(--color-rule-2); border-radius: 6px; padding: 12px; max-height: 250px; overflow-y: auto;">
                     @forelse ($cabang as $c)
                         <div class="form-check mb-2">
                             <input type="checkbox" class="form-check-input cabang-checkbox-edit"

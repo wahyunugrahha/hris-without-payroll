@@ -57,7 +57,7 @@
                                             <select name="kode_jam_kerja[]" class="form-select">
                                                 <option value="">-- Ikut Jadwal Departemen --</option>
                                                 <option value="LIBUR"
-                                                    style="background-color: #fef3c7; font-weight: bold;">🏖️ LIBUR</option>
+                                                    style="background-color: var(--color-warning-tint); font-weight: bold;">🏖️ LIBUR</option>
                                                 @foreach ($jamkerja as $d)
                                                     <option value="{{ $d->kode_jam_kerja }}">
                                                         {{ $d->nama_jam_kerja }} ({{ substr($d->jam_masuk, 0, 5) }} -

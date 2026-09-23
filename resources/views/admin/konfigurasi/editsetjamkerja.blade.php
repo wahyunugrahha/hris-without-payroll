@@ -79,7 +79,7 @@
                                                 {{-- 2. Opsi Libur Personal (Terpilih jika ada data, tapi kode_jam_kerja nya null) --}}
                                                 <option value="LIBUR"
                                                     {{ !is_null($dataHariIni) && is_null($dataHariIni->kode_jam_kerja) ? 'selected' : '' }}
-                                                    style="background-color: #fef3c7; font-weight: bold;">
+                                                    style="background-color: var(--color-warning-tint); font-weight: bold;">
                                                     🏖️ LIBUR
                                                 </option>
 

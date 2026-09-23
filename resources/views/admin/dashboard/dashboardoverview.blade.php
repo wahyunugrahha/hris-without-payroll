@@ -14,21 +14,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
 
+    <link rel="stylesheet" href="{{ asset_v('assets/css/admin-tokens.css') }}" />
     <style>
         :root {
+            --medal-gold: #fdb931;
+            --medal-silver: #bdbdbd;
+            --medal-bronze: #cd7f32;
+            --category-tint: #f3e8ff;
+            --category-ink: #6b21a8;
             --tblr-font-sans-serif: 'Plus Jakarta Sans', sans-serif;
-            --primary-color: #0054a6;
-            --secondary-bg: #f8f9fc;
-            --card-radius: 16px;
-            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-            --transition: all 0.3s ease;
+            --primary-color: var(--color-accent);
+            --secondary-bg: var(--color-paper);
+            --card-radius: var(--radius-card);
+            --card-shadow: var(--shadow-lift);
+            --transition: background-color var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out);
         }
 
         body {
             font-family: var(--tblr-font-sans-serif);
             background-color: var(--secondary-bg);
-            color: #334155;
-            overflow-x: hidden;
+            color: var(--color-ink-2);
+            overflow-x: clip;
         }
 
         /* --- MODERN SCROLLBAR --- */
@@ -36,7 +42,7 @@
         .scroll-area-sm {
             overflow-y: auto;
             scrollbar-width: thin;
-            scrollbar-color: #cbd5e1 transparent;
+            scrollbar-color: var(--color-rule-2) transparent;
         }
 
         .scroll-area {
@@ -64,20 +70,20 @@
 
         .scroll-area::-webkit-scrollbar-thumb,
         .scroll-area-sm::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1;
+            background-color: var(--color-rule-2);
             border-radius: 20px;
         }
 
         /* --- HERO HEADER --- */
         .dashboard-hero {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            background: var(--color-ink);
             padding: 2rem 0 4rem 0;
             color: white;
             position: relative;
             margin-bottom: -3rem;
             border-bottom-left-radius: 30px;
             border-bottom-right-radius: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-menu);
         }
 
         .clock-display {
@@ -85,7 +91,6 @@
             letter-spacing: -1px;
             font-weight: 800;
             font-size: 3.5rem;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
             line-height: 1;
         }
 
@@ -103,14 +108,14 @@
             border: none;
             border-radius: var(--card-radius);
             box-shadow: var(--card-shadow);
-            background: #fff;
+            background: var(--color-surface);
             transition: var(--transition);
             overflow: hidden;
         }
 
         .card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            box-shadow: var(--shadow-menu);
         }
 
         /* Stat Widget */
@@ -140,12 +145,12 @@
             font-weight: 800;
             margin: 0;
             line-height: 1;
-            color: #1e293b;
+            color: var(--color-ink);
         }
 
         .stat-content p {
             margin: 0;
-            color: #64748b;
+            color: var(--color-muted);
             font-size: 0.875rem;
             font-weight: 600;
             text-transform: uppercase;
@@ -153,35 +158,35 @@
 
         /* Color Themes for Stats */
         .theme-success .stat-icon-box {
-            background: #e8f2fb;
-            color: #063a6b;
+            background: var(--color-accent-tint);
+            color: var(--color-accent-hover);
         }
 
         .theme-danger .stat-icon-box {
-            background: #fee2e2;
-            color: #991b1b;
+            background: color-mix(in oklab, var(--color-danger) 12%, var(--color-surface));
+            color: var(--color-danger);
         }
 
         .theme-primary .stat-icon-box {
-            background: #dbeafe;
-            color: #1e40af;
+            background: var(--color-accent-tint);
+            color: var(--color-accent);
         }
 
         .theme-warning .stat-icon-box {
-            background: #fef3c7;
-            color: #92400e;
+            background: var(--color-warning-tint);
+            color: color-mix(in oklab, var(--color-warning) 55%, var(--color-ink));
         }
 
         .theme-dark .stat-icon-box {
-            background: #f1f5f9;
-            color: #334155;
+            background: var(--color-surface-2);
+            color: var(--color-ink-2);
         }
 
         /* --- LIST STYLES --- */
         .card-header-modern {
             background: transparent;
             padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid var(--color-surface-2);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -198,7 +203,7 @@
 
         .list-item-modern {
             padding: 0.85rem 1.25rem;
-            border-bottom: 1px solid #f8fafc;
+            border-bottom: 1px solid var(--color-surface-2);
             display: flex;
             align-items: center;
             transition: background 0.2s;
@@ -209,7 +214,7 @@
         }
 
         .list-item-modern:hover {
-            background-color: #f8fafc;
+            background-color: var(--color-surface-2);
         }
 
         .avatar-modern {
@@ -217,7 +222,7 @@
             height: 40px;
             border-radius: 12px;
             object-fit: cover;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow-lift);
             border: 2px solid white;
         }
 
@@ -237,33 +242,33 @@
         }
 
         .badge-soft-success {
-            background: #e8f2fb;
-            color: #063a6b;
+            background: var(--color-accent-tint);
+            color: var(--color-accent-hover);
         }
 
         .badge-soft-danger {
-            background: #fee2e2;
-            color: #991b1b;
+            background: color-mix(in oklab, var(--color-danger) 12%, var(--color-surface));
+            color: var(--color-danger);
         }
 
         .badge-soft-warning {
-            background: #fef3c7;
-            color: #92400e;
+            background: var(--color-warning-tint);
+            color: color-mix(in oklab, var(--color-warning) 55%, var(--color-ink));
         }
 
         .badge-soft-primary {
-            background: #dbeafe;
-            color: #1e40af;
+            background: var(--color-accent-tint);
+            color: var(--color-accent);
         }
 
         .badge-soft-purple {
-            background: #f3e8ff;
-            color: #6b21a8;
+            background: var(--category-tint);
+            color: var(--category-ink);
         }
 
         .badge-soft-secondary {
-            background: #e2e8f0;
-            color: #475569;
+            background: var(--color-rule);
+            color: var(--color-ink-2);
         }
 
         /* --- LEADERBOARD & RANKS --- */
@@ -280,24 +285,24 @@
         }
 
         .rank-gold {
-            background: linear-gradient(135deg, #FFD700, #FDB931);
-            color: #fff;
+            background: var(--medal-gold);
+            color: var(--color-accent-ink);
             box-shadow: 0 2px 6px rgba(253, 185, 49, 0.4);
         }
 
         .rank-silver {
-            background: linear-gradient(135deg, #E0E0E0, #BDBDBD);
-            color: #fff;
+            background: var(--medal-silver);
+            color: var(--color-accent-ink);
         }
 
         .rank-bronze {
-            background: linear-gradient(135deg, #CD7F32, #A0522D);
-            color: #fff;
+            background: var(--medal-bronze);
+            color: var(--color-accent-ink);
         }
 
         .rank-normal {
-            background: #f1f5f9;
-            color: #64748b;
+            background: var(--color-surface-2);
+            color: var(--color-muted);
             font-weight: 600;
         }
 
@@ -311,15 +316,15 @@
         /* --- BRANCH CARD --- */
         .branch-card-modern {
             height: 100%;
-            border: 1px solid #f1f5f9;
+            border: 1px solid var(--color-surface-2);
         }
 
         .branch-header-modern {
-            background: #f8fafc;
+            background: var(--color-surface-2);
             padding: 1rem;
             font-weight: 700;
-            color: #334155;
-            border-bottom: 1px solid #e2e8f0;
+            color: var(--color-ink-2);
+            border-bottom: 1px solid var(--color-rule);
         }
     </style>
 
@@ -963,7 +968,7 @@
                             @forelse($leaderboardsByCabangMonthly as $kode => $lb)
                                 <div class="col-md-12 col-xl-6">
                                     <div class="card branch-card-modern shadow-sm h-100"
-                                        style="border-top: 3px solid #f59f00;">
+                                        style="border-top: 3px solid var(--color-warning);">
                                         <div class="branch-header-modern bg-white">
                                             <div class="text-truncate fw-bold">{{ $lb['cabang']->nama_cabang }}</div>
                                         </div>
@@ -1014,7 +1019,7 @@
                             @forelse($kpiLeaderboardsByCabangMonthly as $kode => $lb)
                                 <div class="col-md-12 col-xl-6">
                                     <div class="card branch-card-modern shadow-sm h-100"
-                                        style="border-top: 3px solid #0054a6;">
+                                        style="border-top: 3px solid var(--color-accent);">
                                         <div class="branch-header-modern bg-white">
                                             <div class="text-truncate fw-bold">{{ $lb['cabang']->nama_cabang }}</div>
                                         </div>

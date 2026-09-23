@@ -264,9 +264,9 @@
                         </div>
 
                         {{-- RINCIAN PENILAIAN ATASAN --}}
-                        <div class="card-header border-top border-bottom-0 mt-3" style="background-color: #f8f9fa;">
+                        <div class="card-header border-top border-bottom-0 mt-3" style="background-color: var(--color-surface-2);">
                             <h3 class="card-title d-flex align-items-center gap-2 mb-0"
-                                style="font-size: 14px; font-weight: 600; color: #1b7a6f;">
+                                style="font-size: 14px; font-weight: 600; color: var(--color-success);">
                                 <svg xmlns="http://www.w3.org/2000/svg"
                                     class="icon icon-tabler icon-tabler-clipboard-check" width="20" height="20"
                                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
@@ -431,8 +431,8 @@
                         text: "Tindakan ini akan menyetujui Laporan Karyawan dan Penilaian Atasan ini secara final.",
                         icon: 'question',
                         showCancelButton: true,
-                        confirmButtonColor: '#094b87',
-                        cancelButtonColor: '#d33',
+                        confirmButtonColor: 'var(--color-accent)',
+                        cancelButtonColor: 'var(--color-muted)',
                         confirmButtonText: 'Ya, Setujui!',
                         cancelButtonText: 'Batal'
                     }).then((result) => {
@@ -457,8 +457,8 @@
                         inputPlaceholder: 'Contoh: Nilai tidak sesuai bukti...',
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonColor: '#d63939',
-                        cancelButtonColor: '#6c757d',
+                        confirmButtonColor: 'var(--color-danger)',
+                        cancelButtonColor: 'var(--color-muted)',
                         confirmButtonText: 'Kirim Penolakan',
                         cancelButtonText: 'Batal',
                         inputValidator: (value) => {

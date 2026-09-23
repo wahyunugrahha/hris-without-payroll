@@ -113,7 +113,7 @@
                                         <option value="">Pilih Jam Kerja</option>
                                         <option value="LIBUR"
                                             {{ $s->kode_jam_kerja == null || $s->kode_jam_kerja == 'LIBUR' ? 'selected' : '' }}
-                                            style="background-color: #fef3c7; font-weight: bold;">🏖️ LIBUR</option>
+                                            style="background-color: var(--color-warning-tint); font-weight: bold;">🏖️ LIBUR</option>
 
                                         @foreach ($jamkerja as $d)
                                             <option {{ $d->kode_jam_kerja == $s->kode_jam_kerja ? 'selected' : '' }}

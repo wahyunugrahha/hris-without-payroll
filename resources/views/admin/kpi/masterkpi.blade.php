@@ -370,7 +370,7 @@
                         <div class="mb-3">
                             <label class="form-label required">Pilih Cabang (Checklist)</label>
                             <div
-                                style="border: 1px solid #dee2e6; border-radius: 6px; padding: 12px; max-height: 250px; overflow-y: auto;">
+                                style="border: 1px solid var(--color-rule-2); border-radius: 6px; padding: 12px; max-height: 250px; overflow-y: auto;">
                                 @forelse ($cabang as $c)
                                     <div class="form-check mb-2">
                                         <input type="checkbox" class="form-check-input cabang-checkbox"
@@ -466,7 +466,7 @@
                         title: 'Pilih Cabang',
                         text: 'Minimal harus memilih 1 cabang untuk membuat KPI!',
                         confirmButtonText: 'OK',
-                        confirmButtonColor: '#0d6efd'
+                        confirmButtonColor: 'var(--color-accent)'
                     });
                     return false;
                 }
@@ -508,7 +508,7 @@
                                     title: 'Pilih Cabang',
                                     text: 'Minimal harus memilih 1 cabang!',
                                     confirmButtonText: 'OK',
-                                    confirmButtonColor: '#0d6efd'
+                                    confirmButtonColor: 'var(--color-accent)'
                                 });
                                 return false;
                             }
@@ -538,8 +538,8 @@
                     text: "Kode '" + kode + "' dan SEMUA cabang terkait akan dihapus permanen.",
                     icon: "warning",
                     showCancelButton: true,
-                    confirmButtonColor: "#d33",
-                    cancelButtonColor: "#6e7174",
+                    confirmButtonColor: "var(--color-danger)",
+                    cancelButtonColor: "var(--color-muted)",
                     confirmButtonText: "Ya, Hapus Semua",
                     cancelButtonText: "Batal",
                     reverseButtons: true

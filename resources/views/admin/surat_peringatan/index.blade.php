@@ -648,7 +648,7 @@
                                 title: 'Penambahan Ditolak!',
                                 html: `Karyawan masih memiliki <strong>SP ${activeLevel}</strong> yang aktif.<br>`,
                                 icon: 'error',
-                                confirmButtonColor: '#3085d6',
+                                confirmButtonColor: 'var(--color-accent)',
                                 confirmButtonText: 'OK'
                             });
                             return;
@@ -661,8 +661,8 @@
                                 `Menyimpan SP baru akan <strong>menonaktifkan (expired)</strong> SP lama tersebut.<br>Lanjutkan?`,
                             icon: 'warning',
                             showCancelButton: true,
-                            confirmButtonColor: '#094b87',
-                            cancelButtonColor: '#d33',
+                            confirmButtonColor: 'var(--color-accent)',
+                            cancelButtonColor: 'var(--color-muted)',
                             confirmButtonText: 'Ya, Gantikan & Simpan',
                             cancelButtonText: 'Batal'
                         }).then((result) => {
@@ -732,8 +732,8 @@
                 didOpen: (popup) => { popup.querySelector('strong').textContent = nama; },
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#094b87',
-                cancelButtonColor: '#d33',
+                confirmButtonColor: 'var(--color-accent)',
+                cancelButtonColor: 'var(--color-muted)',
                 confirmButtonText: 'Ya, Putihkan'
             }).then((result) => {
                 if (result.isConfirmed) {

@@ -1,25 +1,5 @@
 @extends('layouts.admin.tabler')
 
-@section('header')
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <style>
-        .select2-container--default .select2-selection--single {
-            height: 38px;
-            border: 1px solid #d9dbde;
-            border-radius: 4px;
-        }
-
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            line-height: 38px;
-            padding-left: 12px;
-        }
-
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: 38px;
-        }
-    </style>
-@endsection
-
 @section('content')
     <div class="page-header d-print-none" aria-label="Page header">
         <div class="container-xl">

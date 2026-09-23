@@ -3,14 +3,14 @@
 @section('content')
     <style>
         .focus-border-primary:focus {
-            border-color: #206bc4 !important;
-            background: #fff !important;
-            box-shadow: 0 0 0 0.25rem rgba(32, 107, 196, .25) !important;
+            border-color: var(--color-accent) !important;
+            background: var(--color-surface) !important;
+            box-shadow: 0 0 0 0.25rem color-mix(in oklab, var(--color-focus) 25%, transparent) !important;
         }
 
         .table-vcenter textarea.form-control {
             min-height: 38px;
-            transition: all 0.2s;
+            transition: border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out);
             border-color: transparent;
             background: transparent;
             resize: none;
@@ -18,8 +18,8 @@
         }
 
         .table-vcenter textarea.form-control:focus {
-            border-color: #d9dbde;
-            background: #fff;
+            border-color: var(--color-rule-2);
+            background: var(--color-surface);
         }
 
         .progress-label {
@@ -139,7 +139,7 @@
                     <div class="table-responsive mb-4 border-bottom">
                         <table class="table table-vcenter table-bordered card-table">
                             <thead class="table-light text-center align-middle"
-                                style="border-bottom: 2px solid #e6e8e9; font-size: 0.75rem; letter-spacing: 0.04em;">
+                                style="border-bottom: 2px solid var(--color-rule); font-size: 0.75rem; letter-spacing: 0.04em;">
                                 <tr>
                                     <th rowspan="2" class="w-1 text-dark font-weight-bold text-uppercase">No</th>
                                     <th rowspan="2" style="width: 20%" class="text-dark font-weight-bold text-uppercase">
@@ -182,7 +182,7 @@
                                 </tr>
 
                                 {{-- 2. KPI KARYAWAN (Satu-satunya yang bisa diedit) --}}
-                                <tr style="background-color: #f4fdf8;">
+                                <tr style="background-color: var(--color-surface-2);">
                                     <td class="text-center">{{ $no++ }}</td>
                                     <td><input type="text"
                                             class="form-control bg-transparent border-0 font-weight-bold" value="KPI"
@@ -477,8 +477,8 @@
                     text: "Data yang dihapus tidak dapat dikembalikan!",
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
+                    confirmButtonColor: 'var(--color-danger)',
+                    cancelButtonColor: 'var(--color-muted)',
                     confirmButtonText: 'Ya, Hapus!',
                     cancelButtonText: 'Batal'
                 }).then((result) => {

@@ -585,7 +585,7 @@
                     text: "Data " + $(this).data("nama") + " akan dihapus permanen.",
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#d33',
+                    confirmButtonColor: 'var(--color-danger)',
                     confirmButtonText: 'Ya, Hapus!'
                 }).then((result) => {
                     if (result.isConfirmed) form.submit();

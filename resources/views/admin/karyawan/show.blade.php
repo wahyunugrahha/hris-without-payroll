@@ -112,7 +112,7 @@
                                     : asset('assets/img/nophoto.png');
                             @endphp
                             <span class="avatar avatar-xl mb-3 rounded"
-                                style="background-image: url({{ $path }}); width: 120px; height: 120px; box-shadow: 0 4px 6px rgba(0,0,0,0.1)"></span>
+                                style="background-image: url({{ $path }}); width: 120px; height: 120px; box-shadow: var(--shadow-lift)"></span>
                             <h3 class="m-0 mb-1 font-weight-bold">{{ $karyawan->nama_lengkap ?? '-' }}</h3>
                             <div class="text-muted mb-3">{{ $karyawan->jabatan_nama ?? '-' }}</div>
                             <div class="d-flex justify-content-center gap-2 mb-3">
@@ -404,7 +404,7 @@
                     text: "Data " + $(this).data("nama") + " akan dihapus permanen.",
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#d33',
+                    confirmButtonColor: 'var(--color-danger)',
                     confirmButtonText: 'Ya, Hapus!'
                 }).then((result) => {
                     if (result.isConfirmed) form.submit();

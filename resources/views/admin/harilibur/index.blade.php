@@ -1,19 +1,6 @@
 @extends('layouts.admin.tabler')
 
 @section('content')
-    <style>
-        .date-filter-addon {
-            background: #ffffff;
-            color: #6c7a91;
-            border-color: var(--tblr-border-color, #dbe3ef);
-        }
-
-        [data-bs-theme="dark"] .date-filter-addon {
-            background: #121f31;
-            color: #9db0c8;
-            border-color: #2a3a52;
-        }
-    </style>
 
     {{-- Header Halaman (Sama seperti sebelumnya) --}}
     <div class="page-header d-print-none">

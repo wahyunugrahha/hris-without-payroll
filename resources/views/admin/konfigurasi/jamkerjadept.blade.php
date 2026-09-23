@@ -237,7 +237,7 @@
                                                         <td>
                                                             <div class="d-flex py-1 align-items-center">
                                                                 <span class="avatar me-2"
-                                                                    style="background-image: none; background-color: #f0f2f5; color: #6c757d; font-size: 0.75rem; font-weight: bold;">{{ $acronym }}</span>
+                                                                    style="background-image: none; background-color: var(--color-surface-2); color: var(--color-muted); font-size: 0.75rem; font-weight: bold;">{{ $acronym }}</span>
                                                                 <div class="flex-fill">
                                                                     <div class="font-weight-medium">{{ $d->nama_dept }}
                                                                     </div>
@@ -461,7 +461,7 @@
         }
 
         .card-header.cursor-pointer:hover {
-            background-color: rgba(0, 0, 0, 0.01);
+            background-color: var(--color-surface-2);
         }
 
         .avatar {
@@ -504,7 +504,7 @@
                         
                         if (hasRelations) {
                             messageHtml += `
-                                <div class="alert alert-warning text-left" style="font-size: 13px; border-left: 4px solid #ffc107; background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 4px;">
+                                <div class="alert alert-warning text-start mb-0">
                                     <h6 class="alert-heading mb-1 font-weight-bold"><i class="fas fa-exclamation-triangle mr-1"></i> Dampak Penghapusan Terdeteksi:</h6>
                                     <ul class="pl-3 mb-0" style="list-style-type: disc;">
                             `;
@@ -530,8 +530,8 @@
                             html: messageHtml,
                             icon: hasRelations ? 'warning' : 'question',
                             showCancelButton: true,
-                            confirmButtonColor: '#d33',
-                            cancelButtonColor: '#3085d6',
+                            confirmButtonColor: 'var(--color-danger)',
+                            cancelButtonColor: 'var(--color-muted)',
                             confirmButtonText: 'Ya, Hapus!',
                             cancelButtonText: 'Batal',
                             reverseButtons: true
@@ -596,8 +596,8 @@
                     text: 'Anda akan mengatur jam kerja untuk SEMUA departemen di cabang ini. Lanjutkan?',
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#0054a6',
-                    cancelButtonColor: '#d33',
+                    confirmButtonColor: 'var(--color-accent)',
+                    cancelButtonColor: 'var(--color-muted)',
                     confirmButtonText: 'Ya, Terapkan!',
                     cancelButtonText: 'Batal'
                 }).then((result) => {

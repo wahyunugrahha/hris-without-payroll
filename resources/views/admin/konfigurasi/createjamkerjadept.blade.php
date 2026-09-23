@@ -93,7 +93,7 @@
                                 <td>
                                     <select name="kode_jam_kerja[]" class="form-select">
                                         <option value="">Pilih Jam Kerja</option>
-                                        <option value="LIBUR" style="background-color: #fef3c7; font-weight: bold;"> Libur</option>
+                                        <option value="LIBUR" style="background-color: var(--color-warning-tint); font-weight: bold;"> Libur</option>
                                         @foreach ($jamkerja as $d)
                                             <option value="{{ $d->kode_jam_kerja }}">
                                                 {{ $d->nama_jam_kerja }}

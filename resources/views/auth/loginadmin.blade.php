@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="id">
 
 <head>
     <meta charset="utf-8" />
@@ -12,194 +12,239 @@
     <link rel="manifest" href="{{ asset('__manifest.json') }}?v=20260618">
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler-flags.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler-payments.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler-social.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler-vendors.min.css" />
+    <link rel="stylesheet" href="{{ asset_v('assets/css/admin-tokens.css') }}" />
 
     <style>
         @import url('https://rsms.me/inter/inter.css');
 
         :root {
-            --tblr-primary: #094b87;
-            --tblr-primary-rgb: 9, 75, 135;
+            --login-scrim: oklch(18% 0.03 255 / 0.62);
+            --login-on-photo: oklch(99% 0 0);
+            --login-on-photo-muted: oklch(99% 0 0 / 0.8);
+            --login-on-photo-rule: oklch(99% 0 0 / 0.4);
         }
 
         body {
             font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--color-paper);
+            color: var(--color-ink-2);
+            overflow-x: clip;
         }
 
-        .login-card {
-            border-radius: 1rem;
+        .login-panel {
+            background: var(--color-paper);
         }
 
         .login-logo img {
-            width: min(100%, 280px);
-            max-width: 280px;
+            width: min(100%, 200px);
         }
 
-        .login-bg {
+        .login-card {
+            border: 1px solid var(--color-rule);
+            border-radius: var(--radius-card);
+            background: var(--color-surface);
+            box-shadow: var(--shadow-lift);
+        }
+
+        .login-card .card-footer {
+            background: var(--color-surface-2);
+            border-color: var(--color-rule);
+        }
+
+        .login-title {
+            color: var(--color-ink);
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            overflow-wrap: anywhere;
+        }
+
+        .form-control,
+        .input-group-text {
+            border-color: var(--color-rule-2);
+            border-radius: var(--radius-control);
+        }
+
+        .form-control:focus {
+            border-color: var(--color-focus);
+            box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-focus) 20%, transparent);
+        }
+
+        .password-toggle {
+            border: 0;
+            background: transparent;
+            color: var(--color-muted);
+            padding: 0;
+            line-height: 0;
+        }
+
+        .password-toggle:hover {
+            color: var(--color-ink);
+        }
+
+        .btn-primary {
+            border-radius: var(--radius-control);
+            font-weight: 500;
+        }
+
+        :is(.btn, a, .password-toggle, .form-check-input):focus-visible {
+            outline: 2px solid var(--color-focus);
+            outline-offset: 2px;
+            box-shadow: none;
+        }
+
+        .login-hero {
             position: relative;
+            background-position: center;
+            background-size: cover;
         }
 
-        .login-bg::before {
+        /* Scrim datar agar teks putih terbaca di atas foto. */
+        .login-hero::before {
             content: "";
             position: absolute;
             inset: 0;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.25));
+            background: var(--login-scrim);
         }
 
-        .login-bg-inner {
+        .login-hero-inner {
             position: relative;
             z-index: 1;
+            color: var(--login-on-photo);
         }
 
-        .form-control:focus,
-        .input-group .form-control:focus,
-        .input-group-flat .form-control:focus {
-            border-color: rgba(9, 75, 135, 0.45) !important;
-            box-shadow: 0 0 0 0.2rem rgba(9, 75, 135, 0.2) !important;
+        .login-hero-tag {
+            border: 1px solid var(--login-on-photo-rule);
+            border-radius: var(--radius-control);
+            padding: 0.25rem 0.625rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .login-hero-title {
+            font-size: clamp(1.75rem, 2.4vw + 0.5rem, 2.75rem);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+            max-width: 18ch;
+            overflow-wrap: anywhere;
+            min-width: 0;
+        }
+
+        .login-hero-lede {
+            max-width: 46ch;
+            color: var(--login-on-photo-muted);
         }
     </style>
 </head>
 
-<body class="d-flex flex-column bg-body">
+<body class="d-flex flex-column">
     <div class="page page-center">
         <div class="row g-0 flex-fill">
-            {{-- Left: form --}}
-            <div class="col-12 col-lg-6 col-xl-4 d-flex flex-column justify-content-center bg-white">
+            {{-- Kiri: formulir --}}
+            <div class="col-12 col-lg-6 col-xl-4 d-flex flex-column justify-content-center login-panel">
                 <div class="container container-tight my-5 px-lg-5">
 
-                    {{-- Logo --}}
                     <div class="text-center mb-4 login-logo">
-                        <a href="{{ url('/') }}" aria-label="wndev"
-                            class="navbar-brand navbar-brand-autodark d-inline-flex align-items-center justify-content-center">
+                        <a href="{{ url('/') }}" aria-label="wndev" class="d-inline-flex">
                             <x-brand-logo variant="square" alt="wndev" class="img-fluid d-block mx-auto" />
                         </a>
                     </div>
 
-                    <div class="card shadow-sm login-card border-0">
+                    <div class="card login-card">
                         <div class="card-body p-4 p-md-5">
-                            <h2 class="h3 text-center mb-2">Login Administrator</h2>
+                            <h1 class="login-title text-center mb-1">Masuk ke Panel Admin</h1>
+                            <p class="text-secondary text-center small mb-4">Gunakan akun administrator Anda.</p>
 
-                            {{-- Flash warning --}}
                             @if (Session::get('warning'))
                                 <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                                    <div class="d-flex">
-                                        <div>
-                                            {{ Session::get('warning') }}
-                                        </div>
-                                    </div>
+                                    {{ Session::get('warning') }}
                                     <button type="button" class="btn-close" data-bs-dismiss="alert"
-                                        aria-label="Close"></button>
+                                        aria-label="Tutup"></button>
                                 </div>
                             @endif
 
-                            <form action="{{ route('loginadmin.process') }}" method="post" autocomplete="off"
-                                novalidate>
+                            <form action="{{ route('loginadmin.process') }}" method="post" novalidate>
                                 @csrf
 
-                                {{-- Email --}}
                                 <div class="mb-3">
-                                    <label class="form-label">Email address</label>
-                                    <input type="email" name="email"
+                                    <label class="form-label" for="email">Email</label>
+                                    <input type="email" name="email" id="email"
                                         class="form-control @error('email') is-invalid @enderror"
-                                        placeholder="you@example.com" autocomplete="off" value="{{ old('email') }}"
-                                        autofocus required>
+                                        placeholder="nama@perusahaan.com" autocomplete="username"
+                                        value="{{ old('email') }}" autofocus required>
                                     @error('email')
-                                        <div class="invalid-feedback">
-                                            {{ $message }}
-                                        </div>
+                                        <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
 
-                                {{-- Password --}}
                                 <div class="mb-2">
-                                    <label class="form-label d-flex justify-content-between align-items-center">
-                                        <span>Password</span>
-                                        <span class="form-label-description">
-                                            <a href="#" id="forgot-password-link"
-                                                class="text-decoration-none small">I forgot password</a>
-                                        </span>
-                                    </label>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <label class="form-label mb-0" for="password">Kata sandi</label>
+                                        <a href="#" id="forgot-password-link" class="small text-decoration-none">
+                                            Lupa kata sandi?
+                                        </a>
+                                    </div>
                                     <div class="input-group input-group-flat">
-                                        <input type="password" name="password"
+                                        <input type="password" name="password" id="password"
                                             class="form-control @error('password') is-invalid @enderror"
-                                            placeholder="Your password" autocomplete="off" required>
+                                            placeholder="Kata sandi" autocomplete="current-password" required>
                                         <span class="input-group-text">
-                                            <a href="#" class="link-secondary text-decoration-none"
-                                                title="Show password" data-bs-toggle="password">
-                                                {{-- Tabler eye icon --}}
+                                            <button type="button" class="password-toggle" data-password-toggle
+                                                aria-controls="password" aria-pressed="false"
+                                                aria-label="Tampilkan kata sandi">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="20"
                                                     height="20" viewBox="0 0 24 24" stroke-width="2"
                                                     stroke="currentColor" fill="none" stroke-linecap="round"
-                                                    stroke-linejoin="round">
+                                                    stroke-linejoin="round" aria-hidden="true">
                                                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                                     <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
                                                     <path
                                                         d="M21 12c-2.4 3.333 -5.4 5 -9 5c-3.6 0 -6.6 -1.667 -9 -5c2.4 -3.333 5.4 -5 9 -5c3.6 0 6.6 1.667 9 5" />
                                                 </svg>
-                                            </a>
+                                            </button>
                                         </span>
                                         @error('password')
-                                            <div class="invalid-feedback d-block">
-                                                {{ $message }}
-                                            </div>
+                                            <div class="invalid-feedback d-block">{{ $message }}</div>
                                         @enderror
                                     </div>
                                 </div>
 
-                                {{-- Remember me --}}
                                 <div class="mb-3">
                                     <label class="form-check mb-0">
                                         <input type="checkbox" class="form-check-input" name="remember">
-                                        <span class="form-check-label">Remember me on this device</span>
+                                        <span class="form-check-label">Ingat saya di perangkat ini</span>
                                     </label>
                                 </div>
 
-                                {{-- Submit --}}
                                 <div class="form-footer mt-3">
-                                    <button type="submit" class="btn btn-primary w-100">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon me-1" width="20"
-                                            height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                            fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path d="M5 12l5 5l10 -10" />
-                                        </svg>
-                                        Sign in
-                                    </button>
+                                    <button type="submit" class="btn btn-primary w-100">Masuk</button>
                                 </div>
                             </form>
                         </div>
 
                         <div class="card-footer text-center text-secondary small">
-                            &copy; {{ date('Y') }} wndev. All rights reserved.
+                            &copy; {{ date('Y') }} wndev
                         </div>
                     </div>
                 </div>
             </div>
 
-            {{-- Right: image --}}
+            {{-- Kanan: gambar --}}
             <div class="col-12 col-lg-6 col-xl-8 d-none d-lg-block">
-                <div class="login-bg bg-cover h-100 min-vh-100"
-                    style="background-image: url('{{ asset('assets/img/login-bg.jpg') }}'); background-position:center; background-size:cover;">
-                    <div class="login-bg-inner h-100 d-flex flex-column justify-content-between p-4 p-xl-5 text-white">
+                <div class="login-hero h-100 min-vh-100"
+                    style="background-image: url('{{ asset('assets/img/login-bg.jpg') }}');">
+                    <div class="login-hero-inner h-100 d-flex flex-column justify-content-between p-4 p-xl-5">
                         <div class="d-flex justify-content-end">
-                            <span class="badge bg-success text-uppercase">
-                                Admin Panel
-                            </span>
+                            <span class="login-hero-tag">Panel Admin</span>
                         </div>
                         <div>
-                            <h1 class="display-6 fw-semibold mb-3">
-                                Sistem Absensi & Monitoring Karyawan
-                            </h1>
-                            <p class="lead mb-4">
-                                Kelola kehadiran, izin, dan laporan karyawan dengan lebih mudah dan terpusat.
+                            <h2 class="login-hero-title mb-3">Sistem Absensi &amp; Monitoring Karyawan</h2>
+                            <p class="login-hero-lede lead mb-0">
+                                Kelola kehadiran, izin, dan laporan karyawan dari satu tempat.
                             </p>
                         </div>
-                        <div class="small text-white-50">
-                            WN Developer
-                        </div>
+                        <div class="small login-hero-lede">WN Developer</div>
                     </div>
                 </div>
             </div>
@@ -210,64 +255,55 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('[data-bs-toggle="password"]').forEach(function(toggle) {
-                toggle.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    var wrapper = this.closest('.input-group');
-                    if (!wrapper) return;
-                    var input = wrapper.querySelector('input[type="password"], input[type="text"]');
-                    if (!input) return;
-                    input.type = input.type === 'password' ? 'text' : 'password';
+            document.querySelectorAll('[data-password-toggle]').forEach(function(toggle) {
+                toggle.addEventListener('click', function() {
+                    var input = document.getElementById(toggle.getAttribute('aria-controls'));
+                    var tampil = input.type === 'password';
+                    input.type = tampil ? 'text' : 'password';
+                    toggle.setAttribute('aria-pressed', tampil ? 'true' : 'false');
+                    toggle.setAttribute('aria-label', tampil ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
                 });
             });
 
-            var forgotLink = document.getElementById('forgot-password-link');
-            if (forgotLink) {
-                forgotLink.addEventListener('click', function(e) {
+            document.getElementById('forgot-password-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Lupa kata sandi?',
+                    text: 'Hubungi tim IT untuk mengatur ulang kata sandi akun Anda.',
+                    icon: 'info',
+                    confirmButtonText: 'Mengerti',
+                    confirmButtonColor: 'var(--color-accent)'
+                });
+            });
+
+            document.querySelector('form').addEventListener('submit', function(e) {
+                var email = document.getElementById('email');
+                var password = document.getElementById('password');
+                var pesan = null;
+                var target = null;
+
+                if (!email.value.trim()) {
+                    pesan = 'Email wajib diisi.';
+                    target = email;
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
+                    pesan = 'Format email tidak valid.';
+                    target = email;
+                } else if (!password.value.trim()) {
+                    pesan = 'Kata sandi wajib diisi.';
+                    target = password;
+                }
+
+                if (pesan) {
                     e.preventDefault();
                     Swal.fire({
-                        title: 'Lupa Password?',
-                        text: 'Silahkan hubungi tim IT untuk reset password akun Anda.',
-                        icon: 'info',
-                        confirmButtonText: 'Mengerti',
-                        confirmButtonColor: '#094b87'
+                        title: 'Periksa lagi',
+                        text: pesan,
+                        icon: 'warning',
+                        confirmButtonColor: 'var(--color-accent)'
                     });
-                });
-            }
-
-            var loginForm = document.querySelector('form');
-            if (loginForm) {
-                loginForm.addEventListener('submit', function(e) {
-                    var emailInput = document.querySelector('input[name="email"]');
-                    var passwordInput = document.querySelector('input[name="password"]');
-
-                    var emailVal = emailInput.value.trim();
-                    var passwordVal = passwordInput.value.trim();
-
-                    var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-                    if (!emailVal) {
-                        e.preventDefault();
-                        Swal.fire('Peringatan!', 'Email tidak boleh kosong.', 'warning');
-                        emailInput.focus();
-                        return false;
-                    }
-
-                    if (!emailPattern.test(emailVal)) {
-                        e.preventDefault();
-                        Swal.fire('Peringatan!', 'Format email tidak valid.', 'warning');
-                        emailInput.focus();
-                        return false;
-                    }
-
-                    if (!passwordVal) {
-                        e.preventDefault();
-                        Swal.fire('Peringatan!', 'Password tidak boleh kosong.', 'warning');
-                        passwordInput.focus();
-                        return false;
-                    }
-                });
-            }
+                    target.focus();
+                }
+            });
         });
     </script>
 </body>

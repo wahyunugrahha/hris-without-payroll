@@ -35,7 +35,7 @@
             @endif
 
             {{-- CARD PROFIL KARYAWAN --}}
-            <div class="card mb-3 shadow-sm border-0" style="background-color: #f8fafc;">
+            <div class="card mb-3 shadow-sm border-0" style="background-color: var(--color-surface-2);">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-auto">
@@ -364,7 +364,7 @@
                     //         title: 'Belum Bisa Di-Approve!',
                     //         text: "Pastikan semua laporan KPI harian karyawan ini telah diperiksa dan disetujui (diberi penilaian) oleh Atasan terlebih dahulu.",
                     //         icon: 'warning',
-                    //         confirmButtonColor: '#3b82f6',
+                    //         confirmButtonColor: 'var(--color-accent)',
                     //         confirmButtonText: 'Mengerti'
                     //     });
                     //     return;
@@ -375,8 +375,8 @@
                         text: "Tindakan ini akan menyetujui semua laporan harian beserta penilaian atasan untuk karyawan ini secara permanen.",
                         icon: 'question',
                         showCancelButton: true,
-                        confirmButtonColor: '#094b87',
-                        cancelButtonColor: '#d33',
+                        confirmButtonColor: 'var(--color-accent)',
+                        cancelButtonColor: 'var(--color-muted)',
                         confirmButtonText: 'Ya, Approve Semua!',
                         cancelButtonText: 'Batal'
                     }).then((result) => {
@@ -399,8 +399,8 @@
                         text: "Data KPI tambahan ini akan dihapus secara permanen.",
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#6c757d',
+                        confirmButtonColor: 'var(--color-danger)',
+                        cancelButtonColor: 'var(--color-muted)',
                         confirmButtonText: 'Ya, Hapus!',
                         cancelButtonText: 'Batal'
                     }).then((result) => {

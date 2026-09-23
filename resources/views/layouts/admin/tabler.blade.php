@@ -36,6 +36,7 @@
         @import url('https://rsms.me/inter/inter.css');
     </style>
     {{-- Sistem desain admin: lihat design.md --}}
+    <link rel="stylesheet" href="{{ asset_v('assets/css/admin-tokens.css') }}" />
     <link rel="stylesheet" href="{{ asset_v('assets/css/admin-theme.css') }}" />
 </head>
 

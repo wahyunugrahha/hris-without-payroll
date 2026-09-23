@@ -1,119 +1,11 @@
 /* Hallmark · genre: modern-minimal · macrostructure: Workbench · theme: custom (brand navy) · design-system: design.md · designed-as-app
  * paper oklch(98.4% 0.004 250) · accent oklch(41% 0.12 254) navy · font: Inter (tidak diubah)
- * Semua halaman admin (layouts.admin.tabler) memakai file ini. Warna lewat token, jangan hex lepas.
+ * Semua halaman admin (layouts.admin.tabler) memakai file ini. Token warna ada di admin-tokens.css.
+ * Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V4 · slop test: lolos kecuali gate 1 (Inter dipertahankan atas permintaan)
  */
 
 /* ════════════════════════════════════════════════════════════════════
- * 1. Token
- * ════════════════════════════════════════════════════════════════════ */
-:root,
-[data-bs-theme=light] {
-    --color-paper: oklch(98.4% 0.004 250);
-    --color-surface: oklch(100% 0 0);
-    --color-surface-2: oklch(97% 0.006 252);
-    --color-sidebar: oklch(96.6% 0.007 252);
-    --color-ink: oklch(24% 0.02 258);
-    --color-ink-2: oklch(34% 0.018 257);
-    --color-muted: oklch(52% 0.018 257);
-    --color-rule: oklch(92% 0.008 255);
-    --color-rule-2: oklch(86% 0.01 255);
-    --color-accent: oklch(41% 0.12 254);          /* #094b87 brand */
-    --color-accent-rgb: 9, 75, 135;
-    --color-accent-hover: oklch(35% 0.11 254);
-    --color-accent-tint: oklch(94.5% 0.025 254);
-    --color-accent-ink: oklch(99% 0 0);
-    --color-focus: oklch(58% 0.16 254);
-    --color-success: oklch(55% 0.14 150);
-    --color-warning: oklch(68% 0.15 70);
-    --color-danger: oklch(55% 0.19 27);
-    --color-info: oklch(58% 0.12 230);
-    --color-backdrop: oklch(24% 0.02 258 / 0.35);
-    --shadow-lift: 0 1px 2px oklch(24% 0.02 258 / 0.05);
-    --shadow-menu: 0 12px 32px oklch(24% 0.02 258 / 0.12), 0 1px 3px oklch(24% 0.02 258 / 0.08);
-
-    --radius-control: 6px;
-    --radius-card: 10px;
-    --space-2xs: 0.25rem;
-    --space-xs: 0.5rem;
-    --space-sm: 0.75rem;
-    --space-md: 1rem;
-    --space-lg: 1.5rem;
-    --space-xl: 2rem;
-    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-    --dur-short: 150ms;
-
-    --admin-header-height: 56px;
-    --admin-sidebar-width: 260px;
-
-    /* Petakan ke variabel Tabler supaya seluruh komponen ikut. */
-    --tblr-primary: var(--color-accent);
-    --tblr-primary-rgb: var(--color-accent-rgb);
-    --tblr-primary-fg: var(--color-accent-ink);
-    --tblr-primary-darken: var(--color-accent-hover);
-    --tblr-primary-lt: var(--color-accent-tint);
-    --tblr-link-color: var(--color-accent);
-    --tblr-link-color-rgb: var(--color-accent-rgb);
-    --tblr-body-bg: var(--color-paper);
-    --tblr-body-color: var(--color-ink-2);
-    --tblr-emphasis-color: var(--color-ink);
-    --tblr-secondary: var(--color-muted);
-    --tblr-muted: var(--color-muted);
-    --tblr-bg-surface: var(--color-surface);
-    --tblr-bg-surface-secondary: var(--color-paper);
-    --tblr-bg-surface-tertiary: var(--color-surface-2);
-    --tblr-bg-forms: var(--color-surface);
-    --tblr-border-color: var(--color-rule);
-    --tblr-border-color-translucent: var(--color-rule);
-    --tblr-border-radius: var(--radius-control);
-    --tblr-border-radius-lg: var(--radius-card);
-    --tblr-shadow-card: var(--shadow-lift);
-    --tblr-focus-ring-color: color-mix(in oklab, var(--color-focus) 35%, transparent);
-}
-
-[data-bs-theme=dark] {
-    --color-paper: oklch(16.5% 0.014 258);
-    --color-surface: oklch(20.5% 0.016 258);
-    --color-surface-2: oklch(24% 0.017 258);
-    --color-sidebar: oklch(18.5% 0.015 258);
-    --color-ink: oklch(96% 0.005 255);
-    --color-ink-2: oklch(87% 0.01 255);
-    --color-muted: oklch(70% 0.015 255);
-    --color-rule: oklch(29% 0.018 258);
-    --color-rule-2: oklch(35% 0.02 258);
-    --color-accent: oklch(58% 0.14 254);
-    --color-accent-rgb: 45, 125, 205;
-    --color-accent-hover: oklch(64% 0.14 254);
-    --color-accent-tint: oklch(28% 0.05 254);
-    --color-accent-ink: oklch(99% 0 0);
-    --color-focus: oklch(70% 0.14 254);
-    --color-success: oklch(72% 0.14 150);
-    --color-warning: oklch(80% 0.14 75);
-    --color-danger: oklch(70% 0.16 25);
-    --color-info: oklch(74% 0.11 230);
-    --color-backdrop: oklch(0% 0 0 / 0.55);
-    --shadow-lift: none;
-    --shadow-menu: 0 12px 32px oklch(0% 0 0 / 0.45);
-
-    --tblr-primary: var(--color-accent);
-    --tblr-primary-rgb: var(--color-accent-rgb);
-    --tblr-primary-darken: var(--color-accent-hover);
-    --tblr-primary-lt: var(--color-accent-tint);
-    --tblr-link-color: oklch(74% 0.11 254);
-    --tblr-body-bg: var(--color-paper);
-    --tblr-body-color: var(--color-ink-2);
-    --tblr-emphasis-color: var(--color-ink);
-    --tblr-secondary: var(--color-muted);
-    --tblr-muted: var(--color-muted);
-    --tblr-bg-surface: var(--color-surface);
-    --tblr-bg-surface-secondary: var(--color-paper);
-    --tblr-bg-surface-tertiary: var(--color-surface-2);
-    --tblr-bg-forms: var(--color-paper);
-    --tblr-border-color: var(--color-rule);
-    --tblr-border-color-translucent: var(--color-rule);
-}
-
-/* ════════════════════════════════════════════════════════════════════
- * 2. Kerangka halaman
+ * 1. Kerangka halaman
  * ════════════════════════════════════════════════════════════════════ */
 html,
 body {
@@ -187,7 +79,7 @@ body {
 }
 
 /* ════════════════════════════════════════════════════════════════════
- * 3. Sidebar
+ * 2. Sidebar
  * ════════════════════════════════════════════════════════════════════ */
 .navbar-vertical {
     background-color: var(--color-sidebar) !important;
@@ -316,7 +208,7 @@ body {
 .navbar-vertical .dropdown-menu .dropdown-item {
     position: relative;
     min-height: 32px;
-    padding: 0.375rem var(--space-sm);
+    padding: var(--space-2xs) var(--space-sm);
     font-size: 0.8125rem;
     color: var(--color-muted) !important;
     white-space: nowrap;
@@ -370,7 +262,7 @@ body {
 }
 
 /* ════════════════════════════════════════════════════════════════════
- * 4. Header
+ * 3. Header
  * ════════════════════════════════════════════════════════════════════ */
 .app-header {
     position: sticky;
@@ -444,6 +336,10 @@ body {
     color: var(--color-ink-2);
 }
 
+.admin-palette-trigger:active {
+    background: var(--color-surface-2);
+}
+
 kbd {
     padding: 1px 6px;
     border: 1px solid var(--color-rule-2);
@@ -456,7 +352,7 @@ kbd {
 }
 
 /* ════════════════════════════════════════════════════════════════════
- * 5. Command palette
+ * 4. Command palette
  * ════════════════════════════════════════════════════════════════════ */
 .admin-palette {
     width: min(560px, calc(100vw - 2 * var(--space-md)));
@@ -539,7 +435,7 @@ kbd {
 }
 
 /* ════════════════════════════════════════════════════════════════════
- * 6. Kartu
+ * 5. Kartu
  * ════════════════════════════════════════════════════════════════════ */
 .card {
     background-color: var(--color-surface);
@@ -579,7 +475,7 @@ kbd {
 }
 
 /* ════════════════════════════════════════════════════════════════════
- * 7. Tombol
+ * 6. Tombol
  * ════════════════════════════════════════════════════════════════════ */
 .btn {
     border-radius: var(--radius-control);
@@ -663,7 +559,7 @@ a:focus-visible,
 }
 
 /* ════════════════════════════════════════════════════════════════════
- * 8. Form
+ * 7. Form
  * ════════════════════════════════════════════════════════════════════ */
 .form-control,
 .form-select,
@@ -733,7 +629,7 @@ a:focus-visible,
 }
 
 /* ════════════════════════════════════════════════════════════════════
- * 9. Tabel
+ * 8. Tabel
  * ════════════════════════════════════════════════════════════════════ */
 .table {
     --tblr-table-color: var(--color-ink-2);
@@ -772,7 +668,7 @@ a:focus-visible,
 }
 
 /* ════════════════════════════════════════════════════════════════════
- * 10. Badge status: tint lembut, bukan blok warna penuh
+ * 9. Badge status: tint lembut, bukan blok warna penuh
  * ════════════════════════════════════════════════════════════════════ */
 .badge {
     border-radius: var(--radius-control);
@@ -803,19 +699,19 @@ a:focus-visible,
     --badge-tone: var(--color-muted);
 }
 
-.page-body .badge:is(.bg-success, .bg-green, .bg-danger, .bg-red, .bg-warning, .bg-yellow, .bg-orange, .bg-info, .bg-cyan, .bg-azure, .bg-primary, .bg-blue, .bg-secondary, .bg-dark) {
+.page-body .badge:not(:empty):is(.bg-success, .bg-green, .bg-danger, .bg-red, .bg-warning, .bg-yellow, .bg-orange, .bg-info, .bg-cyan, .bg-azure, .bg-primary, .bg-blue, .bg-secondary, .bg-dark) {
     background: color-mix(in oklab, var(--badge-tone) 14%, var(--color-surface)) !important;
     color: color-mix(in oklab, var(--badge-tone) 82%, var(--color-ink)) !important;
     box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--badge-tone) 22%, transparent);
 }
 
-[data-bs-theme=dark] .page-body .badge:is(.bg-success, .bg-green, .bg-danger, .bg-red, .bg-warning, .bg-yellow, .bg-orange, .bg-info, .bg-cyan, .bg-azure, .bg-primary, .bg-blue, .bg-secondary, .bg-dark) {
+[data-bs-theme=dark] .page-body .badge:not(:empty):is(.bg-success, .bg-green, .bg-danger, .bg-red, .bg-warning, .bg-yellow, .bg-orange, .bg-info, .bg-cyan, .bg-azure, .bg-primary, .bg-blue, .bg-secondary, .bg-dark) {
     background: color-mix(in oklab, var(--badge-tone) 18%, var(--color-surface)) !important;
     color: var(--badge-tone) !important;
 }
 
 /* ════════════════════════════════════════════════════════════════════
- * 11. Menu, modal, tab, paginasi, SweetAlert
+ * 10. Menu, modal, tab, paginasi, SweetAlert
  * ════════════════════════════════════════════════════════════════════ */
 .dropdown-menu {
     background-color: var(--color-surface);
@@ -896,12 +792,166 @@ a:focus-visible,
 }
 
 .swal2-styled.swal2-confirm {
-    background-color: var(--color-accent) !important;
-    border-radius: var(--radius-control) !important;
+    background-color: var(--color-accent);
+    border-radius: var(--radius-control);
+}
+
+.swal2-styled.swal2-cancel,
+.swal2-styled.swal2-deny {
+    background-color: var(--color-muted);
+    border-radius: var(--radius-control);
 }
 
 .swal2-styled:focus-visible {
     box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-focus) 35%, transparent) !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+ * 11. Plugin form: Select2 (tema default), Tom Select, Datepicker, Alert
+ * ════════════════════════════════════════════════════════════════════ */
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple {
+    min-height: 38px;
+    border: 1px solid var(--color-rule-2);
+    border-radius: var(--radius-control);
+    background-color: var(--tblr-bg-forms);
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 36px;
+    padding-left: var(--space-sm);
+    color: var(--color-ink);
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 36px;
+}
+
+.select2-container--default.select2-container--focus .select2-selection,
+.select2-container--default.select2-container--open .select2-selection {
+    border-color: var(--color-focus);
+}
+
+.select2-dropdown {
+    background-color: var(--color-surface);
+    border-color: var(--color-rule-2);
+    color: var(--color-ink-2);
+}
+
+.select2-search--dropdown .select2-search__field {
+    background-color: var(--tblr-bg-forms);
+    color: var(--color-ink);
+    border: 1px solid var(--color-rule-2);
+    border-radius: var(--radius-control);
+}
+
+.select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+    background-color: var(--color-accent-tint);
+    color: var(--color-ink);
+}
+
+.select2-container--default .select2-results__option--selected {
+    background-color: var(--color-surface-2);
+}
+
+.ts-wrapper.multi .ts-control > div {
+    background: var(--color-accent) !important;
+    color: var(--color-accent-ink) !important;
+    border: 0 !important;
+    border-radius: 4px !important;
+    padding: 2px 6px !important;
+}
+
+.ts-wrapper.multi .ts-control > div .remove {
+    border-left: 1px solid color-mix(in oklab, var(--color-accent-ink) 30%, transparent) !important;
+    color: var(--color-accent-ink) !important;
+    margin-left: 6px !important;
+}
+
+.ts-dropdown .active {
+    background-color: var(--color-accent-tint) !important;
+    color: var(--color-accent) !important;
+}
+
+.datepicker-inline {
+    width: 100% !important;
+    padding: var(--space-xs);
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+}
+
+.datepicker.dropdown-menu {
+    padding: var(--space-xs);
+}
+
+.datepicker table {
+    width: 100%;
+}
+
+.datepicker thead tr:first-child th {
+    padding-block: var(--space-xs);
+    border-radius: var(--radius-control);
+    color: var(--color-ink);
+    font-weight: 600;
+}
+
+.datepicker thead tr:first-child th:hover,
+.datepicker tbody td.day:hover,
+.datepicker tbody span:hover {
+    background: var(--color-surface-2) !important;
+    color: var(--color-ink);
+}
+
+.datepicker thead tr:last-child th {
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.datepicker tbody td.day,
+.datepicker tbody span.month,
+.datepicker tbody span.year {
+    border-radius: var(--radius-control) !important;
+    color: var(--color-ink-2);
+    font-variant-numeric: tabular-nums;
+}
+
+.datepicker tbody td.day {
+    height: 36px;
+    width: 36px;
+}
+
+.datepicker tbody td.old,
+.datepicker tbody td.new,
+.datepicker tbody td.disabled {
+    color: var(--color-rule-2) !important;
+}
+
+.datepicker tbody td.today {
+    background: transparent !important;
+    color: var(--color-accent) !important;
+    box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+
+.datepicker tbody td.active,
+.datepicker tbody td.active:hover,
+.datepicker tbody span.active,
+.datepicker tbody span.active:hover {
+    background: var(--color-accent) !important;
+    color: var(--color-accent-ink) !important;
+    text-shadow: none;
+}
+
+.alert {
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-control);
+    color: var(--color-ink-2);
+}
+
+.alert-warning {
+    background: var(--color-warning-tint);
+    border-color: color-mix(in oklab, var(--color-warning) 40%, transparent);
 }
 
 /* ════════════════════════════════════════════════════════════════════

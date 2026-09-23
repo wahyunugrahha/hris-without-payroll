@@ -56,7 +56,7 @@
 
         // Style kotak foto (Border disesuaikan agar terlihat di darkmode)
         $box_style =
-            'width: 32px; height: 32px; border: 1px solid #e6e7e9; border-radius: 4px; display: flex; align-items: center; justify-content: center; background: transparent; color: inherit;';
+            'width: 32px; height: 32px; border: 1px solid var(--color-rule); border-radius: 4px; display: flex; align-items: center; justify-content: center; background: transparent; color: inherit;';
     @endphp
 
     <tr class="align-middle">
@@ -120,7 +120,7 @@
                 {{-- Foto Masuk --}}
                 @if ($foto_in)
                     <a href="{{ $foto_in }}" target="_blank"
-                        style="{{ $box_style }} overflow: hidden; border-color: #206bc4;">
+                        style="{{ $box_style }} overflow: hidden; border-color: var(--color-accent);">
                         <img src="{{ $foto_in }}" style="width:100%; height:100%; object-fit:cover;">
                     </a>
                 @else
@@ -130,7 +130,7 @@
                 {{-- Foto Pulang --}}
                 @if ($foto_out)
                     <a href="{{ $foto_out }}" target="_blank"
-                        style="{{ $box_style }} overflow: hidden; border-color: #d63939;">
+                        style="{{ $box_style }} overflow: hidden; border-color: var(--color-danger);">
                         <img src="{{ $foto_out }}" style="width:100%; height:100%; object-fit:cover;">
                     </a>
                 @else

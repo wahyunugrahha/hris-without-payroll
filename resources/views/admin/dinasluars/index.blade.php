@@ -303,8 +303,8 @@
                     text: "Pengajuan ini akan dihapus permanen!",
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
+                    confirmButtonColor: 'var(--color-accent)',
+                    cancelButtonColor: 'var(--color-muted)',
                     confirmButtonText: 'Ya, Hapus!',
                     cancelButtonText: 'Batal'
                 }).then((result) => {

@@ -441,7 +441,7 @@
                         <div class="col-md-6">
                             <label class="form-label small text-muted">Keperluan</label>
                             <div class="form-control-plaintext" id="mdKeperluan"
-                                style="background: #f8f9fa; padding: 0.5rem; border-radius: 4px;">-</div>
+                                style="background: var(--color-surface-2); padding: 0.5rem; border-radius: 4px;">-</div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small text-muted">Lokasi Tujuan</label>
@@ -478,7 +478,7 @@
                     <div id="mdKeteranganWrap" class="d-none mb-3">
                         <label class="form-label small text-muted">Keterangan Tambahan</label>
                         <div class="form-control-plaintext" id="mdKeterangan"
-                            style="border: 1px dashed #e0e0e0; padding: 10px; border-radius: 4px;">-</div>
+                            style="border: 1px dashed var(--color-rule-2); padding: 10px; border-radius: 4px;">-</div>
                     </div>
 
                     <div class="hr-text">Keputusan</div>

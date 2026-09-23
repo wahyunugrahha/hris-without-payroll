@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-bs-theme="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -16,16 +16,18 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 
+    <link rel="stylesheet" href="{{ asset_v('assets/css/admin-tokens.css') }}" />
     <style>
         :root {
+            --color-category: #d946ef; /* aksen kartu token/QR */
             /* --- COLOR PALETTE --- */
-            --bg-app: #0f172a;
-            --bg-header: rgba(15, 23, 42, 0.95);
-            --bg-card: #1e293b;
-            --border-color: rgba(255, 255, 255, 0.08);
+            --bg-app: var(--color-paper);
+            --bg-header: color-mix(in oklab, var(--color-surface) 95%, transparent);
+            --bg-card: var(--color-surface);
+            --border-color: var(--color-rule);
 
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
+            --text-main: var(--color-ink);
+            --text-muted: var(--color-muted);
 
             /* --- COMPACT SCALING (Agar muat 5 baris) --- */
             --fz-xl: clamp(2.4rem, 3.6vw, 4.5rem);
@@ -39,7 +41,7 @@
             --fz-sm: clamp(0.7rem, 0.45vw, 0.95rem);
             /* Subtext */
 
-            --radius-card: 14px;
+            --radius-card: 10px;
             --space-x: 2rem;
             --space-y: 1.5rem;
         }
@@ -66,7 +68,7 @@
             transform-origin: 0 0;
             display: flex;
             flex-direction: column;
-            background: radial-gradient(circle at top, #1e293b 0%, #0f172a 70%);
+            background: var(--color-paper);
         }
 
         /* --- 1. HEADER (12vh) --- */
@@ -100,12 +102,12 @@
             margin: 0;
             font-weight: 800;
             line-height: 1.1;
-            color: #fff;
+            color: var(--color-accent-ink);
         }
 
         .h-brand small {
             font-size: var(--fz-sm);
-            color: #60a5fa;
+            color: var(--color-accent);
             text-transform: uppercase;
             letter-spacing: 2px;
             font-weight: 600;
@@ -160,7 +162,7 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: 3.5rem;
             font-weight: 700;
-            color: #fff;
+            color: var(--color-accent-ink);
             line-height: 1;
         }
 
@@ -242,7 +244,7 @@
             font-weight: 700;
             padding: 0.2rem 0.6rem;
             border-radius: 4px;
-            color: #0f172a;
+            color: var(--color-paper);
             min-width: 30px;
             text-align: center;
         }
@@ -295,7 +297,7 @@
         .u-main {
             font-size: var(--fz-base);
             font-weight: 600;
-            color: #f1f5f9;
+            color: var(--color-ink);
             white-space: normal;
             overflow: hidden;
             display: -webkit-box;
@@ -327,15 +329,15 @@
         /* --- FOOTER --- */
         footer {
             height: 5vh;
-            background: #020617;
+            background: var(--color-paper);
             display: flex;
             align-items: center;
             border-top: 1px solid var(--border-color);
         }
 
         .mq-tag {
-            background: #ef4444;
-            color: #fff;
+            background: var(--color-danger);
+            color: var(--color-accent-ink);
             height: 100%;
             padding: 0 2rem;
             display: flex;
@@ -358,7 +360,7 @@
             animation: marquee 35s linear infinite;
             font-size: var(--fz-base);
             font-weight: 400;
-            color: #cbd5e1;
+            color: var(--color-ink-2);
             line-height: 5vh;
         }
 
@@ -374,84 +376,84 @@
 
         /* --- COLORS UTILS --- */
         .t-gold {
-            color: #eab308 !important;
+            color: var(--color-warning) !important;
         }
 
         .b-gold {
-            border-top: 4px solid #eab308;
+            border-top: 4px solid var(--color-warning);
         }
 
         .t-green {
-            color: #3d87c9 !important;
+            color: var(--color-accent) !important;
         }
 
         .b-green {
-            border-top: 4px solid #3d87c9;
+            border-top: 4px solid var(--color-accent);
         }
 
         .bg-green {
-            background: #3d87c9;
+            background: var(--color-accent);
         }
 
         .t-orange {
-            color: #f97316 !important;
+            color: var(--color-warning) !important;
         }
 
         .b-orange {
-            border-top: 4px solid #f97316;
+            border-top: 4px solid var(--color-warning);
         }
 
         .bg-orange {
-            background: #f97316;
+            background: var(--color-warning);
         }
 
         .t-purple {
-            color: #d946ef !important;
+            color: var(--color-category) !important;
         }
 
         .b-purple {
-            border-top: 4px solid #d946ef;
+            border-top: 4px solid var(--color-category);
         }
 
         .bg-purple {
-            background: #d946ef;
+            background: var(--color-category);
         }
 
         .t-blue {
-            color: #3b82f6 !important;
+            color: var(--color-accent) !important;
         }
 
         .b-blue {
-            border-top: 4px solid #3b82f6;
+            border-top: 4px solid var(--color-accent);
         }
 
         .bg-blue {
-            background: #3b82f6;
+            background: var(--color-accent);
         }
 
         .t-red {
-            color: #ef4444 !important;
+            color: var(--color-danger) !important;
         }
 
         .b-red {
-            border-top: 4px solid #ef4444;
+            border-top: 4px solid var(--color-danger);
         }
 
         .bg-red {
-            background: #ef4444;
+            background: var(--color-danger);
             color: white;
         }
 
         .t-grey {
-            color: #94a3b8 !important;
+            color: var(--color-muted) !important;
         }
 
         .b-grey {
-            border-top: 4px solid #64748b;
+            border-top: 4px solid var(--color-muted);
         }
 
         .bg-grey {
-            background: #64748b;
+            background: var(--color-muted);
             color: white;
         }
 
@@ -465,7 +467,7 @@
         .split-col {
             display: flex;
             flex-direction: column;
-            border-right: 3px solid rgba(255, 255, 255, 0.2);
+            border-right: 1px solid var(--border-color);
             overflow: hidden;
             min-height: 0;
         }
@@ -484,7 +486,7 @@
             font-weight: 800;
             padding: 0.6rem 0.4rem;
             background: rgba(0, 0, 0, 0.35);
-            color: #fff;
+            color: var(--color-accent-ink);
             letter-spacing: 2px;
             text-transform: uppercase;
             border-bottom: 2px solid var(--border-color);
@@ -518,7 +520,7 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: clamp(2.2rem, 4vw, 5rem);
             font-weight: 700;
-            color: #94a3b8;
+            color: var(--color-muted);
         }
 
         @media (max-width: 1366px) {
@@ -660,7 +662,7 @@
                         <div class="scroll-content">
                             @forelse($topOffice as $idx => $m)
                                 <div class="li-row">
-                                    <div style="font-size:var(--fz-md); font-weight:700; color:#eab308; width:2rem">
+                                    <div style="font-size:var(--fz-md); font-weight:700; color:var(--color-warning); width:2rem">
                                         #{{ $idx + 1 }}</div>
                                     <div class="u-info">
                                         <div class="u-main">{{ $m->nama_lengkap }}</div>
@@ -684,7 +686,7 @@
                         <div class="scroll-content">
                             @forelse($topSite as $idx => $m)
                                 <div class="li-row">
-                                    <div style="font-size:var(--fz-md); font-weight:700; color:#3b82f6; width:2rem">
+                                    <div style="font-size:var(--fz-md); font-weight:700; color:var(--color-accent); width:2rem">
                                         #{{ $idx + 1 }}</div>
                                     <div class="u-info">
                                         <div class="u-main">{{ $m->nama_lengkap }}</div>
@@ -989,10 +991,10 @@
                         <!-- Progress Bar & Timer at the bottom -->
                         <div style="position: absolute; bottom: 15px; left: 0; width: 100%; padding: 0 30px;">
                             <div style="height: 4px; background: rgba(255,255,255,0.05); border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);">
-                                <div id="token-progress" style="height: 100%; background: linear-gradient(90deg, #d946ef, #a855f7); width: 100%; transition: width 1s linear;"></div>
+                                <div id="token-progress" style="height: 100%; background: var(--color-accent); width: 100%; transition: width 1s linear;"></div>
                             </div>
                             <div style="display: flex; justify-content: space-between; margin-top: 5px;">
-                                <span style="font-size: 0.65rem; color: #64748b; font-family: 'JetBrains Mono';">REFRESH</span>
+                                <span style="font-size: 0.65rem; color: var(--color-muted); font-family: 'JetBrains Mono';">REFRESH</span>
                                 <span id="token-timer" style="font-size: 0.75rem; color: #d946ef; font-weight: 700; font-family: 'JetBrains Mono';">--:--</span>
                             </div>
                         </div>

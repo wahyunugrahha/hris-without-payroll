@@ -1,78 +1,5 @@
 @extends('layouts.admin.tabler')
 
-@section('header')
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <style>
-        [data-bs-theme="dark"] .rekap-kpi-page .card-header.bg-light {
-            background-color: #1a2739 !important;
-            border-color: rgba(255, 255, 255, 0.1) !important;
-        }
-
-        [data-bs-theme="dark"] .rekap-kpi-page .text-muted {
-            color: #9fb0c6 !important;
-        }
-
-        [data-bs-theme="dark"] .rekap-kpi-page .table thead th {
-            background-color: #172437;
-            color: #cfe0f5;
-            border-color: rgba(255, 255, 255, 0.08);
-        }
-
-        [data-bs-theme="dark"] .rekap-kpi-page .table td {
-            border-color: rgba(255, 255, 255, 0.08);
-        }
-
-        [data-bs-theme="dark"] .rekap-kpi-page .table tbody tr:hover td {
-            background-color: #162335;
-        }
-
-        .select2-container--default .select2-selection--single {
-            height: 38px;
-            border: 1px solid #d9dbde;
-            border-radius: 4px;
-        }
-
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            line-height: 38px;
-            padding-left: 12px;
-        }
-
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: 38px;
-        }
-
-        [data-bs-theme="dark"] .select2-container--default .select2-selection--single {
-            background-color: #121f31;
-            border-color: #2a3a52;
-            color: #dbe7f5;
-        }
-
-        [data-bs-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__rendered {
-            color: #dbe7f5;
-        }
-
-        [data-bs-theme="dark"] .select2-dropdown {
-            background-color: #121f31;
-            border-color: #2a3a52;
-        }
-
-        [data-bs-theme="dark"] .select2-search--dropdown .select2-search__field {
-            background-color: #0f1a2b;
-            color: #dbe7f5;
-            border: 1px solid #2a3a52;
-        }
-
-        [data-bs-theme="dark"] .select2-results__option {
-            color: #dbe7f5;
-        }
-
-        [data-bs-theme="dark"] .select2-results__option--highlighted.select2-results__option--selectable {
-            background-color: #233650;
-            color: #eaf2ff;
-        }
-    </style>
-@endsection
-
 @section('content')
     <div class="page-header d-print-none">
         <div class="container-xl">
@@ -232,9 +159,7 @@
                                         Cetak PDF
                                     </button>
 
-                                    <button type="button" class="btn btn-success"
-                                        style="background-color: #217346; border-color: #217346;"
-                                        onclick="cetakLaporan('excel')">
+                                    <button type="button" class="btn btn-success" onclick="cetakLaporan('excel')">
                                         <svg xmlns="http://www.w3.org/2000/svg"
                                             class="icon icon-tabler icon-tabler-file-spreadsheet" width="24"
                                             height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
@@ -413,7 +338,7 @@
                 //         title: 'Approval Ditolak!',
                 //         text: textMsg,
                 //         icon: 'error',
-                //         confirmButtonColor: '#d33',
+                //         confirmButtonColor: 'var(--color-danger)',
                 //         confirmButtonText: 'Mengerti'
                 //     });
                 //     return; // Menghentikan proses
@@ -425,8 +350,8 @@
                     text: "Tindakan ini akan meng-approve (Final HR) seluruh laporan harian dan penilaian atasan karyawan yang Anda centang.",
                     icon: 'question',
                     showCancelButton: true,
-                    confirmButtonColor: '#094b87',
-                    cancelButtonColor: '#d33',
+                    confirmButtonColor: 'var(--color-accent)',
+                    cancelButtonColor: 'var(--color-muted)',
                     confirmButtonText: 'Ya, Setujui!',
                     cancelButtonText: 'Batal'
                 }).then((result) => {

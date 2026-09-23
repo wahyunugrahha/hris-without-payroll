@@ -46,7 +46,7 @@
             <div class="card">
                 <div class="card-body">
                     <div id="map"
-                        style="height: 380px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e6e7e9;"></div>
+                        style="height: 380px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--color-rule);"></div>
 
                     {{-- Form Tambah Lokasi --}}
                     <form action="{{ route('cabanglokasi.store', $cabang->kode_cabang) }}" method="POST" id="formTambah">
@@ -443,7 +443,7 @@
                     text: `Lokasi "${nama}" akan dihapus permanen.`,
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#d33',
+                    confirmButtonColor: 'var(--color-danger)',
                     confirmButtonText: 'Ya, Hapus!'
                 }).then((result) => {
                     if (result.isConfirmed) $('#form-del-' + id).submit();

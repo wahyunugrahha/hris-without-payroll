@@ -560,146 +560,43 @@
             href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
 
         <style>
-            /* --- DATEPICKER MODERN & LINGKARAN KECIL (50%) --- */
-
-            .month-visual-input {
-                cursor: pointer;
-            }
-
+            /* Gaya datepicker umum ada di admin-theme.css; di sini hanya penanda status tanggal. */
             .detail-keterangan-box {
-                background: #f8f9fa;
-                padding: 10px;
-                border-radius: 5px;
+                background: var(--color-surface-2);
+                color: var(--color-ink-2);
+                padding: var(--space-sm);
+                border-radius: var(--radius-control);
             }
 
-            [data-bs-theme="dark"] .detail-keterangan-box {
-                background: #162437;
-                color: #dbe7f5;
-            }
-
-            [data-bs-theme="dark"] .month-visual-input {
-                background-color: #121f31 !important;
-                color: #dbe7f5 !important;
-                border-color: #2a3a52 !important;
-            }
-
-            [data-bs-theme="dark"] .month-visual-input::placeholder {
-                color: #93a6bf;
-            }
-
-            .datepicker-inline {
-                width: 100% !important;
-                border: 1px solid #e6e7e9;
-                border-radius: 12px;
-                padding: 10px;
-                background: #fff;
-            }
-
-            .datepicker table {
-                width: 100%;
-                font-family: var(--tblr-font-sans-serif);
-            }
-
-            .datepicker thead tr:first-child th {
-                border-radius: 8px;
-                background: #f8fafc;
-                padding: 10px 0;
-                font-weight: 700;
-                font-size: 0.95rem;
-                color: #1e293b;
-            }
-
-            .datepicker thead tr:first-child th:hover {
-                background: #e2e8f0;
-            }
-
-            .datepicker thead tr:last-child th {
-                color: #64748b;
-                font-weight: 600;
-                font-size: 0.8rem;
-                padding-top: 10px;
-            }
-
-            /* LOGIC LINGKARAN 50% */
-            .datepicker tbody td.day {
-                height: 40px;
-                width: 40px;
-                border: 10px solid #fff !important;
-                border-radius: 50% !important;
-                font-size: 0.85rem;
-                font-weight: 600;
-                line-height: 20px;
-                transition: all 0.1s ease;
-                position: relative;
-            }
-
-            .datepicker tbody td.day:hover {
-                background: #f1f5f9;
-                border-color: #f1f5f9 !important;
-                color: #1e293b;
-            }
-
-            /* AKTIF (BIRU) - Biasa */
-            .datepicker tbody td.active,
-            .datepicker tbody td.active:hover {
-                background: #206bc4 !important;
-                color: #fff !important;
-                border-color: #fff !important;
-                box-shadow: 0 2px 5px rgba(32, 107, 196, 0.3);
-            }
-
-            /* --- STYLING KHUSUS UNTUK DETAIL VIEW --- */
-
-            /* 1. Tanggal Disetujui (HIJAU) */
             .datepicker tbody td.day.day-approved {
-                background: #094b87 !important;
-                color: #fff !important;
-                border-color: #fff !important;
+                background: var(--color-success) !important;
+                color: var(--color-accent-ink) !important;
             }
 
-            /* 2. Tanggal Ditolak/Tidak Dipilih (MERAH) */
             .datepicker tbody td.day.day-rejected {
-                background: #d63939 !important;
-                color: #fff !important;
-                border-color: #fff !important;
+                background: var(--color-danger) !important;
+                color: var(--color-accent-ink) !important;
                 opacity: 0.7;
                 text-decoration: line-through;
             }
 
-            /* 3. Tanggal Pending (BIRU) */
             .datepicker tbody td.day.day-pending {
-                background: #206bc4 !important;
-                color: #fff !important;
-                border-color: #fff !important;
+                background: var(--color-accent) !important;
+                color: var(--color-accent-ink) !important;
                 opacity: 0.9;
             }
 
-            /* 3. PERBAIKAN: Disable pointer events HANYA DI TBODY (Area Tanggal)
-                                                                               agar Header (Tombol Next/Prev) tetap bisa diklik */
+            /* Kalender detail hanya-baca; tombol bulan tetap bisa diklik. */
             #detail-calendar-view .datepicker-days tbody {
                 pointer-events: none;
                 cursor: default;
             }
 
-
-            .datepicker tbody td.today {
-                background: transparent !important;
-                color: #206bc4 !important;
-                border: 1px solid #206bc4 !important;
-            }
-
-            .datepicker tbody td.disabled {
-                color: #cbd5e1;
-                cursor: not-allowed;
-                border-color: #fff !important;
-            }
-
-            /* --- LAYOUT GRID RESPONSIVE --- */
             @media (min-width: 992px) {
                 .modal-grid {
                     display: grid;
-                    grid-template-columns: 1.2fr 0.8fr;
-                    gap: 25px;
+                    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+                    gap: var(--space-lg);
                     align-items: start;
                 }
             }

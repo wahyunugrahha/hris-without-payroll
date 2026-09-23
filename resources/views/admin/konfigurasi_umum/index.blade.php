@@ -3,24 +3,6 @@
 @section('content')
     <!-- Tom Select CSS CDN -->
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
-    <style>
-        .ts-wrapper.multi .ts-control > div {
-            background: var(--tblr-primary, #094b87) !important;
-            color: #ffffff !important;
-            border-radius: 3px !important;
-            border: none !important;
-            padding: 2px 6px !important;
-        }
-        .ts-wrapper.multi .ts-control > div .remove {
-            border-left: 1px solid rgba(255, 255, 255, 0.3) !important;
-            color: #ffffff !important;
-            margin-left: 6px !important;
-        }
-        .ts-dropdown .active {
-            background-color: rgba(var(--tblr-primary-rgb, 47, 179, 68), 0.1) !important;
-            color: var(--tblr-primary, #094b87) !important;
-        }
-    </style>
 
     <div class="page-header d-print-none">
         <div class="container-xl">

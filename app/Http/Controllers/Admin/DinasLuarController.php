@@ -10,26 +10,12 @@ use Illuminate\Support\Facades\Auth;
 
 class DinasLuarController extends Controller
 {
-    public function dashboard()
+    /**
+     * Daftar dinas luar admin ada di halaman approval (dengan filter status).
+     */
+    public function index()
     {
-        $baseQuery = DinasLuar::visibleTo(Auth::guard('user')->user());
-
-        $menunggu = (clone $baseQuery)->where('status_acc', 'menunggu')->count();
-        $acc = (clone $baseQuery)->where('status_acc', 'acc')->count();
-        $tolak = (clone $baseQuery)->where('status_acc', 'tolak')->count();
-
-        return view('admin.dinasluars.dashboard', compact('menunggu', 'acc', 'tolak'));
-    }
-
-    public function index(Request $request)
-    {
-        $dinasluars = DinasLuar::visibleTo(Auth::guard('user')->user())
-            ->with(['karyawan.cabang', 'approver'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(25)
-            ->appends($request->all()); // PERBAIKAN: Agar filter tidak hilang saat ganti halaman
-
-        return view('admin.dinasluars.index', compact('dinasluars'));
+        return redirect()->route('dinasluars.approval');
     }
 
     public function approval(Request $request)

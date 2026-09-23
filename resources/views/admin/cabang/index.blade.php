@@ -448,7 +448,7 @@
                         
                         if (hasRelations) {
                             messageHtml += `
-                                <div class="alert alert-warning text-left" style="font-size: 13px; border-left: 4px solid #ffc107; background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 4px;">
+                                <div class="alert alert-warning text-start mb-0">
                                     <h6 class="alert-heading mb-1 font-weight-bold"><i class="fas fa-exclamation-triangle mr-1"></i> Data Terkait Terdeteksi:</h6>
                                     <ul class="pl-3 mb-0" style="list-style-type: disc;">
                             `;
@@ -486,8 +486,8 @@
                             html: messageHtml,
                             icon: hasRelations ? 'warning' : 'question',
                             showCancelButton: true,
-                            confirmButtonColor: '#d33',
-                            cancelButtonColor: '#3085d6',
+                            confirmButtonColor: 'var(--color-danger)',
+                            cancelButtonColor: 'var(--color-muted)',
                             confirmButtonText: 'Ya, Hapus!',
                             cancelButtonText: 'Batal',
                             reverseButtons: true

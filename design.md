@@ -4,7 +4,14 @@ Sistem desain terkunci untuk semua halaman admin (`layouts.admin.tabler`).
 Halaman baru atau redesign halaman admin membaca file ini dulu. Ubah file ini
 bila sistem perlu berkembang, jangan override per halaman.
 
-Implementasi: `public/assets/css/admin-theme.css` (token + pemetaan ke variabel Tabler).
+Implementasi:
+- `public/assets/css/admin-tokens.css` — token warna/spasi/radius (+ pemetaan ke variabel Tabler).
+- `public/assets/css/admin-theme.css` — gaya layout & komponen admin.
+- `public/assets/js/admin.js` — perilaku global (tema, flash, command palette).
+
+Cakupan: semua view `resources/views/admin/**`, layout `layouts/admin/*`, login admin,
+Dashboard Overview & TV (HTML mandiri, memuat `admin-tokens.css`; TV dikunci mode gelap).
+Dikecualikan: template cetak/Excel (`cetak*`, `*excel*`, `print`) — dokumen, bukan layar.
 
 ## Genre
 modern-minimal (SaaS / dashboard). Tenang, rapi, satu aksen.
@@ -62,4 +69,7 @@ Font **tidak diubah**: Inter (rsms.me/inter) bawaan Tabler. Angka di tabel memak
 
 ## Warna di view
 Pakai kelas Tabler (`btn-primary`, `bg-success-lt`, dst.) atau `var(--color-*)`.
-Jangan menulis hex/rgb baru di view.
+Jangan menulis hex/rgb baru di view. SweetAlert: `confirmButtonColor: 'var(--color-accent)'`
+(hapus/tolak: `var(--color-danger)`, batal: `var(--color-muted)`).
+Pengecualian yang sengaja: palet grafik ApexCharts dan warna lingkaran peta Leaflet
+(butuh warna literal di atribut SVG), warna medali di Overview (variabel bernama).

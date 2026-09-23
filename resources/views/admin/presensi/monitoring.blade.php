@@ -137,7 +137,7 @@
                                 <thead>
                                     {{-- PERBAIKAN: Hapus style background agar darkmode aman --}}
                                     <tr
-                                        style="text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; color: #6c757d;">
+                                        style="text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; color: var(--color-muted);">
                                         <th class="w-1">NO.</th>
                                         <th>NAMA / NIK</th>
                                         <th>DEPARTEMEN / JABATAN</th>
@@ -414,8 +414,8 @@
                     text: "Tindakan ini akan mengosongkan jam & foto presensi ini, dan mengubah statusnya menjadi Dianulir. Karyawan akan dianggap Belum Absen pada sistem.",
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
+                    confirmButtonColor: 'var(--color-danger)',
+                    cancelButtonColor: 'var(--color-muted)',
                     confirmButtonText: 'Ya, Anulir!',
                     cancelButtonText: 'Kembali'
                 }).then((result) => {
