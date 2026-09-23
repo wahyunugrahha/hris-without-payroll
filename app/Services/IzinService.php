@@ -119,6 +119,79 @@ class IzinService
     }
 
     /**
+     * Kode izin baru untuk pengajuan yang dimulai pada tanggal tersebut, mis. IZ09260013.
+     */
+    public function nextKodeIzin(string $tanggal): string
+    {
+        $bulan = date('m', strtotime($tanggal));
+        $tahun = date('Y', strtotime($tanggal));
+
+        $lastKode = Izin::whereMonth('tgl_izin_dari', $bulan)
+            ->whereYear('tgl_izin_dari', $tahun)
+            ->orderByDesc('kode_izin')
+            ->value('kode_izin');
+
+        return $this->generateKodeIzin($lastKode, 'IZ'.$bulan.substr($tahun, 2, 2), 4);
+    }
+
+    /**
+     * True jika salah satu tanggal sudah punya presensi (hadir/izin/sakit/cuti/roster) atau pengajuan lain.
+     */
+    public function tanggalBentrok(string $nik, Collection $dates, ?string $excludeKodeIzin = null): bool
+    {
+        return Presensi::where('nik', $nik)
+            ->whereIn('tgl_presensi', $dates->all())
+            ->whereIn('status', ['h', 'i', 's', 'c', 'r'])
+            ->exists()
+            || $this->hasDateConflict($nik, $dates, $excludeKodeIzin);
+    }
+
+    /**
+     * Tanggal pilihan dikurangi hari libur & libur shift karyawan tersebut.
+     */
+    public function tanggalHariKerja(Karyawan $karyawan, Collection $dates): Collection
+    {
+        if ($dates->isEmpty()) {
+            return $dates;
+        }
+
+        $libur = HariLibur::tanggalBerlaku($karyawan->kode_cabang, $karyawan->kode_dept, $dates->first(), $dates->last());
+
+        return $dates->reject(function ($tanggal) use ($karyawan, $libur) {
+            if (in_array($tanggal, $libur, true)) {
+                return true;
+            }
+
+            $namaHari = $this->jadwalKerja->namaHari(date('D', strtotime($tanggal)));
+            [, $isLiburShift] = $this->jadwalKerja->untukHari($karyawan->nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namaHari);
+
+            return $isLiburShift;
+        })->values();
+    }
+
+    /**
+     * Sisa jatah cuti tahun ini untuk satu jenis cuti; null berarti tanpa batas.
+     */
+    public function sisaCuti(Karyawan $karyawan, MasterCuti $masterCuti, ?string $excludeKodeIzin = null): ?int
+    {
+        if ((int) $masterCuti->jml_hari <= 0) {
+            return null;
+        }
+
+        return max(0, (int) $masterCuti->jml_hari - $this->cutiTakenDays($karyawan, date('Y'), $masterCuti->kode_cuti, $excludeKodeIzin));
+    }
+
+    /**
+     * @return array<string, ?int> [kode_cuti => sisa jatah | null]
+     */
+    public function sisaCutiMap(Karyawan $karyawan, Collection $masterCuti, ?string $excludeKodeIzin = null): array
+    {
+        return $masterCuti
+            ->mapWithKeys(fn (MasterCuti $mc) => [$mc->kode_cuti => $this->sisaCuti($karyawan, $mc, $excludeKodeIzin)])
+            ->all();
+    }
+
+    /**
      * Kode izin berikutnya dengan format prefix + nomor urut, mis. IZ0926 + 0001.
      *
      * ponytail: nomor diambil dari kode terakhir tanpa lock; dua pengajuan bersamaan bisa bentrok

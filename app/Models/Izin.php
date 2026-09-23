@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\VisibleByCabang;
 use App\Support\CutiDatesMeta;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -47,6 +48,24 @@ class Izin extends Model
     public function masterCuti()
     {
         return $this->belongsTo(MasterCuti::class, 'kode_cuti', 'kode_cuti');
+    }
+
+    public function scopeMilik(Builder $query, string $nik): Builder
+    {
+        return $query->where('nik', $nik);
+    }
+
+    /**
+     * Belum diverifikasi admin: masih boleh diubah/dihapus karyawan.
+     */
+    public function scopePending(Builder $query): Builder
+    {
+        return $query->where('status_approved', 0);
+    }
+
+    public function scopeJenis(Builder $query, string $status): Builder
+    {
+        return $query->where('status', $status);
     }
 
     /**

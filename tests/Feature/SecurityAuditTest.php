@@ -40,9 +40,16 @@ class SecurityAuditTest extends TestCase
         $this->get('/dashboard')->assertRedirect(route('login'));
     }
 
+    private function bolehEditIzin(Karyawan $karyawan): Karyawan
+    {
+        Permission::findOrCreate('izin-edit-karyawan', 'karyawan');
+
+        return $karyawan->givePermissionTo('izin-edit-karyawan');
+    }
+
     public function test_karyawan_tidak_bisa_mengubah_izin_milik_orang_lain(): void
     {
-        $a = $this->karyawan('1001');
+        $a = $this->bolehEditIzin($this->karyawan('1001'));
         $b = $this->karyawan('1002');
 
         $izinB = Izin::create([
@@ -61,7 +68,7 @@ class SecurityAuditTest extends TestCase
 
     public function test_karyawan_bisa_mengubah_izin_miliknya_yang_masih_pending(): void
     {
-        $a = $this->karyawan('1001');
+        $a = $this->bolehEditIzin($this->karyawan('1001'));
         $izin = Izin::create([
             'kode_izin' => 'IZ09260002', 'nik' => $a->nik, 'status' => 'i', 'status_approved' => 0,
             'tgl_izin_dari' => '2026-09-01', 'tgl_izin_sampai' => '2026-09-01', 'keterangan' => 'awal',
