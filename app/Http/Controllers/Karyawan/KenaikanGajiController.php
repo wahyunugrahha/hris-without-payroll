@@ -185,25 +185,8 @@ class KenaikanGajiController extends Controller
     {
         $karyawan = Auth::guard('karyawan')->user();
 
-        // Cari Template Master KPI yang sesuai (Berdasarkan Jabatan & Dept & Cabang dengan fallback)
-        $kpiMaster = KPIMaster::where('jabatan_id', $karyawan->jabatan_id)
-            ->where('kode_dept', $karyawan->kode_dept)
-            ->where('kode_cabang', $karyawan->kode_cabang)
-            ->where('is_active', true)->first();
-
-        if (! $kpiMaster) {
-            $kpiMaster = KPIMaster::where('jabatan_id', $karyawan->jabatan_id)
-                ->where('kode_dept', $karyawan->kode_dept)
-                ->whereNull('kode_cabang')
-                ->where('is_active', true)->first();
-        }
-
-        if (! $kpiMaster) {
-            $kpiMaster = KPIMaster::where('jabatan_id', $karyawan->jabatan_id)
-                ->whereNull('kode_dept')
-                ->whereNull('kode_cabang')
-                ->where('is_active', true)->first();
-        }
+        // Master KPI yang berlaku (aturan sama dengan form KPI karyawan).
+        $kpiMaster = KPIMaster::untukKaryawan($karyawan);
 
         $maxPoinDaily = 40; // Default fallback
         if ($kpiMaster) {

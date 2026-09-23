@@ -214,13 +214,8 @@ class PresensiController extends Controller
                         return response()->json(['success' => false, 'error' => 'Belum waktunya pulang. Jam pulang: '.$jamkerja->jam_pulang]);
                     }
 
-                    $isKpiActive = KPIMaster::where('is_active', true)
-                        ->where('jabatan_id', $karyawan->jabatan_id)
-                        ->where('kode_dept', $karyawan->kode_dept)
-                        ->where('kode_cabang', $karyawan->kode_cabang)
-                        ->exists();
-
-                    if ($isKpiActive) {
+                    // Wajib isi KPI dulu bila ada master KPI yang berlaku (aturan sama dengan form KPI).
+                    if (KPIMaster::untukKaryawan($karyawan)) {
                         $kpiHariIni = KPIDaily::where('nik', $nik)
                             ->whereDate('tanggal', $tgl_presensi)
                             ->first();

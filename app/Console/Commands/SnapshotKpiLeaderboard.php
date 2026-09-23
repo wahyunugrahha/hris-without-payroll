@@ -44,7 +44,9 @@ class SnapshotKpiLeaderboard extends Command
             $insertData = [];
 
             // OPTIMASI: Query hanya untuk tanggal ini dengan eager loading
+            // Draft & KPI yang ditolak tidak menghasilkan poin.
             $dailyKpiData = KPIDaily::with(['kpiDailyDetail', 'kpiDailyExtra', 'karyawan'])
+                ->dihitung()
                 ->where('tanggal', $processDate)
                 ->get()
                 ->groupBy(function ($item) {
