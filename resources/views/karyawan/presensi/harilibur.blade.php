@@ -4,7 +4,7 @@
         $user = Auth::guard('karyawan')->user();
     @endphp
 
-    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset_v('assets/css/style.css') }}">
     <div id="appCapsule">
         <div class="section" style="margin-top: 100px;">
             <div class="card"

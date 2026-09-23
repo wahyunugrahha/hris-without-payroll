@@ -34,7 +34,7 @@ return new class extends Migration
                 ->on('karyawan')
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
-            
+
             $table->foreign('approved_by')
                 ->references('id')
                 ->on('users')

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('izin', function (Blueprint $table) {
-            if (!Schema::hasColumn('izin', 'status_decided_at')) {
+            if (! Schema::hasColumn('izin', 'status_decided_at')) {
                 $table->timestamp('status_decided_at')->nullable()->after('status_approved');
             }
         });

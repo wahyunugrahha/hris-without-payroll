@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
+use App\Models\Jabatan;
 use App\Models\KPIMaster;
 use App\Models\KPIMasterDetail;
-use App\Models\Jabatan;
+use Illuminate\Database\Seeder;
 
 class KPIMasterSeeder extends Seeder
 {
@@ -22,17 +22,17 @@ class KPIMasterSeeder extends Seeder
         $masters = [
             [
                 'kode_master' => 'KPI-SPV-MKN',
-                'nama_kpi'    => 'KPI Kinerja Supervisor',
-                'kode_dept'   => 'MKN',
+                'nama_kpi' => 'KPI Kinerja Supervisor',
+                'kode_dept' => 'MKN',
                 'kode_cabang' => 'CBNG0001',
-                'jabatan_id'  => $idSPV,
+                'jabatan_id' => $idSPV,
             ],
             [
                 'kode_master' => 'KPI-MKN',
-                'nama_kpi'    => 'KPI Kinerja Crew Mekanik (Workbook Daily)',
-                'kode_dept'   => 'MKN',
+                'nama_kpi' => 'KPI Kinerja Crew Mekanik (Workbook Daily)',
+                'kode_dept' => 'MKN',
                 'kode_cabang' => 'CBNG0001',
-                'jabatan_id'  => $idMKN,
+                'jabatan_id' => $idMKN,
             ],
         ];
 
@@ -57,7 +57,7 @@ class KPIMasterSeeder extends Seeder
                 KPIMasterDetail::updateOrCreate(
                     [
                         'kode_master' => $spvMaster->kode_master,
-                        'indikator'   => $detail['indikator']
+                        'indikator' => $detail['indikator'],
                     ],
                     array_merge($detail, [
                         'is_active' => true,
@@ -90,7 +90,7 @@ class KPIMasterSeeder extends Seeder
                 KPIMasterDetail::updateOrCreate(
                     [
                         'kode_master' => $mknMaster->kode_master,
-                        'indikator'   => $detail['indikator']
+                        'indikator' => $detail['indikator'],
                     ],
                     array_merge($detail, [
                         'is_active' => true,

@@ -290,7 +290,6 @@
                     <li class="nav-item dropdown mt-2">
                         @php
                             $isKPIActive = request()->routeIs(
-                                'kpi.dashboard',
                                 'kpi.master.*',
                                 'kpi.indikator.*',
                                 'kpi.rekap.*',

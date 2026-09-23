@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class KPIAtasanDailyDetail extends Model
 {
     protected $table = 'kpi_atasan_daily_detail';
+
     protected $guarded = ['id'];
 
     public function atasanDaily()

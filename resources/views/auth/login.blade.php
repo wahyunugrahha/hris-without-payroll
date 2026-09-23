@@ -15,7 +15,7 @@
     <link rel="icon" type="image/png" href="{{ asset('assets/img/logo.png') }}?v=20260618" sizes="32x32">
     <link rel="shortcut icon" type="image/png" href="{{ asset('assets/img/logo.png') }}?v=20260618">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/img/logo.png') }}?v=20260618">
-    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset_v('assets/css/style.css') }}">
     <link rel="manifest" href="{{ asset('__manifest.json') }}?v=20260618">
     <style>
         .register-row {
@@ -98,9 +98,9 @@
         </div>
     </div>
 
-    <script src="{{ asset('assets/js/lib/jquery-3.4.1.min.js') }}"></script>
-    <script src="{{ asset('assets/js/lib/popper.min.js') }}"></script>
-    <script src="{{ asset('assets/js/lib/bootstrap.min.js') }}"></script>
+    <script src="{{ asset_v('assets/js/lib/jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ asset_v('assets/js/lib/popper.min.js') }}"></script>
+    <script src="{{ asset_v('assets/js/lib/bootstrap.min.js') }}"></script>
     <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 

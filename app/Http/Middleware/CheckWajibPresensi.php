@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckWajibPresensi
-{   
+{
     /**
      * Handle an incoming request.
      */

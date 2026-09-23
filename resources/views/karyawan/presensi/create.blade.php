@@ -167,6 +167,7 @@
 
             <div class="presensi-card">
                 <input type="hidden" id="lokasi">
+                <input type="hidden" id="akurasi">
                 <div class="webcam-capture"></div>
 
                 <button id="switch-camera" class="btn btn-success">
@@ -239,7 +240,6 @@
 @push('myscript')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <script>
         var notifikasi_in = document.getElementById('notifikasi_in');
@@ -312,6 +312,7 @@
             var lat = position.coords.latitude;
             var lon = position.coords.longitude;
             lokasi.value = lat + "," + lon;
+            document.getElementById('akurasi').value = position.coords.accuracy;
 
             if (!map) {
                 map = L.map('map').setView([lat, lon], 18);
@@ -432,7 +433,8 @@
                         _token: "{{ csrf_token() }}",
                         image: image,
                         lokasi: lokasi_val,
-                        absen_type: status_absen
+                        absen_type: status_absen,
+                        akurasi: $("#akurasi").val()
                     },
                     cache: false,
                     success: function(respond) {

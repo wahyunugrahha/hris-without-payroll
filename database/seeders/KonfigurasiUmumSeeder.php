@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\KonfigurasiUmum;
 use Illuminate\Database\Seeder;
 
 class KonfigurasiUmumSeeder extends Seeder
@@ -51,7 +51,7 @@ class KonfigurasiUmumSeeder extends Seeder
         ];
 
         foreach ($konfigurasi as $k) {
-            \App\Models\KonfigurasiUmum::updateOrCreate(
+            KonfigurasiUmum::updateOrCreate(
                 ['key' => $k['key']],
                 $k
             );

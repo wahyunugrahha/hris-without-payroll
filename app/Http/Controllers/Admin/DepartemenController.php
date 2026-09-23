@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Departemen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
-
-use App\Models\Departemen;
 
 class DepartemenController extends Controller
 {
@@ -23,7 +22,7 @@ class DepartemenController extends Controller
             ->when($request->filled('nama_dept'), function ($query) use ($request) {
                 $query->whereRaw(
                     'LOWER(nama_dept) ILIKE ?',
-                    ['%' . strtolower($request->nama_dept) . '%']
+                    ['%'.strtolower($request->nama_dept).'%']
                 );
             })
             ->orderBy('nama_dept', 'ASC')
@@ -38,7 +37,7 @@ class DepartemenController extends Controller
 
         try {
             $request->validate([
-                'kode_dept' => 'required|string|size:3|unique:departemen,kode_dept|' . $kode_dept_regex,
+                'kode_dept' => 'required|string|size:3|unique:departemen,kode_dept|'.$kode_dept_regex,
                 'nama_dept' => 'required|string|max:100',
             ]);
         } catch (ValidationException $e) {
@@ -70,7 +69,7 @@ class DepartemenController extends Controller
 
         try {
             $request->validate([
-                'kode_dept_edit' => 'required|string|size:3|' . $kode_dept_regex . '|unique:departemen,kode_dept,' . $kode_dept . ',kode_dept',
+                'kode_dept_edit' => 'required|string|size:3|'.$kode_dept_regex.'|unique:departemen,kode_dept,'.$kode_dept.',kode_dept',
                 'nama_dept_edit' => 'required|string|max:100',
             ], [
                 'kode_dept_edit.unique' => 'Kode Departemen sudah digunakan oleh departemen lain.',
@@ -97,12 +96,12 @@ class DepartemenController extends Controller
             // Update menggunakan query builder untuk menangani perubahan Primary Key
             Departemen::where('kode_dept', $kode_dept)->update([
                 'kode_dept' => $new_kode_dept,
-                'nama_dept' => $nama_dept
+                'nama_dept' => $nama_dept,
             ]);
 
             return Redirect::back()->with('success', 'Data Departemen Berhasil Diupdate');
         } catch (\Exception $e) {
-            return Redirect::back()->with('warning', 'Data Departemen Gagal Diupdate: ' . $e->getMessage())->withInput();
+            return Redirect::back()->with('warning', $this->failMessage('Data Departemen Gagal Diupdate.', $e))->withInput();
         }
     }
 
@@ -119,12 +118,12 @@ class DepartemenController extends Controller
                     'kpi' => $departemen->kpi()->count(),
                     'configuration' => $departemen->configurations()->count(),
                     'holiday' => $departemen->holidays()->count(),
-                ]
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $this->failMessage('Gagal memproses data.', $e),
             ], 500);
         }
     }
@@ -137,7 +136,7 @@ class DepartemenController extends Controller
 
             return Redirect::back()->with('success', 'Data Departemen Berhasil Dihapus');
         } catch (\Exception $e) {
-            return Redirect::back()->with('warning', 'Terjadi kesalahan: ' . $e->getMessage());
+            return Redirect::back()->with('warning', $this->failMessage('Gagal memproses data.', $e));
         }
     }
 }

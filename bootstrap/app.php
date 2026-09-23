@@ -1,8 +1,13 @@
 <?php
 
+use App\Http\Middleware\CheckWajibPresensi;
+use App\Http\Middleware\DisableHtmlCache;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
@@ -25,12 +30,24 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Tamu yang membuka halaman admin diarahkan ke login admin, sisanya ke login karyawan.
+        $middleware->redirectGuestsTo(fn (Request $request) => in_array('auth:user', $request->route()?->gatherMiddleware() ?? [], true)
+            ? route('loginadmin')
+            : route('login'));
+
+        // Yang sudah login dan membuka halaman login diarahkan ke dashboard guard-nya.
+        $middleware->redirectUsersTo(fn () => Auth::guard('user')->check()
+            ? route('dashboard.admin')
+            : route('dashboard.karyawan'));
+
+        $middleware->web(append: [DisableHtmlCache::class, SecurityHeaders::class]);
+
         $middleware->alias([
-        'permission' => PermissionMiddleware::class,
-        'role' => RoleMiddleware::class,
-        'role_or_permission' => RoleOrPermissionMiddleware::class,
-        'wajib_presensi' => \App\Http\Middleware\CheckWajibPresensi::class,
-    ]);
+            'permission' => PermissionMiddleware::class,
+            'role' => RoleMiddleware::class,
+            'role_or_permission' => RoleOrPermissionMiddleware::class,
+            'wajib_presensi' => CheckWajibPresensi::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

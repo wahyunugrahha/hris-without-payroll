@@ -986,7 +986,7 @@
                             <input id="swal-extra-judul" type="text" 
                                 style="width: 100%; padding: 12px 15px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; color: #1e293b; box-sizing: border-box; outline: none; transition: 0.2s;" 
                                 placeholder="Contoh: Membantu rekap data..." 
-                                value="${titleVal}"
+                                value="${escHtml(titleVal)}"
                                 onfocus="this.style.borderColor='#f59e0b'; this.style.boxShadow='0 0 0 3px rgba(245, 158, 11, 0.1)';"
                                 onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
                         </div>
@@ -998,7 +998,7 @@
                                 style="width: 100%; padding: 12px 15px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; color: #1e293b; box-sizing: border-box; outline: none; transition: 0.2s; min-height: 100px; resize: vertical;" 
                                 placeholder="Tuliskan rincian kegiatan di sini..."
                                 onfocus="this.style.borderColor='#f59e0b'; this.style.boxShadow='0 0 0 3px rgba(245, 158, 11, 0.1)';"
-                                onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">${noteVal}</textarea>
+                                onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">${escHtml(noteVal)}</textarea>
                         </div>
                     </div>
                 `,
@@ -1038,7 +1038,14 @@
         }
 
         // 2. Render Tampilan Extra (Dipercantik & Support isApproved)
+        // Escape input teks sebelum masuk ke innerHTML / atribut value (cegah XSS).
+        function escHtml(v) {
+            return String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+        }
+
         function createExtraView(judul, catatan) {
+            judul = escHtml(judul);
+            catatan = catatan ? escHtml(catatan) : '';
             const container = document.getElementById('extra-kpi-container');
             const uniqueId = Date.now() + Math.floor(Math.random() * 1000); // ID Unik
 
@@ -1126,8 +1133,8 @@
                     // Panggil fungsi create untuk menampilkan data yg sudah ada
                     // Kita gunakan logic blade untuk escape string agar aman dari error syntax JS
                     createExtraView(
-                        {!! json_encode($ex->indikator_tambahan) !!},
-                        {!! json_encode($ex->catatan) !!}
+                        @json($ex->indikator_tambahan),
+                        @json($ex->catatan)
                     );
                 @endforeach
             @endif

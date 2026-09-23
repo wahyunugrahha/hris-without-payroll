@@ -537,7 +537,12 @@
                             reverseButtons: true
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                window.location.href = url;
+                                // Hapus via DELETE + CSRF (bukan GET link) agar tidak bisa dipicu dari halaman lain.
+                                const form = $('<form>', { method: 'POST', action: url })
+                                    .append($('<input>', { type: 'hidden', name: '_token', value: '{{ csrf_token() }}' }))
+                                    .append($('<input>', { type: 'hidden', name: '_method', value: 'DELETE' }));
+                                $('body').append(form);
+                                form.trigger('submit');
                             }
                         });
                     } else {

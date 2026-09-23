@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Presensi;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use App\Models\Presensi;
 
 class CleanupPresensiDuplicates extends Command
 {
@@ -33,7 +33,7 @@ class CleanupPresensiDuplicates extends Command
         $date = $this->option('date');
 
         if ($isAll) {
-            $this->info("Memulai pembersihan duplikasi presensi untuk SEMUA TANGGAL...");
+            $this->info('Memulai pembersihan duplikasi presensi untuk SEMUA TANGGAL...');
         } else {
             $date = $date ?: date('Y-m-d');
             $this->info("Memulai pembersihan duplikasi presensi untuk tanggal: {$date}...");
@@ -44,7 +44,7 @@ class CleanupPresensiDuplicates extends Command
             ->groupBy('nik', 'tgl_presensi')
             ->havingRaw('count(*) > 1');
 
-        if (!$isAll) {
+        if (! $isAll) {
             $query->where('tgl_presensi', $date);
         }
 
@@ -52,6 +52,7 @@ class CleanupPresensiDuplicates extends Command
 
         if ($duplicates->isEmpty()) {
             $this->info("Tidak ditemukan data duplikat untuk tanggal {$date}.");
+
             return 0;
         }
 
@@ -64,25 +65,25 @@ class CleanupPresensiDuplicates extends Command
                 ->get();
 
             $nama = $records->first() && $records->first()->karyawan ? $records->first()->karyawan->nama_lengkap : 'Tidak Ditemukan';
-            $this->comment("Memproses: [{$duplicate->nik}] {$nama} - Tanggal: " . $duplicate->tgl_presensi->format('Y-m-d') . " - Ditemukan {$records->count()} data.");
+            $this->comment("Memproses: [{$duplicate->nik}] {$nama} - Tanggal: ".$duplicate->tgl_presensi->format('Y-m-d')." - Ditemukan {$records->count()} data.");
 
             // LOGIKA SELEKSI PRIORITAS:
             // 1. Prioritaskan record yang sudah ada JAM PULANG (jam_out)
             // 2. Prioritaskan record yang ada FOTO MASUK (foto_in)
             // 3. Ambil yang paling pertama dibuat
-            
-            $mainRecord = $records->sort(function($a, $b) {
+
+            $mainRecord = $records->sort(function ($a, $b) {
                 // Cek Kelengkapan Jam Out (Prioritas Utama)
-                $aOut = (!empty($a->jam_out) && $a->jam_out !== '00:00:00') ? 1 : 0;
-                $bOut = (!empty($b->jam_out) && $b->jam_out !== '00:00:00') ? 1 : 0;
-                
+                $aOut = (! empty($a->jam_out) && $a->jam_out !== '00:00:00') ? 1 : 0;
+                $bOut = (! empty($b->jam_out) && $b->jam_out !== '00:00:00') ? 1 : 0;
+
                 if ($aOut !== $bOut) {
                     return $bOut <=> $aOut; // 1 (lengkap) di atas 0 (kosong)
                 }
 
                 // Cek Foto (Prioritas Kedua)
-                $aFoto = (!empty($a->foto_in) && $a->foto_in !== '-') ? 1 : 0;
-                $bFoto = (!empty($b->foto_in) && $b->foto_in !== '-') ? 1 : 0;
+                $aFoto = (! empty($a->foto_in) && $a->foto_in !== '-') ? 1 : 0;
+                $bFoto = (! empty($b->foto_in) && $b->foto_in !== '-') ? 1 : 0;
 
                 if ($aFoto !== $bFoto) {
                     return $bFoto <=> $aFoto;
@@ -96,16 +97,17 @@ class CleanupPresensiDuplicates extends Command
 
             // Hapus semua kecuali yang utama
             $toDelete = $records->where('id', '!=', $mainRecordId)->pluck('id');
-            
+
             if ($toDelete->isNotEmpty()) {
                 $deletedIds = $toDelete->implode(', ');
                 Presensi::whereIn('id', $toDelete)->delete();
                 $totalCleaned += $toDelete->count();
-                $this->warn("   -> Berhasil menghapus " . $toDelete->count() . " data duplikat. (IDs: " . $deletedIds . ")");
+                $this->warn('   -> Berhasil menghapus '.$toDelete->count().' data duplikat. (IDs: '.$deletedIds.')');
             }
         }
 
         $this->info("Selesai! Total data duplikat yang dibersihkan: {$totalCleaned}");
+
         return 0;
     }
 }

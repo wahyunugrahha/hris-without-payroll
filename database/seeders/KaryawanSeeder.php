@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Karyawan;
 use App\Models\Jabatan;
+use App\Models\Karyawan;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class KaryawanSeeder extends Seeder

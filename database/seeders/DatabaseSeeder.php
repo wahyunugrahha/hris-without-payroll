@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             DepartemenSeeder::class,
             CabangSeeder::class,
             JamKerjaSeeder::class,
+            JadwalKerjaDepartemenSeeder::class,
             MasterCutiSeeder::class,
             KPIMasterSeeder::class,
             AdminUserSeeder::class,

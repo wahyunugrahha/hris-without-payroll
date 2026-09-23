@@ -13,7 +13,7 @@ class JabatanController extends Controller
     {
         $jabatan = Jabatan::with('role')
             ->when($request->nama_jabatan, function ($query, $nama_jabatan) {
-                $query->where('nama_jabatan', 'ILIKE', '%' . $nama_jabatan . '%');
+                $query->where('nama_jabatan', 'ILIKE', '%'.$nama_jabatan.'%');
             })
             ->when($request->role_id, function ($query, $role_id) {
                 $query->where('role_id', $role_id);
@@ -37,9 +37,9 @@ class JabatanController extends Controller
     {
         $request->validate([
             'nama_jabatan' => 'required|string|max:100|unique:jabatan,nama_jabatan',
-            'role_id'      => 'required|exists:roles,id',
+            'role_id' => 'required|exists:roles,id',
         ], [
-            'nama_jabatan.unique' => 'Nama jabatan sudah ada.'
+            'nama_jabatan.unique' => 'Nama jabatan sudah ada.',
         ]);
 
         Jabatan::create($request->only(['nama_jabatan', 'role_id']));
@@ -60,13 +60,13 @@ class JabatanController extends Controller
         $jabatan = Jabatan::findOrFail($id);
 
         $request->validate([
-            'nama_jabatan' => 'required|string|max:100|unique:jabatan,nama_jabatan,' . $id . ',id',
-            'role_id'      => 'required|exists:roles,id',
+            'nama_jabatan' => 'required|string|max:100|unique:jabatan,nama_jabatan,'.$id.',id',
+            'role_id' => 'required|exists:roles,id',
         ]);
 
         $jabatan->update([
             'nama_jabatan' => $request->nama_jabatan,
-            'role_id'      => $request->role_id,
+            'role_id' => $request->role_id,
         ]);
 
         return redirect()->route('jabatan.index')->with('success', 'Jabatan berhasil diupdate');
@@ -83,12 +83,12 @@ class JabatanController extends Controller
                     'karyawan' => $jabatan->karyawans()->count(),
                     'user' => $jabatan->users()->count(),
                     'kpi' => $jabatan->kpiMaster()->count(),
-                ]
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $this->failMessage('Gagal memproses data.', $e),
             ], 500);
         }
     }
@@ -98,10 +98,10 @@ class JabatanController extends Controller
         try {
             $jabatan = Jabatan::findOrFail($id);
             $jabatan->delete();
-            
+
             return back()->with('success', 'Jabatan berhasil dihapus');
         } catch (\Exception $e) {
-            return back()->with('warning', 'Data Jabatan Gagal Dihapus. Terjadi Kesalahan: ' . $e->getMessage());
+            return back()->with('warning', $this->failMessage('Data Jabatan Gagal Dihapus.', $e));
         }
     }
 }

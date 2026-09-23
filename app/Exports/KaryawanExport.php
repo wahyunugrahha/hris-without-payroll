@@ -2,31 +2,36 @@
 
 namespace App\Exports;
 
-use App\Models\Karyawan;
 use App\Models\Cabang;
+use App\Models\Karyawan;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
-use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
+use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class KaryawanExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnWidths, WithColumnFormatting, WithMultipleSheets, WithTitle
+class KaryawanExport implements FromCollection, WithColumnFormatting, WithColumnWidths, WithHeadings, WithMapping, WithMultipleSheets, WithStyles, WithTitle
 {
     protected $filters;
+
     protected $kode_cabang_sheet;
+
     protected $nama_cabang_sheet;
+
     protected $globalKodeCabang = 'CBNG0001';
+
     protected $globalCabangNama = null;
 
     public function __construct($filters = [], $kode_cabang_sheet = null, $nama_cabang_sheet = null)
     {
-        if (!empty($filters['kode_cabang']) && strcasecmp($filters['kode_cabang'], 'Global') === 0) {
+        if (! empty($filters['kode_cabang']) && strcasecmp($filters['kode_cabang'], 'Global') === 0) {
             $filters['kode_cabang'] = $this->globalKodeCabang;
         }
         $this->filters = $filters;
@@ -45,7 +50,7 @@ class KaryawanExport implements FromCollection, WithHeadings, WithMapping, WithS
 
         $sheets = [];
 
-        if (!empty($this->filters['kode_cabang'])) {
+        if (! empty($this->filters['kode_cabang'])) {
             $cabangList = Cabang::where('kode_cabang', $this->filters['kode_cabang'])->get();
         } else {
             $cabangList = Cabang::whereRaw('lower(kode_cabang) != ?', ['global'])
@@ -83,12 +88,12 @@ class KaryawanExport implements FromCollection, WithHeadings, WithMapping, WithS
      */
     public function collection()
     {
-        // Jika ini adalah Parent (tidak punya kode cabang spesifik), 
+        // Jika ini adalah Parent (tidak punya kode cabang spesifik),
         // jangan query data (karena data ada di dalam sheets anak).
         // Kecuali Anda ingin sheet pertama berisi semua data.
-        if (!$this->kode_cabang_sheet) {
+        if (! $this->kode_cabang_sheet) {
             // Opsional: return empty collection jika Parent hanya bertugas membungkus sheet
-            // return collect([]); 
+            // return collect([]);
         }
 
         if ($this->globalCabangNama === null) {
@@ -102,7 +107,7 @@ class KaryawanExport implements FromCollection, WithHeadings, WithMapping, WithS
             ->orderBy('karyawan.nama_lengkap');
 
         $statusFilter = $this->filters['status_filter'] ?? Karyawan::STATUS_AKTIF;
-        if (!in_array($statusFilter, Karyawan::FILTERABLE_STATUSES, true)) {
+        if (! in_array($statusFilter, Karyawan::FILTERABLE_STATUSES, true)) {
             $statusFilter = Karyawan::STATUS_AKTIF;
         }
 
@@ -118,16 +123,16 @@ class KaryawanExport implements FromCollection, WithHeadings, WithMapping, WithS
         }
 
         // Filter User
-        if (!empty($this->filters['nama_karyawan'])) {
-            $query->where('karyawan.nama_lengkap', 'ilike', '%' . $this->filters['nama_karyawan'] . '%');
+        if (! empty($this->filters['nama_karyawan'])) {
+            $query->where('karyawan.nama_lengkap', 'ilike', '%'.$this->filters['nama_karyawan'].'%');
         }
-        if (!empty($this->filters['kode_dept'])) {
+        if (! empty($this->filters['kode_dept'])) {
             $query->where('karyawan.kode_dept', $this->filters['kode_dept']);
         }
-        if (!empty($this->filters['jabatan_id'])) {
+        if (! empty($this->filters['jabatan_id'])) {
             $query->where('karyawan.jabatan_id', $this->filters['jabatan_id']);
         }
-        if (!empty($this->filters['kode_cabang'])) {
+        if (! empty($this->filters['kode_cabang'])) {
             if ($this->filters['kode_cabang'] === $this->globalKodeCabang) {
                 $query->whereIn('karyawan.kode_cabang', [$this->globalKodeCabang, 'Global']);
             } else {
@@ -170,14 +175,25 @@ class KaryawanExport implements FromCollection, WithHeadings, WithMapping, WithS
             'No. HP Darurat',
             'No. BPJS Kesehatan',
             'No. BPJS Ketenagakerjaan',
-            'No. Rekening'
+            'No. Rekening',
         ];
+    }
+
+    /**
+     * Cegah Formula Injection: teks yang diawali = + - @ (mis. nama "=HYPERLINK(...)" dari registrasi)
+     * dijadikan teks biasa agar tidak dieksekusi Excel saat file dibuka.
+     */
+    private static function amankanSel($nilai)
+    {
+        return is_string($nilai) && $nilai !== '' && in_array($nilai[0], ['=', '+', '-', '@', chr(9), chr(13)], true)
+            ? "'".$nilai
+            : $nilai;
     }
 
     public function map($karyawan): array
     {
         // Helper untuk format tanggal
-        $formatDate = fn($date) => $date ? date('d-m-Y', strtotime($date)) : '-';
+        $formatDate = fn ($date) => $date ? date('d-m-Y', strtotime($date)) : '-';
 
         $kodeCabang = $karyawan->kode_cabang;
         $namaCabang = $karyawan->nama_cabang ?? '-';
@@ -186,9 +202,9 @@ class KaryawanExport implements FromCollection, WithHeadings, WithMapping, WithS
             $namaCabang = $this->globalCabangNama ?? '-';
         }
 
-        return [
+        return array_map([self::class, 'amankanSel'], [
             // Menggunakan explicit string conversion agar angka 0 di depan tidak hilang
-            $karyawan->nik ? "'" . $karyawan->nik : '',
+            $karyawan->nik ? "'".$karyawan->nik : '',
             $karyawan->nama_lengkap,
             $karyawan->nama_panggilan,
             $karyawan->jabatan_nama ?? '-',
@@ -218,7 +234,7 @@ class KaryawanExport implements FromCollection, WithHeadings, WithMapping, WithS
             (string) ($karyawan->no_bpjs_kesehatan ?? ''),
             (string) ($karyawan->no_bpjs_ketenagakerjaan ?? ''),
             (string) ($karyawan->no_rekening ?? ''),
-        ];
+        ]);
     }
 
     public function styles(Worksheet $sheet)
@@ -227,7 +243,7 @@ class KaryawanExport implements FromCollection, WithHeadings, WithMapping, WithS
             1 => [
                 'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => 'FFFFFF']],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
-                'alignment' => ['vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER],
+                'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
             ],
         ];
     }

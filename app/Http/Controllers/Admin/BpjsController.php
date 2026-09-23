@@ -5,51 +5,41 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\BpjsRequest;
 use App\Models\Karyawan;
+use App\Services\FotoKaryawanService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class BpjsController extends Controller
 {
-    private function getForcedCabang(): ?string
-    {
-        $user = Auth::guard('user')->user();
-        if ($user && $user->roles->pluck('name')->contains('admin cabang')) {
-            return $user->kode_cabang;
-        }
-
-        return null;
-    }
-
     public function index(Request $request)
     {
-        $forcedKodeCabang = $this->getForcedCabang();
+        $forcedKodeCabang = $this->scopedCabang();
 
         $query = BpjsRequest::query()
             ->select('bpjs_tk_requests.*', 'karyawan.nama_lengkap', 'karyawan.kode_cabang')
             ->join('karyawan', 'bpjs_tk_requests.nik', '=', 'karyawan.nik')
             ->orderByDesc('bpjs_tk_requests.created_at');
 
-        if (!empty($forcedKodeCabang)) {
+        if (! empty($forcedKodeCabang)) {
             $query->where('karyawan.kode_cabang', $forcedKodeCabang);
         }
 
-        if (!empty($request->dari) && !empty($request->sampai)) {
+        if (! empty($request->dari) && ! empty($request->sampai)) {
             $query->whereBetween('bpjs_tk_requests.created_at', [
-                $request->dari . ' 00:00:00',
-                $request->sampai . ' 23:59:59',
+                $request->dari.' 00:00:00',
+                $request->sampai.' 23:59:59',
             ]);
         }
 
-        if (!empty($request->nik)) {
+        if (! empty($request->nik)) {
             $query->where('bpjs_tk_requests.nik', $request->nik);
         }
 
-        if (!empty($request->nama_lengkap)) {
-            $query->where('karyawan.nama_lengkap', 'like', '%' . $request->nama_lengkap . '%');
+        if (! empty($request->nama_lengkap)) {
+            $query->where('karyawan.nama_lengkap', 'like', '%'.$request->nama_lengkap.'%');
         }
 
-        if (!empty($request->status)) {
+        if (! empty($request->status)) {
             $query->where('bpjs_tk_requests.status', $request->status);
         }
 
@@ -61,19 +51,19 @@ class BpjsController extends Controller
 
     public function show($id)
     {
-        $forcedKodeCabang = $this->getForcedCabang();
+        $forcedKodeCabang = $this->scopedCabang();
 
         $pengajuan = BpjsRequest::with('karyawan')->findOrFail($id);
         $karyawan = Karyawan::findOrFail($pengajuan->nik);
 
-        if (!empty($forcedKodeCabang) && $karyawan->kode_cabang !== $forcedKodeCabang) {
+        if (! empty($forcedKodeCabang) && $karyawan->kode_cabang !== $forcedKodeCabang) {
             abort(403, 'Anda tidak memiliki akses ke data ini.');
         }
 
         return view('admin.bpjs.show', compact('pengajuan', 'karyawan'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, FotoKaryawanService $foto)
     {
         $request->validate([
             'no_bpjs_kesehatan' => 'nullable|string|max:255',
@@ -83,13 +73,13 @@ class BpjsController extends Controller
             'catatan' => 'nullable|string',
         ]);
 
-        $forcedKodeCabang = $this->getForcedCabang();
+        $forcedKodeCabang = $this->scopedCabang();
 
         $pengajuan = BpjsRequest::findOrFail($id);
 
         $karyawan = Karyawan::findOrFail($pengajuan->nik);
 
-        if (!empty($forcedKodeCabang) && $karyawan->kode_cabang !== $forcedKodeCabang) {
+        if (! empty($forcedKodeCabang) && $karyawan->kode_cabang !== $forcedKodeCabang) {
             abort(403, 'Anda tidak memiliki akses ke data ini.');
         }
 
@@ -98,28 +88,10 @@ class BpjsController extends Controller
             'no_bpjs_ketenagakerjaan' => $request->no_bpjs_ketenagakerjaan,
         ];
 
-        if ($request->hasFile('foto_bpjs_kesehatan')) {
-            $fileKesehatan = $request->file('foto_bpjs_kesehatan');
-            $namaFotoKesehatan = $karyawan->nik . '_bpjs_kes_' . time() . '.' . $fileKesehatan->getClientOriginalExtension();
-
-            if (!empty($karyawan->foto_bpjs_kesehatan) && Storage::disk('public')->exists('uploads/karyawan/bpjs/' . $karyawan->foto_bpjs_kesehatan)) {
-                Storage::disk('public')->delete('uploads/karyawan/bpjs/' . $karyawan->foto_bpjs_kesehatan);
+        foreach (['foto_bpjs_kesehatan', 'foto_bpjs_ketenagakerjaan'] as $jenis) {
+            if ($request->hasFile($jenis)) {
+                $dataKaryawan[$jenis] = $foto->ganti($jenis, $request->file($jenis), $karyawan->{$jenis}, $karyawan->nik);
             }
-
-            $fileKesehatan->storeAs('uploads/karyawan/bpjs/', $namaFotoKesehatan, 'public');
-            $dataKaryawan['foto_bpjs_kesehatan'] = $namaFotoKesehatan;
-        }
-
-        if ($request->hasFile('foto_bpjs_ketenagakerjaan')) {
-            $fileKetenagakerjaan = $request->file('foto_bpjs_ketenagakerjaan');
-            $namaFotoKetenagakerjaan = $karyawan->nik . '_bpjs_ket_' . time() . '.' . $fileKetenagakerjaan->getClientOriginalExtension();
-
-            if (!empty($karyawan->foto_bpjs_ketenagakerjaan) && Storage::disk('public')->exists('uploads/karyawan/bpjs/' . $karyawan->foto_bpjs_ketenagakerjaan)) {
-                Storage::disk('public')->delete('uploads/karyawan/bpjs/' . $karyawan->foto_bpjs_ketenagakerjaan);
-            }
-
-            $fileKetenagakerjaan->storeAs('uploads/karyawan/bpjs/', $namaFotoKetenagakerjaan, 'public');
-            $dataKaryawan['foto_bpjs_ketenagakerjaan'] = $namaFotoKetenagakerjaan;
         }
 
         $karyawan->update($dataKaryawan);

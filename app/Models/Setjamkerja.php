@@ -9,9 +9,10 @@ class Setjamkerja extends Model
 {
     use HasFactory;
 
-    protected $table = "konfigurasi_jamkerja";
+    protected $table = 'konfigurasi_jamkerja';
 
     protected $primaryKey = ['nik', 'hari'];
+
     public $incrementing = false;
 
     public $timestamps = false;
@@ -26,7 +27,7 @@ class Setjamkerja extends Model
     {
         $keys = $this->getKeyName();
 
-        if (!is_array($keys)) {
+        if (! is_array($keys)) {
             return parent::setKeysForSaveQuery($query);
         }
 
@@ -46,5 +47,4 @@ class Setjamkerja extends Model
     {
         return $this->belongsTo(JamKerja::class, 'kode_jam_kerja', 'kode_jam_kerja');
     }
-
 }

@@ -28,6 +28,7 @@ class KPIDailyDetail extends Model
         if ($this->bukti_foto && Storage::exists($this->bukti_foto)) {
             return Storage::url($this->bukti_foto);
         }
+
         return null;
     }
 

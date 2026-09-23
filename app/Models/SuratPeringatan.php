@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\VisibleByCabang;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class SuratPeringatan extends Model
 {
-    use HasFactory;
+    use HasFactory, VisibleByCabang;
 
     protected $table = 'surat_peringatan';
 
@@ -30,4 +32,11 @@ class SuratPeringatan extends Model
         return $this->belongsTo(Karyawan::class, 'nik', 'nik');
     }
 
+    /**
+     * SP yang belum kedaluwarsa.
+     */
+    public function scopeAktif(Builder $query): Builder
+    {
+        return $query->whereDate('expires_at', '>', now()->toDateString());
+    }
 }

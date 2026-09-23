@@ -155,8 +155,7 @@
         $approverJabatan = $user && $user->jabatan ? strtoupper($user->jabatan->nama_jabatan) : 'HRD';
         $approvedAt = \Carbon\Carbon::now()->format('d F Y');
         $ttdText = "Telah di tanda tangani oleh :{$approverName} jabatan:{$approverJabatan} tanggal:{$approvedAt}";
-        $ttdUrl = url('/ttd') . '?text=' . urlencode($ttdText);
-        $qrImage = 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' . urlencode($ttdUrl);
+        $qrImage = \App\Support\TandaTangan::qrImage($ttdText);
 
         // Fallback nama cabang untuk lembar template kosong.
         $defaultBranch = $cabang->nama_cabang ?? 'wndev';

@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 class RoleSeeder extends Seeder
@@ -82,7 +82,7 @@ class RoleSeeder extends Seeder
             // User Management
             'users-view-admin', 'users-create-admin', 'users-edit-admin', 'users-delete-admin',
             'roles-view-admin', 'roles-create-admin', 'roles-edit-admin', 'roles-delete-admin',
-            'permissions-view-admin'
+            'permissions-view-admin',
         ];
 
         $ownerPermissions = [
@@ -130,9 +130,9 @@ class RoleSeeder extends Seeder
         // 3. Mapping nama role dengan array permission-nya
         $roles = [
             'administrator' => $adminPermissions,
-            'hrd'           => $hrdPermissions,
-            'owner'         => $ownerPermissions,
-            'admin cabang'  => $adminCabangPermissions,
+            'hrd' => $hrdPermissions,
+            'owner' => $ownerPermissions,
+            'admin cabang' => $adminCabangPermissions,
         ];
 
         // 4. Looping untuk create/update Role & Sync Permission
@@ -176,9 +176,9 @@ class RoleSeeder extends Seeder
         }
 
         $karyawanRoles = [
-            'staff'         => $staffPermissions,
-            'pjo'           => $pjoPermissions,
-            'spv'           => $leaderPermissions,
+            'staff' => $staffPermissions,
+            'pjo' => $pjoPermissions,
+            'spv' => $leaderPermissions,
             'kepala bagian' => $leaderPermissions,
         ];
 

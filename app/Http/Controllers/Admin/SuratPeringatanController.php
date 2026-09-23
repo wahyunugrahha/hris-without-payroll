@@ -3,42 +3,27 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cabang;
+use App\Models\Jabatan;
+use App\Models\Karyawan;
+use App\Models\SuratPeringatan;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
-use Carbon\Carbon;
-
-use App\Models\SuratPeringatan;
-use App\Models\Cabang;
-use App\Models\Karyawan;
-use App\Models\Jabatan;
+use Illuminate\Validation\ValidationException;
 
 class SuratPeringatanController extends Controller
 {
-    private function getScopedQuery()
-    {
-        $user = Auth::guard('user')->user();
-        $query = SuratPeringatan::query();
-
-        // Jika user adalah admin cabang, filter berdasarkan karyawan di cabangnya
-        if ($user && ($user->hasRole('admin cabang') || !empty($user->kode_cabang))) {
-            $query->whereHas('karyawan', function ($q) use ($user) {
-                $q->where('kode_cabang', $user->kode_cabang);
-            });
-        }
-
-        return $query;
-    }
-
     public function index(Request $request)
     {
         $loggedInUser = Auth::guard('user')->user();
-        $hasRoleAdminCabang = $loggedInUser && $loggedInUser->roles->pluck('name')->contains('admin cabang');
-        $forcedKodeCabang = $hasRoleAdminCabang && !empty($loggedInUser->kode_cabang) ? $loggedInUser->kode_cabang : null;
+        $hasRoleAdminCabang = (bool) $loggedInUser?->isAdminCabang();
+        $forcedKodeCabang = $hasRoleAdminCabang && ! empty($loggedInUser->kode_cabang) ? $loggedInUser->kode_cabang : null;
 
         // 1. Base Query menggunakan Scope Keamanan
         // Eager load Cabang dan Departemen melalui Karyawan
-        $baseQuery = $this->getScopedQuery()->with(['karyawan.cabang', 'karyawan.departemen']);
+        $baseQuery = SuratPeringatan::visibleTo(Auth::guard('user')->user())->with(['karyawan.cabang', 'karyawan.departemen']);
 
         // 2. Ambil Statistik Ringkas (Selalu total global aktif)
         $stats = [
@@ -65,18 +50,18 @@ class SuratPeringatanController extends Controller
             }
         }
 
-        // Filter Pencarian     
+        // Filter Pencarian
         if ($request->filled('q')) {
             $q = $request->get('q');
             $query->whereHas('karyawan', function ($qk) use ($q) {
-                $qk->whereRaw('LOWER(nama_lengkap) ilike ?', ['%' . strtolower($q) . '%'])
-                    ->orWhereRaw('LOWER(nik) ilike ?', ['%' . strtolower($q) . '%']);
+                $qk->whereRaw('LOWER(nama_lengkap) ilike ?', ['%'.strtolower($q).'%'])
+                    ->orWhereRaw('LOWER(nik) ilike ?', ['%'.strtolower($q).'%']);
             });
         }
 
         // Filter Cabang (Untuk Super Admin yang ingin filter manual)
-        // Jika Admin Cabang, forcedKodeCabang sudah di-handle oleh getScopedQuery()
-        if (!$forcedKodeCabang && $request->filled('kode_cabang')) {
+        // Jika Admin Cabang, forcedKodeCabang sudah di-handle oleh scope visibleTo()
+        if (! $forcedKodeCabang && $request->filled('kode_cabang')) {
             $query->whereHas('karyawan', function ($qk) use ($request) {
                 $qk->where('kode_cabang', $request->kode_cabang);
             });
@@ -100,7 +85,7 @@ class SuratPeringatanController extends Controller
         if ($forcedKodeCabang) {
             $karyawanQuery->where('kode_cabang', $forcedKodeCabang);
         }
-        $karyawanList = $karyawanQuery->get(['nik', 'nama_lengkap', 'jabatan_id']); 
+        $karyawanList = $karyawanQuery->get(['nik', 'nama_lengkap', 'jabatan_id']);
 
         $jabatans = Jabatan::whereHas('role', function ($q) {
             $q->where('guard_name', 'karyawan');
@@ -113,7 +98,7 @@ class SuratPeringatanController extends Controller
     public function store(Request $request)
     {
         $user = Auth::guard('user')->user();
-        $forcedKodeCabang = ($user && $user->hasRole('admin cabang')) ? $user->kode_cabang : null;
+        $forcedKodeCabang = $user?->scopedCabang();
 
         try {
             $validated = $request->validate([
@@ -166,19 +151,19 @@ class SuratPeringatanController extends Controller
             return redirect()->route('suratperingatan.index')
                 ->with('success', 'Surat Peringatan berhasil ditambahkan');
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menambahkan Surat Peringatan: ' . $e->getMessage());
+            return back()->with('error', $this->failMessage('Gagal menambahkan Surat Peringatan.', $e));
         }
     }
 
     public function pemutihan($id)
     {
         try {
-            $sp = $this->getScopedQuery()->find($id);
+            $sp = SuratPeringatan::visibleTo(Auth::guard('user')->user())->find($id);
 
-            if (!$sp) {
+            if (! $sp) {
                 return back()->with('error', 'Data tidak ditemukan atau akses ditolak.');
             }
 
@@ -191,7 +176,7 @@ class SuratPeringatanController extends Controller
 
             $sp->update([
                 'expires_at' => Carbon::now()->subDay(), // Expired kemarin
-                'note' => $cleanNote . ' [DIPUTIHKAN MANUAL OLEH ' . strtoupper($userName) . ' PADA ' . now()->format('d-m-Y H:i') . ']'
+                'note' => $cleanNote.' [DIPUTIHKAN MANUAL OLEH '.strtoupper($userName).' PADA '.now()->format('d-m-Y H:i').']',
             ]);
 
             return back()->with('success', 'Surat Peringatan berhasil diputihkan (Non-Aktif).');
@@ -202,9 +187,9 @@ class SuratPeringatanController extends Controller
 
     public function cetak($id)
     {
-        $sp = $this->getScopedQuery()->with('karyawan')->find($id);
+        $sp = SuratPeringatan::visibleTo(Auth::guard('user')->user())->with('karyawan')->find($id);
 
-        if (!$sp) {
+        if (! $sp) {
             return back()->with('error', 'Data tidak ditemukan atau akses ditolak.');
         }
 
@@ -225,7 +210,7 @@ class SuratPeringatanController extends Controller
             return response()->json([
                 'active' => true,
                 'level' => $hasActiveSP->level,
-                'expires_at' => $hasActiveSP->expires_at->format('d-m-Y')
+                'expires_at' => $hasActiveSP->expires_at->format('d-m-Y'),
             ]);
         }
 
@@ -246,9 +231,9 @@ class SuratPeringatanController extends Controller
             9 => 'September',
             10 => 'Oktober',
             11 => 'November',
-            12 => 'Desember'
+            12 => 'Desember',
         ];
 
-        return $date->format('d') . ' ' . ($months[(int) $date->format('m')] ?? $date->format('F')) . ' ' . $date->format('Y');
+        return $date->format('d').' '.($months[(int) $date->format('m')] ?? $date->format('F')).' '.$date->format('Y');
     }
 }

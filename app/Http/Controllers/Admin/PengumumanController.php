@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Redirect;
-
 use App\Models\Pengumuman;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 
 class PengumumanController extends Controller
 {
@@ -15,6 +14,7 @@ class PengumumanController extends Controller
     public function index()
     {
         $pengumuman = Pengumuman::orderBy('created_at', 'desc')->get();
+
         // Pastikan Anda punya view admin: resources/views/pengumuman/index.blade.php
         return view('admin.pengumuman.index', compact('pengumuman'));
     }
@@ -39,7 +39,7 @@ class PengumumanController extends Controller
             'tanggal_mulai' => $request->tanggal_mulai,
             'tanggal_selesai' => $request->tanggal_selesai,
             'gambar' => $gambarPath,
-            'is_active' => 1
+            'is_active' => 1,
         ]);
 
         return Redirect::back()->with(['success' => 'Pengumuman Berhasil Disimpan']);
@@ -84,6 +84,7 @@ class PengumumanController extends Controller
             Storage::disk('public')->delete($data->gambar);
         }
         $data->delete();
+
         return Redirect::back()->with(['success' => 'Data Berhasil Dihapus']);
     }
 
@@ -92,9 +93,10 @@ class PengumumanController extends Controller
         $pengumuman = Pengumuman::findOrFail($id);
 
         // Mengubah status: Jika 1 jadi 0, jika 0 jadi 1
-        $pengumuman->is_active = !$pengumuman->is_active;
+        $pengumuman->is_active = ! $pengumuman->is_active;
 
         $pengumuman->save();
+
         return Redirect::back()->with(['success' => 'Status Berhasil Diubah']);
     }
 }

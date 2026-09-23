@@ -2,10 +2,11 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      * Mengatur foreign key master data agar menggunakan ON DELETE SET NULL untuk data utama (Karyawan/User)
@@ -25,7 +26,7 @@ return new class extends Migration {
         // Data karyawan & admin diset ke NULL saat departemen dihapus (Data aman)
         $this->updateFK('karyawan', 'kode_dept', 'departemen', 'kode_dept', 'set null');
         $this->updateFK('users', 'kode_dept', 'departemen', 'kode_dept', 'set null');
-        
+
         // Data konfigurasi murni didelete berantai (CASCADE)
         $this->updateFK('konfigurasi_jk_dept', 'kode_dept', 'departemen', 'kode_dept', 'cascade');
         $this->updateFK('hari_libur', 'kode_dept', 'departemen', 'kode_dept', 'cascade');
@@ -35,7 +36,7 @@ return new class extends Migration {
         // Data karyawan & admin diset ke NULL saat cabang dihapus (Data aman)
         $this->updateFK('karyawan', 'kode_cabang', 'cabang', 'kode_cabang', 'set null');
         $this->updateFK('users', 'kode_cabang', 'cabang', 'kode_cabang', 'set null');
-        
+
         // Data lokasi & konfigurasi cabang didelete berantai (CASCADE)
         $this->updateFK('kpi_master', 'kode_cabang', 'cabang', 'kode_cabang', 'cascade');
         $this->updateFK('cabang_lokasi', 'kode_cabang', 'cabang', 'kode_cabang', 'cascade');
@@ -43,7 +44,7 @@ return new class extends Migration {
         // --- 3. JAM KERJA (kode_jam_kerja) ---
         // Riwayat presensi diset ke NULL jika jam kerja dihapus (Mencegah kehilangan presensi)
         $this->updateFK('presensi', 'kode_jam_kerja', 'jam_kerja', 'kode_jam_kerja', 'set null');
-        
+
         // Konfigurasi shift detail & personal didelete berantai (CASCADE)
         $this->updateFK('konfigurasi_jk_dept_detail', 'kode_jam_kerja', 'jam_kerja', 'kode_jam_kerja', 'cascade');
         $this->updateFK('setjamkerja', 'kode_jam_kerja', 'jam_kerja', 'kode_jam_kerja', 'cascade');
@@ -67,7 +68,7 @@ return new class extends Migration {
             foreach ($constraints as $constraint) {
                 try {
                     DB::statement("ALTER TABLE {$table} DROP CONSTRAINT IF EXISTS {$constraint}");
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // Ignore jika constraint tidak ada
                 }
             }

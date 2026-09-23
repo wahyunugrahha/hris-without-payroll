@@ -16,37 +16,37 @@ class MasterCutiSeeder extends Seeder
             [
                 'kode_cuti' => 'CTH',
                 'nama_cuti' => 'Cuti Tahunan',
-                'jml_hari' => 12
+                'jml_hari' => 12,
             ],
             [
                 'kode_cuti' => 'CMH',
                 'nama_cuti' => 'Cuti Melahirkan',
-                'jml_hari' => 90
+                'jml_hari' => 90,
             ],
             [
                 'kode_cuti' => 'CKH',
                 'nama_cuti' => 'Cuti Khusus',
-                'jml_hari' => 3
+                'jml_hari' => 3,
             ],
             [
                 'kode_cuti' => 'CTM',
                 'nama_cuti' => 'Cuti Keluarga Meninggal',
-                'jml_hari' => 2
+                'jml_hari' => 2,
             ],
             [
                 'kode_cuti' => 'CNN',
                 'nama_cuti' => 'Cuti Menikah',
-                'jml_hari' => 2
+                'jml_hari' => 2,
             ],
             [
                 'kode_cuti' => 'CKA',
                 'nama_cuti' => 'Cuti Khitan Anak',
-                'jml_hari' => 1
+                'jml_hari' => 1,
             ],
             [
                 'kode_cuti' => 'CIL',
                 'nama_cuti' => 'Cuti Istri Lahiran',
-                'jml_hari' => 2
+                'jml_hari' => 2,
             ],
         ];
 

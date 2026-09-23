@@ -3,28 +3,28 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Cabang;
 use App\Models\Departemen;
 use App\Models\HariLibur;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class HariLiburController extends Controller
 {
     public function index(Request $request)
     {
         $user = Auth::guard('user')->user();
-        $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
+        $isAdminCabang = (bool) $user?->isAdminCabang();
         $forcedKodeCabang = $isAdminCabang ? $user->kode_cabang : null;
 
         $query = HariLibur::query();
 
-        if (!empty($forcedKodeCabang)) {
+        if (! empty($forcedKodeCabang)) {
             $query->where(function ($q) use ($forcedKodeCabang) {
                 $q->whereNull('kode_cabang')
-                  ->orWhere('kode_cabang', $forcedKodeCabang);
+                    ->orWhere('kode_cabang', $forcedKodeCabang);
             });
         }
 
@@ -38,7 +38,7 @@ class HariLiburController extends Controller
         ");
 
         $query->when($request->q, function ($q, $search) {
-            $q->where(function($sub) use ($search) {
+            $q->where(function ($sub) use ($search) {
                 $sub->where('keterangan', 'ilike', "%{$search}%");
             });
         });
@@ -68,15 +68,15 @@ class HariLiburController extends Controller
 
         $hari_libur = $query->paginate(25)->withQueryString();
 
-        $cabang = !empty($forcedKodeCabang)
+        $cabang = ! empty($forcedKodeCabang)
             ? Cabang::where('kode_cabang', $forcedKodeCabang)->get()
             : Cabang::orderBy('nama_cabang')->get();
         $departemen = Departemen::orderBy('nama_dept')->get();
-        
+
         return view('admin.harilibur.index', [
-            'hari_libur'    => $hari_libur,
-            'cabang'        => $cabang,
-            'departemen'    => $departemen,
+            'hari_libur' => $hari_libur,
+            'cabang' => $cabang,
+            'departemen' => $departemen,
         ]);
     }
 
@@ -84,57 +84,60 @@ class HariLiburController extends Controller
     {
         $cabang = Cabang::orderBy('nama_cabang')->get();
         $departemen = Departemen::orderBy('nama_dept')->get();
+
         return view('admin.harilibur.create', compact('cabang', 'departemen'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'tanggal_libur_dari'   => 'required|date',
+            'tanggal_libur_dari' => 'required|date',
             'tanggal_libur_sampai' => 'required|date|after_or_equal:tanggal_libur_dari',
-            'keterangan'           => 'required|string',
-            'jenis_libur'          => 'required',
-            'kode_cabang'          => 'nullable|array',
-            'kode_dept'            => 'nullable|array',
+            'keterangan' => 'required|string',
+            'jenis_libur' => 'required',
+            'kode_cabang' => 'nullable|array',
+            'kode_dept' => 'nullable|array',
         ]);
 
         DB::beginTransaction();
         try {
             // Normalisasi input: Jika kosong, set array berisi [null] agar loop tetap berjalan 1x
-            $cabangList = !empty($request->kode_cabang) ? $request->kode_cabang : [null];
-            $deptList   = !empty($request->kode_dept) ? $request->kode_dept : [null];
+            $cabangList = ! empty($request->kode_cabang) ? $request->kode_cabang : [null];
+            $deptList = ! empty($request->kode_dept) ? $request->kode_dept : [null];
 
             // Parse tanggal menggunakan Carbon
             $startDate = Carbon::parse($request->tanggal_libur_dari);
-            $endDate   = Carbon::parse($request->tanggal_libur_sampai);
+            $endDate = Carbon::parse($request->tanggal_libur_sampai);
 
             // 1. Loop per Hari (Dari tanggal awal hingga akhir)
             for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
-                
+
                 $currentDate = $date->format('Y-m-d');
 
                 // 2. Loop per Cabang
                 foreach ($cabangList as $cbg) {
-                    
+
                     // 3. Loop per Departemen
                     foreach ($deptList as $dept) {
                         HariLibur::create([
                             'tanggal_libur' => $currentDate,
-                            'keterangan'    => $request->keterangan,
-                            'jenis_libur'   => $request->jenis_libur,
-                            'kode_cabang'   => $cbg,
-                            'kode_dept'     => $dept
+                            'keterangan' => $request->keterangan,
+                            'jenis_libur' => $request->jenis_libur,
+                            'kode_cabang' => $cbg,
+                            'kode_dept' => $dept,
                         ]);
                     }
                 }
             }
 
             DB::commit();
+
             return redirect()->route('harilibur.index')->with('success', 'Data Libur Berhasil Disimpan');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal Simpan: ' . $e->getMessage())->withInput();
+
+            return back()->with('error', $this->failMessage('Gagal Simpan.', $e))->withInput();
         }
     }
 
@@ -150,11 +153,11 @@ class HariLiburController extends Controller
         ])->get();
 
         return view('admin.harilibur.edit', [
-            'master'         => $master,
+            'master' => $master,
             'selectedCabang' => $groupData->pluck('kode_cabang')->toArray(),
-            'selectedDept'   => $groupData->pluck('kode_dept')->toArray(),
-            'cabang'         => Cabang::orderBy('nama_cabang')->get(),
-            'departemen'     => Departemen::orderBy('nama_dept')->get(),
+            'selectedDept' => $groupData->pluck('kode_dept')->toArray(),
+            'cabang' => Cabang::orderBy('nama_cabang')->get(),
+            'departemen' => Departemen::orderBy('nama_dept')->get(),
         ]);
     }
 
@@ -162,8 +165,8 @@ class HariLiburController extends Controller
     {
         $request->validate([
             'tanggal_libur' => 'required|date',
-            'keterangan'    => 'required|string',
-            'jenis_libur'   => 'required',
+            'keterangan' => 'required|string',
+            'jenis_libur' => 'required',
         ]);
 
         DB::beginTransaction();
@@ -178,27 +181,29 @@ class HariLiburController extends Controller
             ])->delete();
 
             // 2. Insert data baru (Logika sama dengan store)
-            $cabangList = !empty($request->kode_cabang) ? $request->kode_cabang : [null];
-            $deptList   = !empty($request->kode_dept) ? $request->kode_dept : [null];
+            $cabangList = ! empty($request->kode_cabang) ? $request->kode_cabang : [null];
+            $deptList = ! empty($request->kode_dept) ? $request->kode_dept : [null];
 
             foreach ($cabangList as $cbg) {
                 foreach ($deptList as $dept) {
                     HariLibur::create([
                         'tanggal_libur' => $request->tanggal_libur,
-                        'keterangan'    => $request->keterangan,
-                        'jenis_libur'   => $request->jenis_libur,
-                        'kode_cabang'   => $cbg,
-                        'kode_dept'     => $dept
+                        'keterangan' => $request->keterangan,
+                        'jenis_libur' => $request->jenis_libur,
+                        'kode_cabang' => $cbg,
+                        'kode_dept' => $dept,
                     ]);
                 }
             }
 
             DB::commit();
+
             return redirect()->route('harilibur.index')->with('success', 'Data Berhasil Diperbarui');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal update: ' . $e->getMessage());
+
+            return back()->with('error', $this->failMessage('Gagal update.', $e));
         }
     }
 
@@ -217,10 +222,12 @@ class HariLiburController extends Controller
             ])->delete();
 
             DB::commit();
+
             return redirect()->route('harilibur.index')->with('success', "Data Libur:$namaLibur, Berhasil Dihapus");
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', $e->getMessage());
+
+            return back()->with('error', $this->failMessage('Gagal memproses data.', $e));
         }
     }
 }

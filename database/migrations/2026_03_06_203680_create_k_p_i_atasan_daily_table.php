@@ -20,10 +20,10 @@ return new class extends Migration
             $table->timestamp('approve_hr_at')->nullable();
             $table->enum('status', ['draft', 'submitted', 'approved_by_hr'])->default('draft');
             $table->timestamps();
-            
+
             // Mencegah atasan menilai karyawan yang sama 2x di tanggal yang sama
             $table->unique(['nik', 'tanggal']);
-            
+
             // Foreign key ke tabel karyawan
             $table->foreign('nik')->references('nik')->on('karyawan')->cascadeOnDelete();
         });

@@ -3,27 +3,33 @@
 namespace App\Http\Controllers\Karyawan;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
-
-use App\Models\Karyawan;
+use App\Models\DinasLuar;
+use App\Models\HariLibur;
 use App\Models\Izin;
-use App\Models\Presensi;
-use App\Models\LeaderboardSnapshot;
+use App\Models\Karyawan;
 use App\Models\KpiLeaderboardSnapshot;
+use App\Models\LeaderboardSnapshot;
 use App\Models\Pengumuman;
+use App\Models\Presensi;
+use App\Models\RekapBulanan;
 use App\Models\SuratPeringatan;
+use App\Services\JadwalKerjaService;
+use App\Support\PeriodeKerja;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    public function __construct(private JadwalKerjaService $jadwalKerja) {}
+
     public function index()
     {
         $hariini = date('Y-m-d');
         $bulanini = (int) date('m');
         $tahunini = date('Y');
 
-        if (!Auth::guard('karyawan')->check()) {
+        if (! Auth::guard('karyawan')->check()) {
             return redirect('/')->with('error', 'Silakan login terlebih dahulu.');
         }
 
@@ -40,16 +46,7 @@ class DashboardController extends Controller
             ->where('tgl_presensi', $hariini)
             ->first();
 
-        $currentDate = Carbon::parse($hariini);
-
-        if ($currentDate->day >= 26) {
-            $startDate = Carbon::create($currentDate->year, $currentDate->month, 26, 0, 0, 0)->format('Y-m-d');
-            $endDate = Carbon::create($currentDate->year, $currentDate->month, 26, 0, 0, 0)->addMonthsNoOverflow(1)->day(25)->format('Y-m-d');
-        } else {
-            $endDateCarbon = Carbon::create($currentDate->year, $currentDate->month, 25, 0, 0, 0);
-            $startDate = $endDateCarbon->copy()->subMonthsNoOverflow(1)->day(26)->format('Y-m-d');
-            $endDate = $endDateCarbon->format('Y-m-d');
-        }
+        [$startDate, $endDate] = PeriodeKerja::dari($hariini)->range();
 
         $tanggalPulangCepatBulanIni = Izin::where('nik', $nik)
             ->where('status', 'p')
@@ -81,6 +78,7 @@ class DashboardController extends Controller
                 $tglPresensi = date('Y-m-d', strtotime($item->tgl_presensi));
                 $item->is_pulang_cepat = ($item->status === 'h' && in_array($tglPresensi, $tanggalPulangCepatBulanIni));
                 $payload = method_exists($item, 'toArray') ? $item->toArray() : (array) $item;
+
                 return (object) $payload;
             });
 
@@ -91,7 +89,7 @@ class DashboardController extends Controller
             ->where('status_approved', 1)
             ->get();
 
-        $histori_dinas = \App\Models\DinasLuar::where('nik', $nik)
+        $histori_dinas = DinasLuar::where('nik', $nik)
             ->where('status_acc', 'acc')
             ->whereDate('tgl_mulai', '<=', $endDate)
             ->whereDate('tgl_selesai', '>=', $startDate)
@@ -100,19 +98,21 @@ class DashboardController extends Controller
         $histori_normalized = collect();
 
         foreach ($histori_izin as $izin) {
-            if ($izin->status === 'p') continue;
+            if ($izin->status === 'p') {
+                continue;
+            }
             try {
                 $s = new \DateTime($izin->tgl_izin_dari);
                 $e = new \DateTime($izin->tgl_izin_sampai);
                 $e->modify('+1 day');
                 $daterange = new \DatePeriod($s, new \DateInterval('P1D'), $e);
                 foreach ($daterange as $date) {
-                    $tgl = $date->format("Y-m-d");
+                    $tgl = $date->format('Y-m-d');
                     if ($tgl >= $startDate && $tgl <= $endDate) {
                         $existsInPresensi = $histori_presensi->contains(function ($item) use ($tgl) {
                             return date('Y-m-d', strtotime($item->tgl_presensi)) === $tgl;
                         });
-                        if (!$existsInPresensi) {
+                        if (! $existsInPresensi) {
                             $histori_normalized->push((object) [
                                 'tgl_presensi' => $tgl,
                                 'jam_in' => '00:00:00',
@@ -124,7 +124,8 @@ class DashboardController extends Controller
                         }
                     }
                 }
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
         }
 
         foreach ($histori_dinas as $dinas) {
@@ -134,13 +135,13 @@ class DashboardController extends Controller
                 $e->modify('+1 day');
                 $daterange = new \DatePeriod($s, new \DateInterval('P1D'), $e);
                 foreach ($daterange as $date) {
-                    $tgl = $date->format("Y-m-d");
+                    $tgl = $date->format('Y-m-d');
                     if ($tgl >= $startDate && $tgl <= $endDate) {
                         $existsInPresensi = $histori_presensi->contains(function ($item) use ($tgl) {
                             return date('Y-m-d', strtotime($item->tgl_presensi)) === $tgl;
                         });
                         $existsInNormalized = $histori_normalized->contains('tgl_presensi', $tgl);
-                        if (!$existsInPresensi && !$existsInNormalized) {
+                        if (! $existsInPresensi && ! $existsInNormalized) {
                             $histori_normalized->push((object) [
                                 'tgl_presensi' => $tgl,
                                 'jam_in' => '00:00:00',
@@ -151,7 +152,8 @@ class DashboardController extends Controller
                         }
                     }
                 }
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
         }
 
         $leaderboard_points = LeaderboardSnapshot::where('nik', $nik)
@@ -174,21 +176,21 @@ class DashboardController extends Controller
                 });
                 $existsInNormalized = $histori_normalized->contains('tgl_presensi', $tgl);
 
-                if (!$existsInPresensi && !$existsInNormalized) {
+                if (! $existsInPresensi && ! $existsInNormalized) {
                     // Verifikasi Jam Kerja dan Hari Libur
-                    $isHariLiburNasional = \App\Models\HariLibur::isHariLibur($tgl, $kode_cabang, $kode_dept);
-                    $namaHari = $this->gethari(date('D', strtotime($tgl)));
-                    [$jkObj, $isLiburJamKerja, $source] = $this->resolveJamKerja($nik, $kode_dept, $kode_cabang, $namaHari);
-                    
+                    $isHariLiburNasional = HariLibur::isHariLibur($tgl, $kode_cabang, $kode_dept);
+                    $namaHari = $this->jadwalKerja->namaHari(date('D', strtotime($tgl)));
+                    [$jkObj, $isLiburJamKerja, $source] = $this->jadwalKerja->untukHari($nik, $kode_dept, $kode_cabang, $namaHari);
+
                     // Logika Hari Libur yang lebih ketat
                     $isHoliday = $isHariLiburNasional || $isLiburJamKerja || ($namaHari == 'Minggu' && $source == 'none');
 
-                    if (!$isHoliday) {
+                    if (! $isHoliday) {
                         // Untuk shift lintas hari, tanggal sebelumnya bisa belum melewati jam pulang.
-                        if (!empty($jkObj)) {
+                        if (! empty($jkObj)) {
                             $jamPulangStr = $jkObj->jam_pulang;
                             $waktuSekarang = Carbon::now();
-                            $waktuPulang = Carbon::parse($tgl . ' ' . $jamPulangStr);
+                            $waktuPulang = Carbon::parse($tgl.' '.$jamPulangStr);
 
                             if ($jkObj->lintashari == 1) {
                                 $waktuPulang->addDay();
@@ -196,6 +198,7 @@ class DashboardController extends Controller
 
                             if ($waktuSekarang->lt($waktuPulang)) {
                                 $startIterator->addDay();
+
                                 continue;
                             }
                         }
@@ -205,7 +208,7 @@ class DashboardController extends Controller
                             'jam_in' => '00:00:00',
                             'jam_out' => '00:00:00',
                             'status' => 'a',
-                            'keterangan' => 'Alpha / Mangkir'
+                            'keterangan' => 'Alpha / Mangkir',
                         ]);
                     }
                 }
@@ -216,26 +219,33 @@ class DashboardController extends Controller
         $histori_presensi = $histori_presensi->map(function ($item) use ($leaderboard_points) {
             $tgl = date('Y-m-d', strtotime($item->tgl_presensi));
             $item->daily_points = $leaderboard_points->get($tgl)?->first();
+
             return $item;
         });
 
         $histori_normalized = $histori_normalized->map(function ($item) use ($leaderboard_points) {
             $item->daily_points = $leaderboard_points->get($item->tgl_presensi)?->first();
+
             return $item;
         });
 
         // Gabungkan dan Filter: Pastikan status 'Alpha' tidak ditampilkan jika diidentifikasi sebagai hari libur
         $historibulanini = collect($histori_presensi)->merge($histori_normalized)
-            ->filter(function($item) use ($nik, $kode_dept, $kode_cabang) {
+            ->filter(function ($item) use ($nik, $kode_dept, $kode_cabang) {
                 if ($item->status == 'a') {
                     $tgl = date('Y-m-d', strtotime($item->tgl_presensi));
-                    $isHariLiburNasional = \App\Models\HariLibur::isHariLibur($tgl, $kode_cabang, $kode_dept);
-                    $namaHari = $this->gethari(date('D', strtotime($tgl)));
-                    [$jkObj, $isLiburJamKerja, $source] = $this->resolveJamKerja($nik, $kode_dept, $kode_cabang, $namaHari);
-                    
-                    if ($isHariLiburNasional || $isLiburJamKerja || ($namaHari == 'Minggu' && $source == 'none')) return false;
-                    if (empty($jkObj)) return false;
+                    $isHariLiburNasional = HariLibur::isHariLibur($tgl, $kode_cabang, $kode_dept);
+                    $namaHari = $this->jadwalKerja->namaHari(date('D', strtotime($tgl)));
+                    [$jkObj, $isLiburJamKerja, $source] = $this->jadwalKerja->untukHari($nik, $kode_dept, $kode_cabang, $namaHari);
+
+                    if ($isHariLiburNasional || $isLiburJamKerja || ($namaHari == 'Minggu' && $source == 'none')) {
+                        return false;
+                    }
+                    if (empty($jkObj)) {
+                        return false;
+                    }
                 }
+
                 return true;
             })
             ->sortBy('tgl_presensi')
@@ -255,14 +265,14 @@ class DashboardController extends Controller
         $bulan = $dateObj->month;
         $tahun = $dateObj->year;
 
-        $hasRekap = \App\Models\RekapBulanan::where('bulan', $bulan)->where('tahun', $tahun)->exists();
+        $hasRekap = RekapBulanan::where('bulan', $bulan)->where('tahun', $tahun)->exists();
         $siteBranches = array_map('trim', explode(',', get_setting('cabang_tambang', 'CBNG0003,CBNG0011,RBJ,TBKR,CBNG0002')));
         $isTambang = in_array($karyawan->kode_cabang, $siteBranches);
 
         $userRank = null;
 
         if ($hasRekap) {
-            $leaderboard = \App\Models\RekapBulanan::query()
+            $leaderboard = RekapBulanan::query()
                 ->select(
                     'rekap_bulanans.nik',
                     'karyawan.nama_lengkap',
@@ -279,12 +289,12 @@ class DashboardController extends Controller
                 ->limit(10)
                 ->get();
 
-            $userPoints = \App\Models\RekapBulanan::where('nik', $nik)
+            $userPoints = RekapBulanan::where('nik', $nik)
                 ->where('bulan', $bulan)
                 ->where('tahun', $tahun)
                 ->value('total_poin') ?? 0;
 
-            $allRekap = \App\Models\RekapBulanan::where('bulan', $bulan)
+            $allRekap = RekapBulanan::where('bulan', $bulan)
                 ->where('tahun', $tahun)
                 ->where('kode_cabang', $kode_cabang)
                 ->orderByDesc('total_poin')
@@ -358,7 +368,7 @@ class DashboardController extends Controller
             ->sum('leaderboard_snapshots.points');
 
         if ($hasRekap) {
-            $kpiLeaderboard = \App\Models\RekapBulanan::query()
+            $kpiLeaderboard = RekapBulanan::query()
                 ->select(
                     'rekap_bulanans.nik',
                     'karyawan.nama_lengkap',
@@ -374,7 +384,7 @@ class DashboardController extends Controller
                 ->limit(10)
                 ->get();
 
-            $kpiUserPoints = \App\Models\RekapBulanan::where('nik', $nik)
+            $kpiUserPoints = RekapBulanan::where('nik', $nik)
                 ->where('bulan', $bulan)
                 ->where('tahun', $tahun)
                 ->value('total_poin_kpi') ?? 0;
@@ -434,7 +444,7 @@ class DashboardController extends Controller
             9 => 'September',
             10 => 'Oktober',
             11 => 'November',
-            12 => 'Desember'
+            12 => 'Desember',
         ];
 
         $pengumuman = Pengumuman::aktif()->orderBy('tanggal_mulai', 'desc')->get();
@@ -448,31 +458,29 @@ class DashboardController extends Controller
 
         // Cek Kelengkapan Data Profil
         $fieldsToCheck = [
-            'nama_panggilan', 'no_hp', 'email', 'alamat', 'agama', 
+            'nama_panggilan', 'no_hp', 'email', 'alamat', 'agama',
             'status_pernikahan', 'pendidikan_terakhir', 'no_rekening',
             'nama_darurat', 'no_darurat', 'hubungan_darurat',
-            'no_bpjs_kesehatan', 'foto_bpjs_kesehatan'
+            'no_bpjs_kesehatan', 'foto_bpjs_kesehatan',
         ];
-        
+
         $missingFields = [];
         foreach ($fieldsToCheck as $field) {
             if (empty($karyawan->$field)) {
                 $missingFields[] = $field;
             }
         }
-        $isProfileIncomplete = !empty($missingFields);
+        $isProfileIncomplete = ! empty($missingFields);
 
         $bonusDate = Carbon::parse($endDate)->subMonthsNoOverflow(1);
         $bonusBulan = $bonusDate->month;
         $bonusTahun = $bonusDate->year;
-        $bonusPeriodText = $namabulan[$bonusBulan] . ' ' . $bonusTahun;
+        $bonusPeriodText = $namabulan[$bonusBulan].' '.$bonusTahun;
 
-        $rekapBulananUser = \App\Models\RekapBulanan::where('nik', $nik)
+        $rekapBulananUser = RekapBulanan::where('nik', $nik)
             ->where('bulan', $bonusBulan)
             ->where('tahun', $bonusTahun)
             ->first();
-
-
 
         return view('karyawan.dashboard.dashboard', compact(
             'presensihariini',
@@ -500,48 +508,6 @@ class DashboardController extends Controller
         ));
     }
 
-    public function gethari($hari)
-    {
-        switch ($hari) {
-            case 'Sun': return "Minggu";
-            case 'Mon': return "Senin";
-            case 'Tue': return "Selasa";
-            case 'Wed': return "Rabu";
-            case 'Thu': return "Kamis";
-            case 'Fri': return "Jumat";
-            case 'Sat': return "Sabtu";
-            default: return "Tidak diketahui";
-        }
-    }
-
-    private function resolveJamKerja(string $nik, string $kodeDept, string $kodeCabang, string $hari): array
-    {
-        $hariNormal = strtolower(trim($hari));
-
-        $setJamKerja = \App\Models\Setjamkerja::with('jamKerja')
-            ->where('nik', $nik)
-            ->where(DB::raw('LOWER(hari)'), $hariNormal)
-            ->first();
-
-        if ($setJamKerja) {
-            $isLibur = is_null($setJamKerja->kode_jam_kerja) || $setJamKerja->kode_jam_kerja === 'LIBUR';
-            return [$setJamKerja->jamKerja, $isLibur, 'personal'];
-        }
-
-        $setJamKerjaDept = \App\Models\KonfigurasiJkDeptDetail::with(['jamKerja', 'konfigurasi'])
-            ->where(DB::raw('LOWER(hari)'), $hariNormal)
-            ->whereHas('konfigurasi', function ($query) use ($kodeDept, $kodeCabang) {
-                $query->where('kode_dept', $kodeDept)->where('kode_cabang', $kodeCabang);
-            })->first();
-
-        if ($setJamKerjaDept) {
-            $isLibur = is_null($setJamKerjaDept->kode_jam_kerja) || $setJamKerjaDept->kode_jam_kerja === 'LIBUR';
-            return [$setJamKerjaDept->jamKerja, $isLibur, 'dept'];
-        }
-
-        return [null, false, 'none'];
-    }
-
     /**
      * Helper to calculate and apply average clock-in tie-breaker on live leaderboard collections
      */
@@ -563,7 +529,7 @@ class DashboardController extends Controller
             $totalSeconds = 0;
             $count = 0;
             foreach ($presensis as $p) {
-                if (!empty($p->jam_in) && $p->jam_in !== '00:00:00') {
+                if (! empty($p->jam_in) && $p->jam_in !== '00:00:00') {
                     $parts = explode(':', $p->jam_in);
                     if (count($parts) >= 2) {
                         $hours = (int) $parts[0];
@@ -579,7 +545,7 @@ class DashboardController extends Controller
 
         return $collection->sortBy([
             [$pointsField, 'desc'],
-            ['avg_jam_masuk', 'asc']
+            ['avg_jam_masuk', 'asc'],
         ])->values();
     }
 }

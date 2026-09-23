@@ -7,8 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class Departemen extends Model
 {
     protected $table = 'departemen';
+
     protected $primaryKey = 'kode_dept';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [
@@ -40,5 +43,4 @@ class Departemen extends Model
     {
         return $this->hasMany(HariLibur::class, 'kode_dept', 'kode_dept');
     }
-
 }

@@ -22,10 +22,10 @@ return new class extends Migration
             if (Schema::hasColumn('karyawan', 'tanggal_masuk')) {
                 $table->renameColumn('tanggal_masuk', 'tanggal_awal_kontrak');
             }
-            if (!Schema::hasColumn('karyawan', 'foto_bpjs_kesehatan')) {
+            if (! Schema::hasColumn('karyawan', 'foto_bpjs_kesehatan')) {
                 $table->string('foto_bpjs_kesehatan')->nullable();
             }
-            if (!Schema::hasColumn('karyawan', 'foto_bpjs_ketenagakerjaan')) {
+            if (! Schema::hasColumn('karyawan', 'foto_bpjs_ketenagakerjaan')) {
                 $table->string('foto_bpjs_ketenagakerjaan')->nullable();
             }
 
@@ -41,7 +41,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('karyawan', function (Blueprint $table) {
-            if (!Schema::hasColumn('karyawan', 'nama')) {
+            if (! Schema::hasColumn('karyawan', 'nama')) {
                 $table->renameColumn('nama_panggilan', 'nama');
                 $table->addColumn('string', 'nama_panggilan')->nullable();
             }
@@ -51,7 +51,7 @@ return new class extends Migration
             if (Schema::hasColumn('karyawan', 'tanggal_awal_kontrak')) {
                 $table->renameColumn('tanggal_awal_kontrak', 'tanggal_masuk');
             }
-            
+
             if (Schema::hasColumn('karyawan', 'foto_bpjs_kesehatan')) {
                 $table->dropColumn('foto_bpjs_kesehatan');
             }

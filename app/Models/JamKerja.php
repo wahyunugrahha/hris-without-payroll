@@ -7,8 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class JamKerja extends Model
 {
     protected $table = 'jam_kerja';
+
     protected $primaryKey = 'kode_jam_kerja';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [
@@ -35,5 +38,4 @@ class JamKerja extends Model
     {
         return $this->hasMany(Setjamkerja::class, 'kode_jam_kerja', 'kode_jam_kerja');
     }
-
 }

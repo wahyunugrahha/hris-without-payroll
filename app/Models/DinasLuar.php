@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\VisibleByCabang;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class DinasLuar extends Model
 {
-    use HasFactory;
+    use HasFactory, VisibleByCabang;
 
     protected $table = 'dinas_luar';
 
@@ -24,13 +25,13 @@ class DinasLuar extends Model
         'status_acc',
         'catatan_approval',
         'approved_by',
-        'approved_at'
+        'approved_at',
     ];
 
     protected $casts = [
         'tgl_mulai' => 'date',
         'tgl_selesai' => 'date',
-        'approved_at' => 'datetime'
+        'approved_at' => 'datetime',
     ];
 
     /**

@@ -12,7 +12,7 @@ class KPIDailyExtra extends Model
         'kpi_daily_id',
         'indikator_tambahan',
         'catatan',
-        'score'
+        'score',
     ];
 
     public function kpiDaily()

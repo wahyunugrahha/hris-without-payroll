@@ -10,7 +10,9 @@ class KonfigurasiJkDeptDetail extends Model
     protected $table = 'konfigurasi_jk_dept_detail';
 
     public $incrementing = false;
+
     protected $primaryKey = ['kode_jk_dept', 'hari'];
+
     protected $keyType = 'string';
 
     public $timestamps = false;
@@ -25,7 +27,7 @@ class KonfigurasiJkDeptDetail extends Model
     protected function setKeysForSaveQuery($query)
     {
         $keys = $this->getKeyName();
-        if (!is_array($keys)) {
+        if (! is_array($keys)) {
             return parent::setKeysForSaveQuery($query);
         }
 
@@ -42,10 +44,8 @@ class KonfigurasiJkDeptDetail extends Model
         return $this->belongsTo(KonfigurasiJkDept::class, 'kode_jk_dept', 'kode_jk_dept');
     }
 
-
     public function jamKerja(): BelongsTo
     {
         return $this->belongsTo(JamKerja::class, 'kode_jam_kerja', 'kode_jam_kerja');
     }
-
 }

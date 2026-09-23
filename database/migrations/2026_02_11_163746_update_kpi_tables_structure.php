@@ -21,11 +21,11 @@ return new class extends Migration
             // Kolom penyimpan NIK / ID
             $table->string('approve_atasan')->nullable()->comment('Menyimpan NIK Atasan yang ACC');
             $table->string('approve_hr')->nullable()->comment('Menyimpan NIK HR yang ACC');
-            
+
             // Kolom penyimpan Waktu (Timestamp)
             $table->timestamp('approve_atasan_at')->nullable()->comment('Waktu atasan ACC');
             $table->timestamp('approve_hr_at')->nullable()->comment('Waktu HR ACC');
-            
+
             // Kolom alasan reject
             $table->text('alasan_reject')->nullable()->comment('Catatan revisi dari atasan/hr');
         });
@@ -39,11 +39,11 @@ return new class extends Migration
         // Rollback: Hapus semua kolom yang baru dibuat
         Schema::table('kpi_daily', function (Blueprint $table) {
             $table->dropColumn([
-                'approve_atasan', 
-                'approve_hr', 
-                'approve_atasan_at', 
-                'approve_hr_at', 
-                'alasan_reject'
+                'approve_atasan',
+                'approve_hr',
+                'approve_atasan_at',
+                'approve_hr_at',
+                'alasan_reject',
             ]);
         });
 

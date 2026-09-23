@@ -26,7 +26,7 @@ return new class extends Migration
             $table->text('keterangan')->nullable();
             $table->integer('status_approved')->default(0); // 0=pending, 1=approved, 2=rejected
             $table->timestamps();
-            
+
             $table->foreign('nik')->references('nik')->on('karyawan');
         });
     }

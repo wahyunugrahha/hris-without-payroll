@@ -65,7 +65,7 @@ class DepartemenSeeder extends Seeder
                 ]
             );
         }
-        
+
         $this->command->info('Data 40 Departemen berhasil diproses.');
     }
 }

@@ -12,6 +12,13 @@
                     @if(session('success'))
                         <div class="alert alert-success">{{ session('success') }}</div>
                     @endif
+                    @if($errors->any())
+                        <div class="alert alert-danger">
+                            @foreach($errors->all() as $error)
+                                <div>{{ $error }}</div>
+                            @endforeach
+                        </div>
+                    @endif
 
                     <form action="{{ route('users.account.update') }}" method="POST">
                         @csrf
@@ -19,36 +26,38 @@
 
                         <div class="mb-3">
                             <label class="form-label">Name</label>
-                            <input type="text" name="name" class="form-control" value="{{ $user->name }}" required>
+                            <input type="text" name="name" class="form-control" value="{{ old('name', $user->name) }}" required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Email</label>
-                            <input type="email" name="email" class="form-control" value="{{ $user->email }}" required>
+                            <input type="email" name="email" class="form-control" value="{{ old('email', $user->email) }}" required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">New Password (leave blank to keep)</label>
-                            <input type="password" name="password" class="form-control" placeholder="New password">
+                            <input type="password" name="password" class="form-control" placeholder="Minimal 8 karakter" autocomplete="new-password">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Confirm New Password</label>
+                            <input type="password" name="password_confirmation" class="form-control" autocomplete="new-password">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Current Password (wajib jika ganti password)</label>
+                            <input type="password" name="current_password" class="form-control" autocomplete="current-password">
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Departemen</label>
-                            <select name="kode_dept" class="form-select" required>
-                                @foreach($departemen as $d)
-                                    <option value="{{ $d->kode_dept }}" {{ $user->kode_dept == $d->kode_dept ? 'selected' : '' }}>{{ $d->nama_dept }}</option>
-                                @endforeach
-                            </select>
+                            <input type="text" class="form-control" value="{{ $user->departemen->nama_dept ?? '-' }}" disabled>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Cabang (optional)</label>
-                            <select name="kode_cabang" class="form-select">
-                                <option value="">--</option>
-                                @foreach($cabang as $c)
-                                    <option value="{{ $c->kode_cabang }}" {{ ($user->kode_cabang ?? '') == $c->kode_cabang ? 'selected' : '' }}>{{ $c->nama_cabang }}</option>
-                                @endforeach
-                            </select>
+                            <label class="form-label">Cabang</label>
+                            <input type="text" class="form-control" value="{{ $user->cabang->nama_cabang ?? '-' }}" disabled>
+                            <small class="form-hint">Departemen dan cabang hanya bisa diubah oleh super admin melalui Manajemen User.</small>
                         </div>
 
                         <button type="submit" class="btn btn-primary">Save Changes</button>

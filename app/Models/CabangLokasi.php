@@ -10,6 +10,7 @@ class CabangLokasi extends Model
     use HasFactory;
 
     protected $table = 'cabang_lokasis';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -25,5 +26,4 @@ class CabangLokasi extends Model
     {
         return $this->belongsTo(Cabang::class, 'kode_cabang', 'kode_cabang');
     }
-
 }

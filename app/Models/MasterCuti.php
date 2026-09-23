@@ -12,10 +12,13 @@ class MasterCuti extends Model
     protected $table = 'master_cuti';
 
     protected $primaryKey = 'kode_cuti';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     public $timestamps = false;
+
     protected $fillable = [
         'kode_cuti',
         'nama_cuti',
@@ -30,5 +33,4 @@ class MasterCuti extends Model
     {
         return $this->hasMany(Izin::class, 'kode_cuti', 'kode_cuti');
     }
-
 }

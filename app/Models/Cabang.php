@@ -10,10 +10,15 @@ class Cabang extends Model
     use HasFactory;
 
     protected $table = 'cabang';
+
     protected $primaryKey = 'kode_cabang';
+
     protected $keyType = 'string';
+
     public $incrementing = false;
+
     public $timestamps = false;
+
     protected $fillable = [
         'kode_cabang',
         'nama_cabang',

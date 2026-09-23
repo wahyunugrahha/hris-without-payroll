@@ -3,14 +3,12 @@
 namespace App\Http\Controllers\Karyawan;
 
 use App\Http\Controllers\Controller;
+use App\Models\DinasLuar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-use App\Models\DinasLuar;
-
 class DinasLuarController extends Controller
 {
-
     /**
      * Catatan: Karyawan whitelist TETAP BISA mengajukan Dinas Luar.
      * Dinas Luar adalah status khusus terpisah dari presensi harian.
@@ -25,11 +23,11 @@ class DinasLuarController extends Controller
 
         $query = DinasLuar::where('nik', $nik);
 
-        if (!empty($request->bulan)) {
+        if (! empty($request->bulan)) {
             $query->whereMonth('tgl_mulai', $request->bulan);
         }
 
-        if (!empty($request->tahun)) {
+        if (! empty($request->tahun)) {
             $query->whereYear('tgl_mulai', $request->tahun);
         }
 
@@ -68,7 +66,7 @@ class DinasLuarController extends Controller
             'dana_diajukan' => $request->dana_diajukan,
             'lokasi_tujuan' => $request->lokasi_tujuan,
             'keterangan' => $request->keterangan,
-            'status_acc' => 'menunggu'
+            'status_acc' => 'menunggu',
         ]);
 
         return redirect()->route('dinasluars.index')->with('success', 'Pengajuan berhasil dikirim.');
@@ -77,12 +75,12 @@ class DinasLuarController extends Controller
     public function destroy($id)
     {
         $nik = Auth::guard('karyawan')->user()->nik;
-        
+
         $dinasLuar = DinasLuar::where('id', $id)
             ->where('nik', $nik)
             ->first();
 
-        if (!$dinasLuar) {
+        if (! $dinasLuar) {
             return redirect()->route('dinasluars.index')->with('error', 'Data tidak ditemukan.');
         }
 
@@ -99,12 +97,12 @@ class DinasLuarController extends Controller
     public function edit($id)
     {
         $nik = Auth::guard('karyawan')->user()->nik;
-        
+
         $dinasLuar = DinasLuar::where('id', $id)
             ->where('nik', $nik)
             ->first();
 
-        if (!$dinasLuar) {
+        if (! $dinasLuar) {
             return redirect()->route('dinasluars.index')->with('error', 'Data tidak ditemukan.');
         }
 
@@ -128,12 +126,12 @@ class DinasLuarController extends Controller
         ]);
 
         $nik = Auth::guard('karyawan')->user()->nik;
-        
+
         $dinasLuar = DinasLuar::where('id', $id)
             ->where('nik', $nik)
             ->first();
 
-        if (!$dinasLuar) {
+        if (! $dinasLuar) {
             return redirect()->route('dinasluars.index')->with('error', 'Data tidak ditemukan.');
         }
 

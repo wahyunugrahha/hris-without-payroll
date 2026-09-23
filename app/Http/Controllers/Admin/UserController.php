@@ -3,19 +3,57 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cabang;
+use App\Models\Departemen;
+use App\Models\Jabatan;
+use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
-use App\Models\Departemen;
-use App\Models\Cabang;
-use App\Models\Jabatan;
-use App\Models\User;
-
 class UserController extends Controller
 {
+    /**
+     * Nama role yang dipakai langsung oleh kode (pembatasan cabang, verifikasi KPI, hierarki atasan).
+     * Mengganti nama / menghapusnya diam-diam mematikan aturan akses, jadi dikunci.
+     */
+    private const ROLE_SISTEM = ['administrator', 'hrd', 'owner', 'admin cabang', 'spv', 'pjo', 'kepala divisi', 'staff'];
+
+    private function penggunaAdministrator(): bool
+    {
+        return (bool) auth('user')->user()?->hasRole('administrator');
+    }
+
+    /**
+     * Hanya administrator yang boleh memberi / mengelola akses administrator.
+     */
+    private function tolakJikaMenyentuhAdministrator(?Jabatan $jabatan = null, ?User $target = null): void
+    {
+        $menyentuhAdmin = $jabatan?->role?->name === 'administrator' || $target?->hasRole('administrator');
+
+        abort_if($menyentuhAdmin && ! $this->penggunaAdministrator(), 403, 'Hanya administrator yang dapat mengelola akun administrator.');
+    }
+
+    /**
+     * Permission yang dipakai middleware route. Mengganti nama / menghapusnya mengunci fitur terkait.
+     */
+    private function permissionDipakaiRoute(string $nama): bool
+    {
+        foreach (app('router')->getRoutes() as $route) {
+            foreach ($route->gatherMiddleware() as $middleware) {
+                if (is_string($middleware) && str_starts_with($middleware, 'permission:')
+                    && in_array($nama, explode('|', explode(',', substr($middleware, 11))[0]), true)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     public function usersIndex(Request $request)
     {
         $users = User::with(['roles', 'jabatan'])
@@ -36,8 +74,8 @@ class UserController extends Controller
             ->withQueryString();
 
         $departemen = Departemen::orderBy('kode_dept')->get();
-        $cabang     = Cabang::orderBy('nama_cabang')->get();
-        $jabatan = Jabatan::whereHas('role', function($q) {
+        $cabang = Cabang::orderBy('nama_cabang')->get();
+        $jabatan = Jabatan::whereHas('role', function ($q) {
             $q->where('guard_name', 'user');
         })->orderBy('nama_jabatan')->get();
 
@@ -52,25 +90,27 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'        => 'required',
-            'email'       => 'required|email|unique:users,email',
-            'password'    => 'required|min:6',
-            'kode_dept'   => 'required',
-            'jabatan_id'  => 'required|exists:jabatan,id',
-            'kode_cabang' => 'nullable|string|max:8',
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:6',
+            'kode_dept' => 'required',
+            'jabatan_id' => 'required|exists:jabatan,id',
+            'kode_cabang' => $this->kodeCabangRules($request),
         ]);
+
+        $this->tolakJikaMenyentuhAdministrator(Jabatan::with('role')->find($request->jabatan_id));
 
         DB::transaction(function () use ($request) {
 
             $jabatan = Jabatan::with('role')->findOrFail($request->jabatan_id);
 
             $user = User::create([
-                'name'        => $request->name,
-                'email'       => $request->email,
-                'password'    => bcrypt($request->password),
-                'kode_dept'   => $request->kode_dept,
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => bcrypt($request->password),
+                'kode_dept' => $request->kode_dept,
                 'kode_cabang' => $request->kode_cabang,
-                'jabatan_id'  => $jabatan->id,
+                'jabatan_id' => $jabatan->id,
             ]);
 
             if ($jabatan->role) {
@@ -83,10 +123,11 @@ class UserController extends Controller
 
     public function edit($id)
     {
-        $user       = User::with(['roles', 'jabatan'])->findOrFail($id);
+        $user = User::with(['roles', 'jabatan'])->findOrFail($id);
+        $this->tolakJikaMenyentuhAdministrator(target: $user);
         $departemen = Departemen::orderBy('kode_dept')->get();
-        $cabang     = Cabang::orderBy('nama_cabang')->get();
-        $jabatan = Jabatan::whereHas('role', function($q) {
+        $cabang = Cabang::orderBy('nama_cabang')->get();
+        $jabatan = Jabatan::whereHas('role', function ($q) {
             $q->where('guard_name', 'user');
         })->orderBy('nama_jabatan')->get();
 
@@ -101,24 +142,27 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'name'        => 'required',
-            'email'       => 'required|email|unique:users,email,' . $id,
-            'kode_dept'   => 'required',
-            'jabatan_id'  => 'required|exists:jabatan,id',
-            'kode_cabang' => 'nullable|string|max:8',
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email,'.$id,
+            'kode_dept' => 'required',
+            'jabatan_id' => 'required|exists:jabatan,id',
+            'kode_cabang' => $this->kodeCabangRules($request),
+            'password' => 'nullable|min:6',
         ]);
+
+        $this->tolakJikaMenyentuhAdministrator(Jabatan::with('role')->find($request->jabatan_id), User::findOrFail($id));
 
         DB::transaction(function () use ($request, $id) {
 
-            $user    = User::findOrFail($id);
+            $user = User::findOrFail($id);
             $jabatan = Jabatan::with('role')->findOrFail($request->jabatan_id);
 
             $user->update([
-                'name'        => $request->name,
-                'email'       => $request->email,
-                'kode_dept'   => $request->kode_dept,
+                'name' => $request->name,
+                'email' => $request->email,
+                'kode_dept' => $request->kode_dept,
                 'kode_cabang' => $request->kode_cabang,
-                'jabatan_id'  => $jabatan->id,
+                'jabatan_id' => $jabatan->id,
             ]);
 
             if ($request->filled('password')) {
@@ -135,10 +179,25 @@ class UserController extends Controller
         return back()->with('success', 'Data user berhasil diupdate');
     }
 
+    /**
+     * Admin cabang wajib punya cabang; tanpa cabang, pembatasan datanya tidak berlaku.
+     */
+    private function kodeCabangRules(Request $request): array
+    {
+        return [
+            'nullable', 'string', 'max:8', 'exists:cabang,kode_cabang',
+            Rule::requiredIf(fn () => Jabatan::with('role')->find($request->jabatan_id)?->role?->name === 'admin cabang'),
+        ];
+    }
+
     public function destroy($id)
     {
         try {
-            User::findOrFail($id)->delete();
+            $user = User::findOrFail($id);
+            $this->tolakJikaMenyentuhAdministrator(target: $user);
+            abort_if($user->is(auth('user')->user()), 403, 'Tidak dapat menghapus akun sendiri.');
+            $user->delete();
+
             return back()->with('success', 'Data user berhasil dihapus');
         } catch (QueryException $e) {
             return back()->with(
@@ -151,33 +210,29 @@ class UserController extends Controller
     // Edit current authenticated user (account settings)
     public function editSelf()
     {
-        $user = auth()->user();
-        $departemen = Departemen::orderBy('kode_dept')->get();
-        $cabang = Cabang::orderBy('nama_cabang')->get();
+        $user = auth('user')->user()->load('departemen', 'cabang');
 
-        return view('admin.users.account', compact('user', 'departemen', 'cabang'));
+        return view('admin.users.account', compact('user'));
     }
 
-    // Update current authenticated user's account
+    // Update current authenticated user's account.
+    // Departemen & cabang sengaja tidak bisa diubah sendiri: keduanya menentukan scope akses admin.
     public function updateSelf(Request $request)
     {
-        $user = auth()->user();
+        $user = auth('user')->user();
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'kode_dept' => 'required',
-            'kode_cabang' => 'nullable|string|max:8',
-            'password' => 'nullable|string|min:6',
+            'email' => 'required|email|unique:users,email,'.$user->id,
+            'password' => 'nullable|string|min:6|confirmed',
+            'current_password' => 'required_with:password|current_password:user',
         ]);
 
         $user->name = $request->name;
         $user->email = $request->email;
-        $user->kode_dept = $request->kode_dept;
-        $user->kode_cabang = $request->kode_cabang;
 
         if ($request->filled('password')) {
-            $user->password = bcrypt($request->password);
+            $user->password = Hash::make($request->password);
         }
 
         $user->save();
@@ -203,12 +258,12 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|unique:roles,name',
             'guard_name' => 'required|in:user,karyawan',
-            'permissions' => 'array'
+            'permissions' => 'array',
         ]);
 
         $role = Role::create([
             'name' => $request->name,
-            'guard_name' => $request->guard_name
+            'guard_name' => $request->guard_name,
         ]);
 
         if ($request->has('permissions')) {
@@ -220,13 +275,19 @@ class UserController extends Controller
 
     public function rolesUpdate(Request $request, Role $role)
     {
+        abort_if($role->name === 'administrator' && ! $this->penggunaAdministrator(), 403, 'Hanya administrator yang dapat mengubah role administrator.');
+
+        if (in_array($role->name, self::ROLE_SISTEM, true) && $request->name !== $role->name) {
+            return back()->with('warning', "Role sistem \"{$role->name}\" tidak dapat diganti nama. Permission-nya tetap bisa diatur.");
+        }
+
         $request->validate([
-            'name' => 'required|unique:roles,name,' . $role->id,
-            'permissions' => 'array'
+            'name' => 'required|unique:roles,name,'.$role->id,
+            'permissions' => 'array',
         ]);
 
         $role->update(['name' => $request->name]);
-        
+
         if ($request->has('permissions')) {
             $role->syncPermissions($request->permissions);
         } else {
@@ -238,7 +299,12 @@ class UserController extends Controller
 
     public function rolesDestroy(Role $role)
     {
+        if (in_array($role->name, self::ROLE_SISTEM, true)) {
+            return back()->with('warning', "Role sistem \"{$role->name}\" tidak dapat dihapus.");
+        }
+
         $role->delete();
+
         return back()->with('success', 'Role berhasil dihapus');
     }
 
@@ -246,7 +312,7 @@ class UserController extends Controller
     public function permissionsIndex()
     {
         return view('admin.users.permission', [
-            'permissions' => Permission::orderBy('guard_name', 'asc')->orderBy('name', 'asc')->get()
+            'permissions' => Permission::orderBy('guard_name', 'asc')->orderBy('name', 'asc')->get(),
         ]);
     }
 
@@ -254,12 +320,12 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required|unique:permissions,name',
-            'guard_name' => 'required|in:user,karyawan' // Validasi guard
+            'guard_name' => 'required|in:user,karyawan', // Validasi guard
         ]);
 
         Permission::create([
             'name' => $request->name,
-            'guard_name' => $request->guard_name
+            'guard_name' => $request->guard_name,
         ]);
 
         return back()->with('success', 'Permission berhasil ditambahkan');
@@ -267,14 +333,18 @@ class UserController extends Controller
 
     public function permissionsUpdate(Request $request, Permission $permission)
     {
+        if (($request->name !== $permission->name || $request->guard_name !== $permission->guard_name) && $this->permissionDipakaiRoute($permission->name)) {
+            return back()->with('warning', "Permission \"{$permission->name}\" dipakai sistem dan tidak dapat diganti nama.");
+        }
+
         $request->validate([
-            'name' => 'required|unique:permissions,name,' . $permission->id,
-            'guard_name' => 'required|in:user,karyawan' // Validasi guard
+            'name' => 'required|unique:permissions,name,'.$permission->id,
+            'guard_name' => 'required|in:user,karyawan', // Validasi guard
         ]);
 
         $permission->update([
             'name' => $request->name,
-            'guard_name' => $request->guard_name
+            'guard_name' => $request->guard_name,
         ]);
 
         return back()->with('success', 'Permission berhasil diupdate');
@@ -282,7 +352,12 @@ class UserController extends Controller
 
     public function permissionsDestroy(Permission $permission)
     {
+        if ($this->permissionDipakaiRoute($permission->name)) {
+            return back()->with('warning', "Permission \"{$permission->name}\" dipakai sistem dan tidak dapat dihapus.");
+        }
+
         $permission->delete();
+
         return back()->with('success', 'Permission berhasil dihapus');
     }
 }

@@ -4,10 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
-        if (!Schema::hasTable('izin') || !Schema::hasColumn('izin', 'keterangan')) {
+        if (! Schema::hasTable('izin') || ! Schema::hasColumn('izin', 'keterangan')) {
             return;
         }
 
@@ -15,11 +16,13 @@ return new class extends Migration {
 
         if ($driver === 'pgsql') {
             DB::statement('ALTER TABLE izin ALTER COLUMN keterangan TYPE TEXT');
+
             return;
         }
 
         if ($driver === 'mysql') {
             DB::statement('ALTER TABLE izin MODIFY keterangan TEXT NULL');
+
             return;
         }
 
@@ -31,7 +34,7 @@ return new class extends Migration {
 
     public function down(): void
     {
-        if (!Schema::hasTable('izin') || !Schema::hasColumn('izin', 'keterangan')) {
+        if (! Schema::hasTable('izin') || ! Schema::hasColumn('izin', 'keterangan')) {
             return;
         }
 
@@ -39,11 +42,13 @@ return new class extends Migration {
 
         if ($driver === 'pgsql') {
             DB::statement('ALTER TABLE izin ALTER COLUMN keterangan TYPE VARCHAR(255)');
+
             return;
         }
 
         if ($driver === 'mysql') {
             DB::statement('ALTER TABLE izin MODIFY keterangan VARCHAR(255) NULL');
+
             return;
         }
 

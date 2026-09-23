@@ -1,32 +1,37 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\Auth\AdminAuthController;
+use App\Http\Controllers\Admin\BpjsController;
 use App\Http\Controllers\Admin\CabangController;
+use App\Http\Controllers\Admin\CabangLokasiController;
 use App\Http\Controllers\Admin\CutiController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DepartemenController;
+use App\Http\Controllers\Admin\DinasLuarController;
 use App\Http\Controllers\Admin\HariLiburController;
+use App\Http\Controllers\Admin\IzinApprovalController;
+use App\Http\Controllers\Admin\JabatanController;
+use App\Http\Controllers\Admin\KaryawanController;
+use App\Http\Controllers\Admin\KenaikanGajiController;
 use App\Http\Controllers\Admin\KonfigurasiController;
 use App\Http\Controllers\Admin\KonfigurasiUmumController;
-use App\Http\Controllers\Admin\CabangLokasiController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\PengumumanController;
-use App\Http\Controllers\Admin\SuratPeringatanController;
-use App\Http\Controllers\Admin\KaryawanController;
-
-use App\Http\Controllers\Admin\DinasLuarController;
-use App\Http\Controllers\Admin\BpjsController;
-use App\Http\Controllers\Admin\JabatanController;
-use App\Http\Controllers\Admin\KenaikanGajiController;
-use App\Http\Controllers\Admin\KPIController;
+use App\Http\Controllers\Admin\Kpi\LaporanKpiController;
+use App\Http\Controllers\Admin\Kpi\MasterKpiController;
+use App\Http\Controllers\Admin\Kpi\VerifikasiKpiController;
+use App\Http\Controllers\Admin\LaporanPresensiController;
 use App\Http\Controllers\Admin\LemburController;
+use App\Http\Controllers\Admin\PengumumanController;
 use App\Http\Controllers\Admin\PresensiController;
+use App\Http\Controllers\Admin\SuratPeringatanController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Auth\AdminAuthController;
+use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(function () {
 
     Route::get('/panel/dashboardadmin', [DashboardController::class, 'dashboardadmin'])->name('dashboard.admin');
+    // Menampilkan token registrasi & data karyawan: wajib login admin (TV kantor login sekali dengan akun khusus).
+    Route::get('/dashboard-tv', [DashboardController::class, 'dashboardtv'])->name('dashboardtv');
+    Route::get('/overview', [DashboardController::class, 'dashboardoverview'])->name('overview');
     Route::get('/proseslogoutadmin', [AdminAuthController::class, 'logout'])->name('proseslogoutadmin');
 
     // Account settings
@@ -181,47 +186,41 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
         Route::get('/monitoring', [PresensiController::class, 'monitoring'])
             ->middleware('permission:presensi-monitoring-view-admin,user')
             ->name('presensi.monitoring');
-        Route::match(['get', 'post'], '/getpresensi', [PresensiController::class, 'getpresensi'])->name('presensi.getpresensi');
-        
+        Route::match(['get', 'post'], '/getpresensi', [PresensiController::class, 'getpresensi'])->middleware('permission:presensi-monitoring-view-admin,user')->name('presensi.getpresensi');
+
         // Batal Presensi
         Route::post('/monitoring/{id}/batal', [PresensiController::class, 'batalpresensi'])
             ->middleware('permission:presensi-monitoring-view-admin,user')
             ->name('presensi.batal');
 
         // Peta
-        Route::post('/tampilkanpeta', [PresensiController::class, 'tampilkanpeta'])->name('presensi.tampilkanpeta');
+        Route::post('/tampilkanpeta', [PresensiController::class, 'tampilkanpeta'])->middleware('permission:presensi-monitoring-view-admin,user')->name('presensi.tampilkanpeta');
 
         // Laporan & Rekap
-        Route::get('/laporan', [PresensiController::class, 'laporan'])
+        Route::get('/laporan', [LaporanPresensiController::class, 'laporan'])
             ->middleware('permission:laporan-view-admin,user')
             ->name('presensi.laporan');
-        Route::post('/cetaklaporan', [PresensiController::class, 'cetaklaporan'])
-            ->name('presensi.cetaklaporan');
-        Route::get('/rekap', [PresensiController::class, 'rekap'])
+        Route::post('/cetaklaporan', [LaporanPresensiController::class, 'cetaklaporan'])->middleware('permission:laporan-view-admin,user')->name('presensi.cetaklaporan');
+        Route::get('/rekap', [LaporanPresensiController::class, 'rekap'])
             ->middleware('permission:laporan-view-admin,user')
             ->name('presensi.rekap');
-        Route::post('/cetakrekap', [PresensiController::class, 'cetakrekap'])
-            ->name('presensi.cetakrekap');
+        Route::post('/cetakrekap', [LaporanPresensiController::class, 'cetakrekap'])->middleware('permission:laporan-view-admin,user')->name('presensi.cetakrekap');
 
         // Izin Sakit (Halaman List Utama)
-        Route::get('/izinsakit', [PresensiController::class, 'izinsakit'])
+        Route::get('/izinsakit', [IzinApprovalController::class, 'index'])
             ->middleware('permission:pengajuan-izin-view-admin,user')
             ->name('presensi.izinsakit');
         // Detail Izin Sakit
-        Route::get('/detailijinsakit/{id}', [PresensiController::class, 'detailijinsakit'])->name('presensi.detailijinsakit');
+        Route::get('/detailijinsakit/{id}', [IzinApprovalController::class, 'show'])
+            ->middleware('permission:pengajuan-izin-view-admin,user')
+            ->name('presensi.detailijinsakit');
         // Approval via Form (POST)
-        Route::post('/approveizinsakit', [PresensiController::class, 'approveizinsakit'])
+        Route::post('/approveizinsakit', [IzinApprovalController::class, 'update'])
             ->middleware('permission:pengajuan-izin-approve-admin,user')
             ->name('presensi.approveizinsakit');
-        Route::post('/{id}/batalkanizinsakit', [PresensiController::class, 'batalkanizinsakit'])
+        Route::post('/{id}/batalkanizinsakit', [IzinApprovalController::class, 'cancel'])
             ->middleware('permission:pengajuan-izin-approve-admin,user')
             ->name('presensi.batalkanizinsakit');
-    });
-
-    // Approval Izin Sakit (Via Dashboard)
-    Route::prefix('izin')->middleware('permission:pengajuan-izin-approve-admin,user')->group(function () {
-        Route::get('/{kode_izin}/approve-dashboard', [PresensiController::class, 'approveizinsakitDashboard'])->name('admin.izin.approve.dashboard');
-        Route::get('/{kode_izin}/reject-dashboard', [PresensiController::class, 'batalkanizinsakitDashboard'])->name('admin.izin.reject.dashboard');
     });
 
     // Dinas Luar
@@ -238,11 +237,7 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
         Route::post('/{id}/cancel', [DinasLuarController::class, 'cancel'])
             ->middleware('permission:dinas-luar-approve-admin,user')
             ->name('dinasluars.cancel');
-        
-        // Approval Dinas Luar (Via Dashboard)
-        Route::get('/{id}/approve', [DinasLuarController::class, 'approveDashboard'])->middleware('permission:dinas-luar-approve-admin,user')->name('admin.dinas-luar.approve');
-        Route::get('/{id}/reject', [DinasLuarController::class, 'rejectDashboard'])->middleware('permission:dinas-luar-approve-admin,user')->name('admin.dinas-luar.reject');
-        
+
         // Cetak Dinas Luar
         Route::get('/{id}/cetak', [DinasLuarController::class, 'cetak'])
             ->middleware('permission:dinas-luar-view-admin,user')
@@ -260,7 +255,7 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
             Route::get('/rekap', 'rekap')
                 ->middleware('permission:laporan-view-admin,user')
                 ->name('admin.lembur.rekap');
-            Route::post('/cetakrekap', 'cetakrekap')->name('admin.lembur.cetakrekap');
+            Route::post('/cetakrekap', 'cetakrekap')->middleware('permission:laporan-view-admin,user')->name('admin.lembur.cetakrekap');
 
             // Approval via Form (POST)
             Route::get('/approval', 'approval')
@@ -268,24 +263,16 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
                 ->name('admin.lembur.approval');
             Route::post('/approve', 'approve')
                 ->middleware('permission:lembur-approve-admin,user')
-                ->name('admin.lembur.approve'); 
+                ->name('admin.lembur.approve');
             Route::post('/reject', 'reject')
                 ->middleware('permission:lembur-approve-admin,user')
-                ->name('admin.lembur.reject');   
+                ->name('admin.lembur.reject');
             Route::post('/cancel', 'cancel')
                 ->middleware('permission:lembur-approve-admin,user')
-                ->name('admin.lembur.cancel');   
+                ->name('admin.lembur.cancel');
             Route::post('/update-jam', 'updateJam')
                 ->middleware('permission:lembur-approve-admin,user')
                 ->name('admin.lembur.update-jam');
-    
-            // Approval via Dashboard (GET Link)
-            Route::get('/{kode_lembur}/approve-dashboard', 'approveDashboard')
-                ->middleware('permission:lembur-approve-admin,user')
-                ->name('admin.lembur.approve.dashboard');
-            Route::get('/{kode_lembur}/reject-dashboard', 'rejectDashboard')
-                ->middleware('permission:lembur-approve-admin,user')
-                ->name('admin.lembur.reject.dashboard');
         });
 
     // Surat Peringatan
@@ -305,9 +292,6 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
         Route::get('/{id}/cetak', [SuratPeringatanController::class, 'cetak'])
             ->middleware('permission:surat-peringatan-view-admin,user')
             ->name('suratperingatan.cetak');
-        Route::delete('/{id}/delete', [SuratPeringatanController::class, 'destroy'])
-            ->middleware('permission:surat-peringatan-manage-admin,user')
-            ->name('suratperingatan.destroy');
     });
 
     // Kenaikan Gaji
@@ -337,82 +321,46 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
     });
 
     // KPI Management
-    Route::prefix('kpi')
-        ->controller(KPIController::class)
-        ->group(function () {
-            Route::get('/dashboardkpi', 'dashboardKPI')
-                ->middleware('permission:kpi-view-admin,user')
-                ->name('kpi.dashboard');
-
+    Route::prefix('kpi')->group(function () {
+        Route::controller(MasterKpiController::class)->group(function () {
             Route::prefix('masterkpi')->name('kpi.master.')->group(function () {
-                Route::get('/', 'masterKPI')
-                    ->middleware('permission:kpi-view-admin,user')
-                    ->name('index');
-                Route::post('/store', 'storeMasterKPI')
-                    ->middleware('permission:kpi-create-admin,user')
-                    ->name('store');
-                Route::get('/{id}/edit', 'editMasterKPI')
-                    ->middleware('permission:kpi-edit-admin,user')
-                    ->name('edit');
-                Route::put('/{id}/update', 'updateMasterKPI')
-                    ->middleware('permission:kpi-edit-admin,user')
-                    ->name('update');
-                Route::delete('/{id}/delete', 'deleteMasterKPI')
-                    ->middleware('permission:kpi-delete-admin,user')
-                    ->name('delete');
+                Route::get('/', 'masterKPI')->middleware('permission:kpi-view-admin,user')->name('index');
+                Route::post('/store', 'storeMasterKPI')->middleware('permission:kpi-create-admin,user')->name('store');
+                Route::get('/{id}/edit', 'editMasterKPI')->middleware('permission:kpi-edit-admin,user')->name('edit');
+                Route::put('/{id}/update', 'updateMasterKPI')->middleware('permission:kpi-edit-admin,user')->name('update');
+                Route::delete('/{id}/delete', 'deleteMasterKPI')->middleware('permission:kpi-delete-admin,user')->name('delete');
             });
 
             Route::prefix('detailmasterkpi')->name('kpi.master.detail.')->group(function () {
-                Route::get('/{kpi_master_id}', 'detailMasterKPI')
-                    ->middleware('permission:kpi-view-admin,user')
-                    ->name('index');
-                Route::post('/{kpi_master_id}/store', 'storeDetailMasterKPI')
-                    ->middleware('permission:kpi-create-admin,user')
-                    ->name('store');
-                Route::put('/update', 'updateDetailMasterKPI')
-                    ->middleware('permission:kpi-edit-admin,user')
-                    ->name('update');
-                Route::delete('/{detail_id}/{jenis}/delete', 'deleteDetailMasterKPI')
-                    ->middleware('permission:kpi-delete-admin,user')
-                    ->name('delete');
+                Route::get('/{kpi_master_id}', 'detailMasterKPI')->middleware('permission:kpi-view-admin,user')->name('index');
+                Route::post('/{kpi_master_id}/store', 'storeDetailMasterKPI')->middleware('permission:kpi-create-admin,user')->name('store');
+                Route::put('/update', 'updateDetailMasterKPI')->middleware('permission:kpi-edit-admin,user')->name('update');
+                Route::delete('/{detail_id}/{jenis}/delete', 'deleteDetailMasterKPI')->middleware('permission:kpi-delete-admin,user')->name('delete');
             });
+        });
 
+        // Verifikasi HR: hak per record diperiksa KPIDailyPolicy (role & cabang).
+        Route::controller(VerifikasiKpiController::class)->group(function () {
             Route::prefix('indikatorkpi')->name('kpi.indikator.')->group(function () {
-                Route::get('/', 'indikatorKPI')
-                    ->middleware('permission:kpi-view-admin,user')
-                    ->name('index');
-                Route::get('/{kpi_daily_id}', 'detailIndikatorKPI')
-                    ->middleware('permission:kpi-view-admin,user')
-                    ->name('detail.index');
-                Route::put('/{kpi_daily_id}/update', 'updateDetailIndikatorKPI')
-                    ->middleware('permission:kpi-edit-admin,user')
-                    ->name('detail.update');
-                Route::put('/{kpi_daily_id}/approve', 'approveKPI')
-                    ->middleware('permission:kpi-view-admin,user')
-                    ->name('approve');
-                Route::put('/{kpi_daily_id}/reject', 'rejectKPI')
-                    ->middleware('permission:kpi-view-admin,user')
-                    ->name('reject');
-
-                Route::put('/extra/{id}/update', 'updateExtra')
-                    ->middleware('permission:kpi-edit-admin,user')
-                    ->name('extra.update');
-                Route::delete('/extra/{id}/destroy', 'destroyExtra')
-                    ->middleware('permission:kpi-edit-admin,user')
-                    ->name('extra.destroy');
+                Route::get('/', 'indikatorKPI')->middleware('permission:kpi-view-admin,user')->name('index');
+                Route::get('/{kpi_daily_id}', 'detailIndikatorKPI')->middleware('permission:kpi-view-admin,user')->name('detail.index');
+                Route::put('/{kpi_daily_id}/update', 'updateDetailIndikatorKPI')->middleware('permission:kpi-edit-admin,user')->name('detail.update');
+                Route::put('/{kpi_daily_id}/approve', 'approveKPI')->middleware('permission:kpi-view-admin,user')->name('approve');
+                Route::put('/{kpi_daily_id}/reject', 'rejectKPI')->middleware('permission:kpi-view-admin,user')->name('reject');
+                Route::put('/extra/{id}/update', 'updateExtra')->middleware('permission:kpi-edit-admin,user')->name('extra.update');
+                Route::delete('/extra/{id}/destroy', 'destroyExtra')->middleware('permission:kpi-edit-admin,user')->name('extra.destroy');
             });
 
-            Route::get('/rekap/karyawan', 'rekapKPIKaryawan')
-                ->middleware('permission:laporan-view-admin,user')
-                ->name('kpi.rekap.karyawan');
-            Route::get('/report', 'reportKPI')
-                ->middleware('permission:laporan-view-admin,user')
-                ->name('kpi.report');
+            Route::post('/rekap/karyawan/bulk-approve', 'bulkApproveHR')->middleware('permission:kpi-edit-admin,user')->name('kpi.rekap.karyawan.bulk_approve');
+        });
 
-            Route::post('/rekap/karyawan/bulk-approve', [KPIController::class, 'bulkApproveHR'])->name('kpi.rekap.karyawan.bulk_approve');
+        Route::controller(LaporanKpiController::class)->middleware('permission:laporan-view-admin,user')->group(function () {
+            Route::get('/rekap/karyawan', 'rekapKPIKaryawan')->name('kpi.rekap.karyawan');
             Route::post('/rekap/cetakKPI/karyawan', 'cetakRekapKPIKaryawan')->name('kpi.rekap.karyawan.cetak');
+            Route::get('/report', 'reportKPI')->name('kpi.report');
             Route::post('/report/cetakKPI/', 'cetakReportKPI')->name('kpi.report.cetak');
         });
+    });
 
     // Konfigurasi Jam Kerja
     Route::prefix('konfigurasi')->group(function () {
@@ -464,17 +412,16 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
             Route::get('/jamkerjadept/{kode_jk_dept}/relations', 'checkRelationsJamKerjaDept')
                 ->middleware('permission:jam-kerja-dept-view-admin,user')
                 ->name('konfigurasi.jamkerjadept.relations');
-            Route::get('/jamkerjadept/{kode_jk_dept}/delete', 'deletejamkerjadept')
+            Route::delete('/jamkerjadept/{kode_jk_dept}/delete', 'deletejamkerjadept')
                 ->middleware('permission:jam-kerja-dept-delete-admin,user')
                 ->name('konfigurasi.deletejamkerjadept');
 
             // Jam Kerja Personal
-            Route::get('/{nik}/setjamkerja', 'setjamkerja')
-                ->name('konfigurasi.setjamkerja');
-            Route::post('/setstorejamkerja', 'setstorejamkerja')
-                ->name('konfigurasi.setstorejamkerja');
-            Route::post('/updatesetjamkerja', 'updatesetjamkerja')
-                ->name('konfigurasi.updatesetjamkerja');
+            Route::middleware('permission:karyawan-edit-admin,user')->group(function () {
+                Route::get('/{nik}/setjamkerja', 'setjamkerja')->name('konfigurasi.setjamkerja');
+                Route::post('/setstorejamkerja', 'setstorejamkerja')->name('konfigurasi.setstorejamkerja');
+                Route::post('/updatesetjamkerja', 'updatesetjamkerja')->name('konfigurasi.updatesetjamkerja');
+            });
         });
 
         // Konfigurasi Umum

@@ -3,20 +3,22 @@
 namespace App\Http\Controllers\Karyawan;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\BpjsRequest;
 use App\Models\Karyawan;
+use App\Services\FotoKaryawanService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
 
 class KaryawanController extends Controller
 {
-    // --- Profile & Izin ---    
+    public function __construct(private FotoKaryawanService $foto) {}
+
+    // --- Profile & Izin ---
     public function profile()
     {
         $nik = auth('karyawan')->user()->nik;
         $karyawan = Karyawan::findOrFail($nik);
+
         return view('karyawan.profile.index', compact('karyawan'));
     }
 
@@ -24,6 +26,7 @@ class KaryawanController extends Controller
     {
         $nik = auth('karyawan')->user()->nik;
         $karyawan = Karyawan::findOrFail($nik);
+
         return view('karyawan.profile.edit_profile', compact('karyawan'));
     }
 
@@ -39,7 +42,7 @@ class KaryawanController extends Controller
             'pendidikan_terakhir' => 'required|string|max:255',
             'no_rekening' => 'nullable|string|max:255',
             'password' => 'nullable|string|min:6',
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:3072'
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:3072',
         ]);
 
         $nik = auth('karyawan')->user()->nik;
@@ -49,7 +52,7 @@ class KaryawanController extends Controller
         if ($karyawan->status_aktif == Karyawan::STATUS_DIBERHENTIKAN) {
             return redirect()->back()->with('error', 'Data tidak dapat diubah karena status Anda sudah diberhentikan.');
         }
-        
+
         $data = [
             'no_hp' => $request->no_hp,
             'email' => $request->email,
@@ -61,17 +64,14 @@ class KaryawanController extends Controller
             'no_rekening' => $request->no_rekening,
         ];
 
-        if (!empty($request->password))
+        if (! empty($request->password)) {
             $data['password'] = Hash::make($request->password);
+        }
         if ($request->hasFile('foto')) {
-            $file = $request->file('foto');
-            $foto_baru = $nik . "_" . time() . "." . $file->getClientOriginalExtension();
-            $data['foto'] = $foto_baru;
-            if ($karyawan->foto && Storage::disk('public')->exists('uploads/karyawan/' . $karyawan->foto))
-                Storage::disk('public')->delete('uploads/karyawan/' . $karyawan->foto);
-            $file->storeAs('uploads/karyawan/', $foto_baru, 'public');
+            $data['foto'] = $this->foto->ganti('foto', $request->file('foto'), $karyawan->foto, $nik);
         }
         $karyawan->update($data);
+
         return redirect()->back()->with('success', 'Profil berhasil diperbarui!');
     }
 
@@ -79,6 +79,7 @@ class KaryawanController extends Controller
     {
         $nik = auth('karyawan')->user()->nik;
         $karyawan = Karyawan::findOrFail($nik);
+
         return view('karyawan.profile.profile_darurat', compact('karyawan'));
     }
 
@@ -166,17 +167,8 @@ class KaryawanController extends Controller
             'no_bpjs_kesehatan' => $request->no_bpjs_kesehatan,
         ];
 
-        // Upload Foto BPJS Kesehatan
         if ($request->hasFile('foto_bpjs_kesehatan')) {
-            $fileBpjs = $request->file('foto_bpjs_kesehatan');
-            $foto_bpjs_baru = $nik . "_bpjs_kes_" . time() . "." . $fileBpjs->getClientOriginalExtension();
-            $data['foto_bpjs_kesehatan'] = $foto_bpjs_baru;
-            
-            // Hapus foto lama jika ada
-            if ($karyawan->foto_bpjs_kesehatan && Storage::disk('public')->exists('uploads/karyawan/bpjs/' . $karyawan->foto_bpjs_kesehatan)) {
-                Storage::disk('public')->delete('uploads/karyawan/bpjs/' . $karyawan->foto_bpjs_kesehatan);
-            }
-            $fileBpjs->storeAs('uploads/karyawan/bpjs/', $foto_bpjs_baru, 'public');
+            $data['foto_bpjs_kesehatan'] = $this->foto->ganti('foto_bpjs_kesehatan', $request->file('foto_bpjs_kesehatan'), $karyawan->foto_bpjs_kesehatan, $nik);
         }
 
         $karyawan->update($data);

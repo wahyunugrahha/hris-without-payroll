@@ -2,19 +2,21 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
-use App\Models\Karyawan;
-use App\Models\SuratPeringatan;
 use App\Models\HariLibur;
+use App\Models\Karyawan;
 use App\Models\LeaderboardSnapshot;
+use App\Models\SuratPeringatan;
+use App\Support\PeriodeKerja;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class EvaluateSuratPeringatan extends Command
 {
     protected $signature = 'sp:evaluate';
+
     protected $description = 'Evaluasi pelanggaran presensi dan generate SP otomatis';
 
     public function handle()
@@ -23,13 +25,11 @@ class EvaluateSuratPeringatan extends Command
         $hariIniTanggal = $today->day;
 
         // 1. Tentukan Periode Siklus
-        $startPeriod = $hariIniTanggal < 26 
-            ? Carbon::create($today->year, $today->month, 26)->subMonth() 
-            : Carbon::create($today->year, $today->month, 26);
-            
-        $endPeriod = $startPeriod->copy()->addMonthsNoOverflow(1)->day(25);
-        
-        $this->info("Memulai Evaluasi SP. Siklus Berjalan: " . $startPeriod->toDateString() . " s/d " . $endPeriod->toDateString());
+        $periode = PeriodeKerja::dari($today);
+        $startPeriod = $periode->mulai->toMutable();
+        $endPeriod = $periode->selesai->toMutable();
+
+        $this->info('Memulai Evaluasi SP. Siklus Berjalan: '.$startPeriod->toDateString().' s/d '.$endPeriod->toDateString());
 
         // =========================================================================
         // BAGIAN A: EVALUASI ALPHA & KETERLAMBATAN (Jalan setiap hari)
@@ -42,7 +42,7 @@ class EvaluateSuratPeringatan extends Command
         if ($hariIniTanggal >= 24 && $hariIniTanggal <= 25) {
             $this->evaluateMinusPoints($startPeriod, $endPeriod);
         } else {
-            $this->info("✅ Sinkronisasi Peringkat selesai. Belum memasuki fase persiapan SP Poin Minus (tgl 24-25).");
+            $this->info('✅ Sinkronisasi Peringkat selesai. Belum memasuki fase persiapan SP Poin Minus (tgl 24-25).');
         }
 
         // =========================================================================
@@ -57,37 +57,37 @@ class EvaluateSuratPeringatan extends Command
      */
     private function evaluateDailyViolations(Carbon $startPeriod, Carbon $endPeriod, Carbon $today)
     {
-        $this->info("🔄 Mengecek pelanggaran Alpha & Keterlambatan...");
+        $this->info('🔄 Mengecek pelanggaran Alpha & Keterlambatan...');
         $effectiveDate = Carbon::create(2026, 3, 1);
         $queryStartDate = $effectiveDate->gt($startPeriod) ? $effectiveDate : $startPeriod;
 
         // Optimasi: Ambil data libur terlebih dahulu (hanya array string tanggal)
         $liburDates = HariLibur::whereBetween('tanggal_libur', [$queryStartDate->toDateString(), $today->toDateString()])
             ->pluck('tanggal_libur')
-            ->map(fn($d) => Carbon::parse($d)->toDateString())
+            ->map(fn ($d) => Carbon::parse($d)->toDateString())
             ->toArray();
 
         // Optimasi: Menggunakan chunk untuk menghindari Out of Memory jika karyawan ratusan/ribuan
         $countSP = 0;
         Karyawan::with([
-            'presensis' => fn($q) => $q->whereBetween('tgl_presensi', [$queryStartDate->toDateString(), $today->toDateString()])->with('jamKerja'),
-            'izin' => fn($q) => $q->where('status_approved', 1)->where('tgl_izin_sampai', '>=', $queryStartDate->toDateString())->where('tgl_izin_dari', '<=', $today->toDateString()),
-            'dinasLuars' => fn($q) => $q->where('status_acc', 'acc')->where('tgl_selesai', '>=', $queryStartDate->toDateString())->where('tgl_mulai', '<=', $today->toDateString())
+            'presensis' => fn ($q) => $q->whereBetween('tgl_presensi', [$queryStartDate->toDateString(), $today->toDateString()])->with('jamKerja'),
+            'izin' => fn ($q) => $q->where('status_approved', 1)->where('tgl_izin_sampai', '>=', $queryStartDate->toDateString())->where('tgl_izin_dari', '<=', $today->toDateString()),
+            'dinasLuars' => fn ($q) => $q->where('status_acc', 'acc')->where('tgl_selesai', '>=', $queryStartDate->toDateString())->where('tgl_mulai', '<=', $today->toDateString()),
         ])->chunk(100, function ($karyawans) use ($queryStartDate, $today, $liburDates, $startPeriod, $endPeriod, &$countSP) {
-            
+
             $periodCheck = CarbonPeriod::create($queryStartDate, $today->copy()->subDay());
             $siteBranches = array_map('trim', explode(',', get_setting('cabang_tambang', 'CBNG0003,CBNG0011,RBJ,TBKR,CBNG0002')));
             $spTambangAktif = (int) get_setting('sp_tambang_aktif', 0);
 
             foreach ($karyawans as $k) {
                 $nik = $k->nik;
-                
+
                 // Jika karyawan berada di cabang tambang dan fitur SP tambang dinonaktifkan
-                if (in_array($k->kode_cabang, $siteBranches) && !$spTambangAktif) {
+                if (in_array($k->kode_cabang, $siteBranches) && ! $spTambangAktif) {
                     continue;
                 }
 
-                $presensiMap = $k->presensis->keyBy(fn($p) => Carbon::parse($p->tgl_presensi)->toDateString());
+                $presensiMap = $k->presensis->keyBy(fn ($p) => Carbon::parse($p->tgl_presensi)->toDateString());
 
                 $absentCount = 0;
                 $streakLate = 0;
@@ -99,15 +99,17 @@ class EvaluateSuratPeringatan extends Command
                     // Lewati hari libur, minggu, atau jika sedang dinas luar
                     if ($date->isSunday() || in_array($dateStr, $liburDates) || $this->isDinasLuar($k, $dateStr)) {
                         $streakLate = 0;
+
                         continue;
                     }
 
                     $p = $presensiMap->get($dateStr);
-                    $isAlpha = ($p && $p->status == 'a') || (!$p && !$this->hasIzin($k, $dateStr));
+                    $isAlpha = ($p && $p->status == 'a') || (! $p && ! $this->hasIzin($k, $dateStr));
 
                     if ($isAlpha) {
                         $absentCount++;
                         $streakLate = 0;
+
                         continue;
                     }
 
@@ -130,11 +132,17 @@ class EvaluateSuratPeringatan extends Command
                 $reason = '';
 
                 if ($absentCount > 5) {
-                    $candidateLevel = 2; $violationType = 'absent'; $reason = "Alpha akumulasi > 5x ({$absentCount} kali)";
+                    $candidateLevel = 2;
+                    $violationType = 'absent';
+                    $reason = "Alpha akumulasi > 5x ({$absentCount} kali)";
                 } elseif ($maxStreakLate >= 5) {
-                    $candidateLevel = 1; $violationType = 'late'; $reason = "Terlambat tanpa keterangan {$maxStreakLate} hari berturut-turut";
+                    $candidateLevel = 1;
+                    $violationType = 'late';
+                    $reason = "Terlambat tanpa keterangan {$maxStreakLate} hari berturut-turut";
                 } elseif ($absentCount >= 3) {
-                    $candidateLevel = 1; $violationType = 'absent'; $reason = "Alpha akumulasi >= 3x ({$absentCount} kali)";
+                    $candidateLevel = 1;
+                    $violationType = 'absent';
+                    $reason = "Alpha akumulasi >= 3x ({$absentCount} kali)";
                 }
 
                 if ($candidateLevel > 0) {
@@ -153,8 +161,8 @@ class EvaluateSuratPeringatan extends Command
      */
     private function evaluateMinusPoints(Carbon $startPeriod, Carbon $endPeriod)
     {
-        $this->info("🔄 Fase Tutup Buku: Mengecek Poin Minus untuk persiapan SP 2...");
-        
+        $this->info('🔄 Fase Tutup Buku: Mengecek Poin Minus untuk persiapan SP 2...');
+
         $tglAwalStr = $startPeriod->format('Y-m-d');
         $tglAkhirStr = $endPeriod->format('Y-m-d');
         $nextMonthStart = $endPeriod->copy()->addDay();
@@ -190,12 +198,12 @@ class EvaluateSuratPeringatan extends Command
 
         foreach ($minusedUsers as $user) {
             // Jika karyawan berada di cabang tambang dan fitur SP tambang dinonaktifkan
-            if (in_array($user->kode_cabang, $siteBranches) && !$spTambangAktif) {
+            if (in_array($user->kode_cabang, $siteBranches) && ! $spTambangAktif) {
                 continue;
             }
 
             $reason = "Akumulasi poin minus presensi harian pada siklus {$tglAwalStr} s/d {$tglAkhirStr} jatuh di angka {$user->total_points} (Minus). Akan dikurangi tunjangan sebanyak 25% Gaji.";
-            
+
             // Gunakan level 2 sebagai standar Poin Minus
             $candidateLevel = 2;
             $expiresAt = $nextMonthStart->copy()->addMonthsNoOverflow(3)->day(25);
@@ -215,7 +223,7 @@ class EvaluateSuratPeringatan extends Command
      */
     private function cleanupDuplicateActiveSP()
     {
-        $this->info("🔄 Mengecek duplikasi SP aktif...");
+        $this->info('🔄 Mengecek duplikasi SP aktif...');
 
         $niksWithMultipleActive = SuratPeringatan::whereDate('expires_at', '>', Carbon::today())
             ->select('nik')
@@ -231,7 +239,7 @@ class EvaluateSuratPeringatan extends Command
                 ->orderByDesc('level')
                 ->orderByDesc('issued_at')
                 ->get();
-            
+
             if ($activeSPs->count() > 1) {
                 // Simpan yang pertama (terbaru), nonaktifkan sisanya
                 $latest = $activeSPs->shift();
@@ -252,15 +260,15 @@ class EvaluateSuratPeringatan extends Command
      */
     private function cleanupInactiveKaryawanSP()
     {
-        $this->info("🔄 Membersihkan SP untuk karyawan Nonaktif/Diberhentikan...");
-        
+        $this->info('🔄 Membersihkan SP untuk karyawan Nonaktif/Diberhentikan...');
+
         $inactiveNiks = Karyawan::turnover()->pluck('nik')->toArray();
-        
+
         $deactivatedCount = SuratPeringatan::whereIn('nik', $inactiveNiks)
             ->whereDate('expires_at', '>', Carbon::today())
             ->update([
                 'expires_at' => Carbon::yesterday(),
-                'note' => DB::raw("CONCAT(note, ' [NONAKTIF OTOMATIS KARENA KARYAWAN KELUAR]')")
+                'note' => DB::raw("CONCAT(note, ' [NONAKTIF OTOMATIS KARENA KARYAWAN KELUAR]')"),
             ]);
 
         if ($deactivatedCount > 0) {
@@ -270,12 +278,14 @@ class EvaluateSuratPeringatan extends Command
 
     // --- Helper Methods ---
 
-    private function hasIzin($karyawan, $dateStr) {
-        return $karyawan->izin->contains(fn($i) => $dateStr >= $i->tgl_izin_dari && $dateStr <= $i->tgl_izin_sampai);
+    private function hasIzin($karyawan, $dateStr)
+    {
+        return $karyawan->izin->contains(fn ($i) => $dateStr >= $i->tgl_izin_dari && $dateStr <= $i->tgl_izin_sampai);
     }
 
-    private function isDinasLuar($karyawan, $dateStr) {
-        return $karyawan->dinasLuars->contains(fn($d) => $dateStr >= $d->tgl_mulai && $dateStr <= $d->tgl_selesai);
+    private function isDinasLuar($karyawan, $dateStr)
+    {
+        return $karyawan->dinasLuars->contains(fn ($d) => $dateStr >= $d->tgl_mulai && $dateStr <= $d->tgl_selesai);
     }
 
     /**
@@ -286,7 +296,7 @@ class EvaluateSuratPeringatan extends Command
     {
         $today = Carbon::today();
         $issuedAt = Carbon::parse($issuedAt);
-        
+
         // Cegah duplikasi SP:
         // 1. Cek apakah sudah ada SP dengan tanggal terbit yang SAMA
         $queryExists = SuratPeringatan::where('nik', $nik)
@@ -296,7 +306,7 @@ class EvaluateSuratPeringatan extends Command
         if ($querySameDay->exists()) {
             return false;
         }
-        
+
         // 2. Cek apakah sudah pernah terbit SP untuk tipe ini di siklus berjalan
         if ($startPeriod && $endPeriod) {
             $queryExists->whereBetween('issued_at', [$startPeriod->format('Y-m-d'), $endPeriod->format('Y-m-d')]);
@@ -314,7 +324,7 @@ class EvaluateSuratPeringatan extends Command
             ->whereDate('expires_at', '>', $today)
             ->orderByDesc('level')
             ->first();
-            
+
         $finalLevel = $candidateLevel;
 
         if ($lastActiveSP) {
@@ -326,13 +336,14 @@ class EvaluateSuratPeringatan extends Command
                     Log::info("Karyawan {$nik} dinonaktifkan karena mengulangi pelanggaran saat SP3 aktif.");
                     $this->info("Karyawan {$nik} dinonaktifkan karena mengulangi pelanggaran saat SP3 aktif.");
                 }
+
                 return false;
             }
 
             // LOGIKA ESKALASI:
             // 1. Jika SP aktif saat ini BUKAN 'Pelanggaran Disiplin' (Poin Minus), maka bisa eskalasi +1
             // 2. Jika SP aktif saat ini ADALAH 'Pelanggaran Disiplin', maka tidak dihitung eskalasi (level tetap)
-            
+
             if ($lastActiveSP->violation_type !== 'Pelanggaran Disiplin') {
                 $escalatedLevel = min(3, $lastActiveSP->level + 1);
                 if ($escalatedLevel > $finalLevel) {
@@ -356,11 +367,12 @@ class EvaluateSuratPeringatan extends Command
             'violation_type' => $violationType,
             'issued_at' => $issuedAt,
             'expires_at' => $finalLevel == 3 ? $issuedAt->copy()->addMonthsNoOverflow(1) : ($expiresAt ?? $issuedAt->copy()->addMonths(3)),
-            'note' => $reason
+            'note' => $reason,
         ]);
 
         $this->info("SP Created: {$nik} | Level {$finalLevel} | Type: {$violationType}");
         Log::info("Auto SP Created: {$nik} Level {$finalLevel} Type {$violationType}");
+
         return true;
     }
 }

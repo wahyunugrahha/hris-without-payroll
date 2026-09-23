@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\VisibleByCabang;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class SalaryIncrease extends Model
 {
-    use HasFactory;
+    use HasFactory, VisibleByCabang;
 
     protected $fillable = [
         'nik',
@@ -16,7 +17,7 @@ class SalaryIncrease extends Model
         'status',
         'approved_at',
         'approved_by',
-        'catatan'
+        'catatan',
     ];
 
     public function karyawan()

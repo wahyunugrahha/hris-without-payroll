@@ -1,11 +1,12 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-
+return new class extends Migration
+{
     private function hasForeignKeyOnColumn(string $table, string $column): bool
     {
         return DB::table('information_schema.table_constraints as tc')
@@ -22,7 +23,7 @@ return new class extends Migration {
 
     public function up(): void
     {
-        if (!Schema::hasColumn('presensi', 'kode_jam_kerja')) {
+        if (! Schema::hasColumn('presensi', 'kode_jam_kerja')) {
             Schema::table('presensi', function (Blueprint $table) {
                 $table->char('kode_jam_kerja', 4)->after('tgl_presensi')->nullable();
             });

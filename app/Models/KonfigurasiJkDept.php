@@ -3,14 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class KonfigurasiJkDept extends Model
 {
     protected $table = 'konfigurasi_jk_dept';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     protected $primaryKey = 'kode_jk_dept';
 
     protected $fillable = [
@@ -35,5 +38,4 @@ class KonfigurasiJkDept extends Model
     {
         return $this->belongsTo(Departemen::class, 'kode_dept', 'kode_dept');
     }
-
 }

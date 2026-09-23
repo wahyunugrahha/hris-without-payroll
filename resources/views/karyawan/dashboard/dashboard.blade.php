@@ -6,7 +6,7 @@
         $cabangName = $userWithDept?->cabang?->nama_cabang ?? '-';
     @endphp
 
-    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}?v={{ filemtime(public_path('assets/css/style.css')) }}">
+    <link rel="stylesheet" href="{{ asset_v('assets/css/style.css') }}">
 
     <style>
         .modern-header {

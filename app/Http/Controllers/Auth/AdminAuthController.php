@@ -16,7 +16,7 @@ class AdminAuthController extends Controller
         ], [
             'email.required' => 'Email tidak boleh kosong.',
             'email.email' => 'Format email tidak valid.',
-            'password.required' => 'Password tidak boleh kosong.'
+            'password.required' => 'Password tidak boleh kosong.',
         ]);
 
         $credentials = $request->only('email', 'password');
@@ -24,6 +24,7 @@ class AdminAuthController extends Controller
 
         if (Auth::guard('user')->attempt($credentials, $remember)) {
             $request->session()->regenerate();
+
             return redirect()->route('dashboard.admin');
         }
 

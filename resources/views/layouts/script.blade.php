@@ -1,12 +1,12 @@
-<script src="{{ asset('assets/js/lib/jquery-3.4.1.min.js') }}"></script>
-<script src="{{ asset('assets/js/lib/popper.min.js') }}"></script>
-<script src="{{ asset('assets/js/lib/bootstrap.min.js') }}"></script>
+<script src="{{ asset_v('assets/js/lib/jquery-3.7.1.min.js') }}"></script>
+<script src="{{ asset_v('assets/js/lib/popper.min.js') }}"></script>
+<script src="{{ asset_v('assets/js/lib/bootstrap.min.js') }}"></script>
 
 <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
 <script nomodule src="https://cdn.jsdelivr.net/npm/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 
-<script src="{{ asset('assets/js/plugins/owl-carousel/owl.carousel.min.js') }}"></script>
-<script src="{{ asset('assets/js/plugins/jquery-circle-progress/circle-progress.min.js') }}"></script>
+<script src="{{ asset_v('assets/js/plugins/owl-carousel/owl.carousel.min.js') }}"></script>
+<script src="{{ asset_v('assets/js/plugins/jquery-circle-progress/circle-progress.min.js') }}"></script>
 
 <script src="https://cdn.amcharts.com/lib/4/core.js"></script>
 <script src="https://cdn.amcharts.com/lib/4/charts.js"></script>
@@ -14,7 +14,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
 
 
-<script src="{{ asset('assets/js/base.js') }}"></script>
+<script src="{{ asset_v('assets/js/base.js') }}"></script>
 {{-- Commented out unused chart code --}}
 {{-- <script>
     am4core.ready(function() {
