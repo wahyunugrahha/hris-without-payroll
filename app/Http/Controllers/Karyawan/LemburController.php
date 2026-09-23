@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Karyawan;
 
+use App\Exceptions\BusinessException;
 use App\Http\Controllers\Controller;
 use App\Models\HariLibur;
 use App\Models\Lembur;
-use App\Models\Presensi; // Wajib untuk Transaction
-use App\Services\JadwalKerjaService;
+use App\Models\Presensi;
+use App\Services\JadwalKerjaService; // Wajib untuk Transaction
+use App\Support\FotoBase64;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -417,11 +419,9 @@ class LemburController extends Controller
 
     private function processImage($base64_string, $prefix)
     {
-        if (str_contains($base64_string, ';base64,')) {
-            $image_parts = explode(';base64,', $base64_string);
-            $image_base64 = base64_decode($image_parts[1]);
-        } else {
-            $image_base64 = base64_decode($base64_string);
+        $image_base64 = FotoBase64::decode($base64_string);
+        if ($image_base64 === null) {
+            throw new BusinessException('Foto absen tidak valid. Silakan ambil ulang foto.');
         }
 
         $fileName = $prefix.'.jpeg'; // Paksa ekstensi JPEG

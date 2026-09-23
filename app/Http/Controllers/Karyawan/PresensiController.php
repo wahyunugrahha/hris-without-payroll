@@ -15,6 +15,7 @@ use App\Models\Lembur;
 use App\Models\Presensi;
 use App\Services\JadwalKerjaService;
 use App\Services\PresensiService;
+use App\Support\FotoBase64;
 use App\Support\PeriodeKerja;
 use Carbon\Carbon;
 use DateInterval;
@@ -148,9 +149,8 @@ class PresensiController extends Controller
             }
 
             // Foto selfie dikirim sebagai data URL base64; pastikan isinya benar-benar gambar.
-            $image_parts = explode(';base64,', (string) $request->image);
-            $image_base64 = isset($image_parts[1]) ? base64_decode($image_parts[1], true) : false;
-            if ($image_base64 === false || @getimagesizefromstring($image_base64) === false) {
+            $image_base64 = FotoBase64::decode($request->image);
+            if ($image_base64 === null) {
                 return response()->json(['success' => false, 'error' => 'Data gambar tidak valid.'], 400);
             }
 

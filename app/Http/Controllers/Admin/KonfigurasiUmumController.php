@@ -26,6 +26,19 @@ class KonfigurasiUmumController extends Controller
 
     public function update(Request $request)
     {
+        $request->validate([
+            'settings.point_gaji_kantor' => 'sometimes|nullable|integer|min:0',
+            'settings.point_gaji_tambang' => 'sometimes|nullable|integer|min:0',
+            'settings.toleransi_keterlambatan' => 'sometimes|nullable|integer|min:0|max:240',
+            'settings.cabang_tambang' => 'sometimes|nullable|array',
+            'settings.cabang_tambang.*' => 'exists:cabang,kode_cabang',
+            'settings.sp_tambang_aktif' => 'sometimes|nullable|in:0,1',
+        ], [
+            'settings.*.integer' => 'Nilai harus berupa angka bulat.',
+            'settings.toleransi_keterlambatan.max' => 'Toleransi keterlambatan maksimal 240 menit.',
+            'settings.cabang_tambang.*.exists' => 'Cabang tambang tidak dikenal.',
+        ]);
+
         try {
             $settings = $request->input('settings', []);
 
