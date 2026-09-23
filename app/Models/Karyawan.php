@@ -149,6 +149,22 @@ class Karyawan extends Authenticatable
             : implode(' ', $parts).' lagi';
     }
 
+    /**
+     * Karyawan Nonaktif otomatis aktif kembali bila kontraknya diperpanjang ke masa depan
+     * (tanggal habis kontrak baru lebih lambat dari yang lama).
+     */
+    public function diaktifkanKembaliOleh($tanggalHabisKontrakBaru): bool
+    {
+        if ($this->getOriginal('status_aktif') !== self::STATUS_NONAKTIF || empty($tanggalHabisKontrakBaru)) {
+            return false;
+        }
+
+        $baru = Carbon::parse($tanggalHabisKontrakBaru);
+        $lama = $this->getOriginal('tanggal_habis_kontrak');
+
+        return $baru->isFuture() && (empty($lama) || $baru->gt(Carbon::parse($lama)));
+    }
+
     public function getFotoUrlAttribute()
     {
         if ($this->foto && Storage::disk('public')->exists('uploads/karyawan/'.$this->foto)) {
