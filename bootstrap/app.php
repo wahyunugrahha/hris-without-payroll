@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\CheckWajibPresensi;
 use App\Http\Middleware\DisableHtmlCache;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -39,7 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
             ? route('dashboard.admin')
             : route('dashboard.karyawan'));
 
-        $middleware->web(append: [DisableHtmlCache::class]);
+        $middleware->web(append: [DisableHtmlCache::class, SecurityHeaders::class]);
 
         $middleware->alias([
             'permission' => PermissionMiddleware::class,

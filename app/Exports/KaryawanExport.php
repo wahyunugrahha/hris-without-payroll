@@ -179,6 +179,17 @@ class KaryawanExport implements FromCollection, WithColumnFormatting, WithColumn
         ];
     }
 
+    /**
+     * Cegah Formula Injection: teks yang diawali = + - @ (mis. nama "=HYPERLINK(...)" dari registrasi)
+     * dijadikan teks biasa agar tidak dieksekusi Excel saat file dibuka.
+     */
+    private static function amankanSel($nilai)
+    {
+        return is_string($nilai) && $nilai !== '' && in_array($nilai[0], ['=', '+', '-', '@', chr(9), chr(13)], true)
+            ? "'".$nilai
+            : $nilai;
+    }
+
     public function map($karyawan): array
     {
         // Helper untuk format tanggal
@@ -191,7 +202,7 @@ class KaryawanExport implements FromCollection, WithColumnFormatting, WithColumn
             $namaCabang = $this->globalCabangNama ?? '-';
         }
 
-        return [
+        return array_map([self::class, 'amankanSel'], [
             // Menggunakan explicit string conversion agar angka 0 di depan tidak hilang
             $karyawan->nik ? "'".$karyawan->nik : '',
             $karyawan->nama_lengkap,
@@ -223,7 +234,7 @@ class KaryawanExport implements FromCollection, WithColumnFormatting, WithColumn
             (string) ($karyawan->no_bpjs_kesehatan ?? ''),
             (string) ($karyawan->no_bpjs_ketenagakerjaan ?? ''),
             (string) ($karyawan->no_rekening ?? ''),
-        ];
+        ]);
     }
 
     public function styles(Worksheet $sheet)
