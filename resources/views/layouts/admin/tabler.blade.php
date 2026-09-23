@@ -1,5 +1,5 @@
 ﻿<!doctype html>
-<html lang="en">
+<html lang="id">
 
 <head>
     <meta charset="utf-8" />
@@ -26,11 +26,10 @@
     @yield('header')
 
     <script>
-        // Apply theme immediately before page renders (prevents flash)
-        (function() {
-            const theme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-bs-theme', theme);
-        })();
+        // Terapkan tema sebelum render agar tidak berkedip.
+        try {
+            document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') === 'dark' ? 'dark' : 'light');
+        } catch (e) {}
     </script>
 
     <style>
@@ -63,79 +62,19 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    <script>
-        // Dark Mode Toggle
-        (function() {
-            const url = new URL(window.location.href);
-            const themeFromUrl = url.searchParams.get('theme');
-            const storedTheme = localStorage.getItem('theme');
-            const theme = themeFromUrl === 'dark' || themeFromUrl === 'light'
-                ? themeFromUrl
-                : (storedTheme === 'dark' || storedTheme === 'light' ? storedTheme : 'light');
-
-            document.documentElement.setAttribute('data-bs-theme', theme);
-
-            if (themeFromUrl === 'dark' || themeFromUrl === 'light') {
-                localStorage.setItem('theme', themeFromUrl);
-                url.searchParams.delete('theme');
-                window.history.replaceState({}, '', url.pathname + url.search + url.hash);
-            }
-        })();
-
-        document.addEventListener("DOMContentLoaded", function() {
-            // Handle theme toggle clicks
-            document.querySelectorAll('[href="?theme=dark"], [href="?theme=light"]').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const newTheme = this.getAttribute('href').includes('dark') ? 'dark' : 'light';
-                    document.documentElement.setAttribute('data-bs-theme', newTheme);
-                    localStorage.setItem('theme', newTheme);
-                    const url = new URL(window.location.href);
-                    url.searchParams.delete('theme');
-                    window.history.replaceState({}, '', url.pathname + url.search + url.hash);
-                });
-            });
-
-            // Global SweetAlert for Session Success
-            @if (Session::get('success'))
-                Swal.fire({
-                    title: 'Berhasil!',
-                    text: "{{ Session::get('success') }}",
-                    icon: 'success',
-                    confirmButtonText: 'Ok'
-                });
-            @endif
-
-            // Global SweetAlert for Session Warning/Error
-            @if (Session::get('warning'))
-                Swal.fire({
-                    title: 'Peringatan!',
-                    text: "{{ Session::get('warning') }}",
-                    icon: 'warning',
-                    confirmButtonText: 'Ok'
-                });
-            @endif
-
-            // Global SweetAlert for Validation Errors
-            @if ($errors->any())
-                Swal.fire({
-                    title: 'Gagal!',
-                    html: `
-                        <div class="text-start">
-                            <ul class="mb-0">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    `,
-                    icon: 'error',
-                    confirmButtonText: 'Ok'
-                });
-            @endif
-        });
+    {{-- Data flash untuk assets/js/admin.js --}}
+    <script type="application/json" id="admin-flash">
+        @json(['success' => session('success'), 'warning' => session('warning'), 'errors' => $errors->all()])
     </script>
 
+    <dialog id="admin-palette" class="admin-palette" aria-label="Cari menu">
+        <input type="search" placeholder="Ketik nama menu…" autocomplete="off" spellcheck="false"
+            role="combobox" aria-expanded="true" aria-controls="admin-palette-list" aria-autocomplete="list" />
+        <ul id="admin-palette-list" role="listbox"></ul>
+        <p class="admin-palette-hint"><kbd>↑</kbd><kbd>↓</kbd> pilih · <kbd>Enter</kbd> buka · <kbd>Esc</kbd> tutup</p>
+    </dialog>
+
+    <script src="{{ asset_v('assets/js/admin.js') }}"></script>
     @stack('myscript')
 </body>
 

@@ -37,9 +37,25 @@ Font **tidak diubah**: Inter (rsms.me/inter) bawaan Tabler. Angka di tabel memak
 - Hijau (`success`) — setuju/hadir/aktif/ekspor.
 - Kuning (`warning`) — terlambat/perlu perhatian. Merah (`danger`) — tolak/hapus/alpha.
 
+## Kerangka (layout admin)
+- **Sidebar**: latar `--color-sidebar` (sedikit lebih gelap dari konten), item 36px,
+  submenu dengan garis panduan vertikal; item aktif = garis navy 2px + tint.
+- **Header**: sticky 56px, blur tipis; kiri tombol "Cari menu… Ctrl K" (command
+  palette dari link sidebar, `public/assets/js/admin.js`), kanan tema/notifikasi/akun.
+- **Judul halaman** (`.page-header`): pita putih penuh + garis bawah; pretitle kecil,
+  judul 1.375rem/600, ikon judul navy.
+- **Toolbar judul**: hanya `btn-primary` yang berwarna; tombol lain otomatis netral
+  (outline), makna warnanya pindah ke ikon.
+- **Badge status** di konten: tint lembut dari warna status, bukan blok penuh.
+
+## JavaScript
+- Perilaku global admin di `public/assets/js/admin.js` (tema, flash, palette).
+- Data server ke JS lewat `<script type="application/json">` + `@json`, bukan
+  interpolasi Blade di dalam string JS.
+
 ## Aturan komponen
 - Satu tombol utama navy per area aksi; sisanya outline/ghost.
-- Radius: 6px kontrol (tombol, input, badge), 8px kartu/menu/modal.
+- Radius: 6px kontrol (tombol, input, badge), 10px kartu/menu/modal.
 - Kedalaman dari garis 1px, bukan bayangan. Tanpa gradient.
 - Focus ring 2px `--color-focus`, offset 2px, tampil instan.
 - Gerak: hanya warna latar/teks 150ms; `prefers-reduced-motion` mematikan transisi.

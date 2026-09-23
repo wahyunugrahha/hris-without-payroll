@@ -3,12 +3,15 @@
  * Semua halaman admin (layouts.admin.tabler) memakai file ini. Warna lewat token, jangan hex lepas.
  */
 
-/* ── Token ─────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════
+ * 1. Token
+ * ════════════════════════════════════════════════════════════════════ */
 :root,
 [data-bs-theme=light] {
     --color-paper: oklch(98.4% 0.004 250);
     --color-surface: oklch(100% 0 0);
     --color-surface-2: oklch(97% 0.006 252);
+    --color-sidebar: oklch(96.6% 0.007 252);
     --color-ink: oklch(24% 0.02 258);
     --color-ink-2: oklch(34% 0.018 257);
     --color-muted: oklch(52% 0.018 257);
@@ -17,18 +20,29 @@
     --color-accent: oklch(41% 0.12 254);          /* #094b87 brand */
     --color-accent-rgb: 9, 75, 135;
     --color-accent-hover: oklch(35% 0.11 254);
-    --color-accent-tint: oklch(95% 0.02 254);
+    --color-accent-tint: oklch(94.5% 0.025 254);
     --color-accent-ink: oklch(99% 0 0);
     --color-focus: oklch(58% 0.16 254);
+    --color-success: oklch(55% 0.14 150);
+    --color-warning: oklch(68% 0.15 70);
+    --color-danger: oklch(55% 0.19 27);
+    --color-info: oklch(58% 0.12 230);
+    --color-backdrop: oklch(24% 0.02 258 / 0.35);
     --shadow-lift: 0 1px 2px oklch(24% 0.02 258 / 0.05);
-    --shadow-menu: 0 8px 24px oklch(24% 0.02 258 / 0.08), 0 1px 2px oklch(24% 0.02 258 / 0.06);
+    --shadow-menu: 0 12px 32px oklch(24% 0.02 258 / 0.12), 0 1px 3px oklch(24% 0.02 258 / 0.08);
 
     --radius-control: 6px;
-    --radius-card: 8px;
+    --radius-card: 10px;
+    --space-2xs: 0.25rem;
+    --space-xs: 0.5rem;
+    --space-sm: 0.75rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     --dur-short: 150ms;
 
-    --admin-header-height: 66px;
+    --admin-header-height: 56px;
     --admin-sidebar-width: 260px;
 
     /* Petakan ke variabel Tabler supaya seluruh komponen ikut. */
@@ -57,9 +71,10 @@
 }
 
 [data-bs-theme=dark] {
-    --color-paper: oklch(17% 0.015 258);
-    --color-surface: oklch(21% 0.016 258);
+    --color-paper: oklch(16.5% 0.014 258);
+    --color-surface: oklch(20.5% 0.016 258);
     --color-surface-2: oklch(24% 0.017 258);
+    --color-sidebar: oklch(18.5% 0.015 258);
     --color-ink: oklch(96% 0.005 255);
     --color-ink-2: oklch(87% 0.01 255);
     --color-muted: oklch(70% 0.015 255);
@@ -71,8 +86,13 @@
     --color-accent-tint: oklch(28% 0.05 254);
     --color-accent-ink: oklch(99% 0 0);
     --color-focus: oklch(70% 0.14 254);
+    --color-success: oklch(72% 0.14 150);
+    --color-warning: oklch(80% 0.14 75);
+    --color-danger: oklch(70% 0.16 25);
+    --color-info: oklch(74% 0.11 230);
+    --color-backdrop: oklch(0% 0 0 / 0.55);
     --shadow-lift: none;
-    --shadow-menu: 0 8px 24px oklch(0% 0 0 / 0.35);
+    --shadow-menu: 0 12px 32px oklch(0% 0 0 / 0.45);
 
     --tblr-primary: var(--color-accent);
     --tblr-primary-rgb: var(--color-accent-rgb);
@@ -92,7 +112,9 @@
     --tblr-border-color-translucent: var(--color-rule);
 }
 
-/* ── Kerangka halaman ──────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════
+ * 2. Kerangka halaman
+ * ════════════════════════════════════════════════════════════════════ */
 html,
 body {
     margin: 0;
@@ -127,21 +149,48 @@ body {
     background: transparent;
 }
 
-.page > .page-wrapper > .app-header {
-    margin-top: 0 !important;
+/* Judul halaman: pita putih penuh dengan garis bawah (pola Workbench). */
+.page > .page-wrapper > .page-wrapper > .page-header {
+    margin: 0;
+    padding-block: var(--space-lg);
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-rule);
 }
 
-.page-title {
-    color: var(--color-ink);
+.page-body {
+    margin-top: var(--space-lg);
+    margin-bottom: var(--space-xl);
 }
 
 .page-pretitle {
     color: var(--color-muted);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    margin-bottom: var(--space-2xs);
 }
 
-/* ── Sidebar ───────────────────────────────────────────────────────── */
+.page-title {
+    color: var(--color-ink);
+    font-size: 1.375rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    gap: var(--space-xs);
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.page-title .icon {
+    color: var(--color-accent);
+    width: 22px;
+    height: 22px;
+    stroke-width: 1.75;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+ * 3. Sidebar
+ * ════════════════════════════════════════════════════════════════════ */
 .navbar-vertical {
-    background-color: var(--color-surface) !important;
+    background-color: var(--color-sidebar) !important;
     border-right: 1px solid var(--color-rule) !important;
     min-height: 100vh;
 }
@@ -153,29 +202,25 @@ body {
     height: var(--admin-header-height);
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 0;
-    margin-bottom: 0;
+    justify-content: flex-start;
+    padding: 0 var(--space-md);
+    margin: 0 !important;
     overflow: visible;
 }
 
 .navbar-vertical .navbar-brand > a {
-    width: 100%;
     height: 100%;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
     overflow: hidden;
 }
 
 .navbar-vertical .admin-sidebar-logo {
-    width: min(150px, calc(100% - 16px)) !important;
-    max-width: min(150px, calc(100% - 16px)) !important;
-    min-width: 124px;
+    width: auto !important;
+    max-width: 128px !important;
     height: auto !important;
-    max-height: 52px !important;
+    max-height: 34px !important;
     object-fit: contain !important;
-    object-position: center center;
 }
 
 [data-bs-theme=dark] .navbar-vertical .admin-sidebar-logo {
@@ -183,11 +228,18 @@ body {
 }
 
 .navbar-vertical .navbar-nav {
-    padding-inline: 0.375rem;
+    padding: var(--space-xs) var(--space-xs) var(--space-lg) !important;
+    gap: 2px;
+}
+
+.navbar-vertical .navbar-nav > .nav-item {
+    margin-top: 0 !important;
 }
 
 .navbar-vertical .navbar-nav > .nav-item > .nav-link {
-    padding-inline: 0.625rem;
+    min-height: 36px;
+    padding: var(--space-xs) var(--space-sm);
+    font-weight: 500;
 }
 
 .navbar-vertical .nav-link,
@@ -197,37 +249,101 @@ body {
     transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out);
 }
 
+.navbar-vertical .nav-link-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.navbar-vertical .dropdown-toggle::after {
+    flex-shrink: 0;
+    margin-left: var(--space-xs);
+}
+
+.navbar-vertical .nav-link-icon {
+    width: 20px;
+    margin-right: var(--space-xs);
+}
+
 .navbar-vertical .nav-link .icon {
     color: var(--color-muted);
+    width: 18px;
+    height: 18px;
+    stroke-width: 1.75;
 }
 
 .navbar-vertical .nav-link:hover,
 .navbar-vertical .dropdown-menu .dropdown-item:hover {
-    background-color: var(--color-surface-2) !important;
+    background-color: color-mix(in oklab, var(--color-ink) 6%, transparent) !important;
     color: var(--color-ink) !important;
 }
 
+/* Grup yang sedang terbuka / berisi halaman aktif. */
 .navbar-vertical .nav-link.active,
-.navbar-vertical .dropdown-item.active {
+.navbar-vertical .nav-link.show {
+    color: var(--color-ink) !important;
+}
+
+.navbar-vertical .nav-link.active {
+    background-color: var(--color-surface) !important;
+    box-shadow: 0 0 0 1px var(--color-rule), var(--shadow-lift);
+}
+
+.navbar-vertical .nav-link.active .icon,
+.navbar-vertical .nav-link.show .icon {
+    color: var(--color-accent);
+}
+
+/* Submenu: garis panduan vertikal, item aktif ditandai garis navy. */
+.navbar-vertical .dropdown-menu {
+    background: transparent !important;
+    border: 0;
+    box-shadow: none;
+    padding: 2px 0 var(--space-xs);
+    margin: 0 0 0 calc(var(--space-sm) + 9px) !important;
+}
+
+.navbar-vertical .dropdown-menu-column {
+    border-left: 1px solid var(--color-rule-2);
+    padding-left: var(--space-xs);
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.navbar-vertical .dropdown-menu .dropdown-item {
+    position: relative;
+    min-height: 32px;
+    padding: 0.375rem var(--space-sm);
+    font-size: 0.8125rem;
+    color: var(--color-muted) !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.navbar-vertical .dropdown-menu .dropdown-item.active {
     color: var(--color-accent) !important;
     background-color: var(--color-accent-tint) !important;
     font-weight: 500;
 }
 
-.navbar-vertical .nav-link.active .icon {
-    color: var(--color-accent);
+.navbar-vertical .dropdown-menu .dropdown-item.active::before {
+    content: "";
+    position: absolute;
+    left: calc(-1 * var(--space-xs) - 1px);
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--color-accent);
 }
 
-[data-bs-theme=dark] .navbar-vertical .nav-link.active,
-[data-bs-theme=dark] .navbar-vertical .dropdown-item.active,
-[data-bs-theme=dark] .navbar-vertical .nav-link.active .icon {
+[data-bs-theme=dark] .navbar-vertical .dropdown-menu .dropdown-item.active {
     color: var(--color-ink) !important;
-}
-
-.navbar-vertical .dropdown-menu {
-    background: transparent !important;
-    border: 0;
-    box-shadow: none;
 }
 
 @media (max-width: 1199.98px) {
@@ -249,29 +365,34 @@ body {
 
     .navbar-vertical .navbar-brand {
         border-bottom: 0;
-    }
-
-    .navbar-vertical .admin-sidebar-logo {
-        width: min(138px, calc(100% - 16px)) !important;
-        max-width: min(138px, calc(100% - 16px)) !important;
-        min-width: 116px;
-        max-height: 48px !important;
+        justify-content: center;
     }
 }
 
-/* ── Header ────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════
+ * 4. Header
+ * ════════════════════════════════════════════════════════════════════ */
 .app-header {
-    background-color: var(--color-surface) !important;
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    background-color: color-mix(in oklab, var(--color-surface) 88%, transparent) !important;
+    backdrop-filter: saturate(1.4) blur(8px);
     border-bottom: 1px solid var(--color-rule) !important;
     min-height: var(--admin-header-height);
     margin: 0;
+    padding-block: 0;
 }
 
 .app-header .container-xl {
     width: 100%;
     max-width: 100%;
-    padding-inline: 1rem;
+    min-height: var(--admin-header-height);
+    padding-inline: var(--space-lg);
     margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
 }
 
 .app-header .nav-link {
@@ -284,16 +405,142 @@ body {
     background-color: var(--color-surface-2) !important;
 }
 
+.app-header .icon,
 .app-header .icon-1 {
     width: 20px;
     height: 20px;
+    stroke-width: 1.75;
 }
 
 .app-header .avatar {
     box-shadow: 0 0 0 1px var(--color-rule-2);
 }
 
-/* ── Kartu ─────────────────────────────────────────────────────────── */
+/* Tombol pembuka command palette. */
+.admin-palette-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    width: min(340px, 100%);
+    height: 36px;
+    padding: 0 var(--space-xs) 0 var(--space-sm);
+    border: 1px solid var(--color-rule-2);
+    border-radius: var(--radius-control);
+    background: var(--color-paper);
+    color: var(--color-muted);
+    font-size: 0.8125rem;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out);
+}
+
+.admin-palette-trigger span {
+    flex: 1;
+    white-space: nowrap;
+}
+
+.admin-palette-trigger:hover {
+    border-color: var(--color-focus);
+    color: var(--color-ink-2);
+}
+
+kbd {
+    padding: 1px 6px;
+    border: 1px solid var(--color-rule-2);
+    border-radius: 4px;
+    background: var(--color-surface);
+    color: var(--color-muted);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    box-shadow: none;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+ * 5. Command palette
+ * ════════════════════════════════════════════════════════════════════ */
+.admin-palette {
+    width: min(560px, calc(100vw - 2 * var(--space-md)));
+    margin: 12vh auto auto;
+    padding: 0;
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    color: var(--color-ink-2);
+    box-shadow: var(--shadow-menu);
+    overflow: hidden;
+}
+
+.admin-palette::backdrop {
+    background: var(--color-backdrop);
+}
+
+.admin-palette input {
+    width: 100%;
+    height: 52px;
+    padding: 0 var(--space-md);
+    border: 0;
+    border-bottom: 1px solid var(--color-rule);
+    background: transparent;
+    color: var(--color-ink);
+    font-size: 0.9375rem;
+    outline: none;
+}
+
+.admin-palette [role="listbox"] {
+    max-height: min(360px, 50vh);
+    margin: 0;
+    padding: var(--space-xs);
+    overflow-y: auto;
+    list-style: none;
+}
+
+.admin-palette [role="option"] {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-control);
+    cursor: pointer;
+}
+
+.admin-palette [role="option"] small {
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+.admin-palette [role="option"][aria-selected="true"] {
+    background: var(--color-accent-tint);
+    color: var(--color-accent);
+}
+
+[data-bs-theme=dark] .admin-palette [role="option"][aria-selected="true"] {
+    color: var(--color-ink);
+}
+
+.admin-palette-empty {
+    padding: var(--space-lg);
+    color: var(--color-muted);
+    text-align: center;
+}
+
+.admin-palette-hint {
+    margin: 0;
+    padding: var(--space-xs) var(--space-md);
+    border-top: 1px solid var(--color-rule);
+    background: var(--color-surface-2);
+    color: var(--color-muted);
+    font-size: 0.75rem;
+}
+
+.admin-palette-hint kbd {
+    margin-right: 2px;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+ * 6. Kartu
+ * ════════════════════════════════════════════════════════════════════ */
 .card {
     background-color: var(--color-surface);
     border: 1px solid var(--color-rule);
@@ -313,18 +560,31 @@ body {
     border-color: var(--color-rule);
 }
 
+.card-header {
+    min-height: 52px;
+    padding-block: var(--space-sm);
+}
+
 .card-header.bg-transparent {
     background-color: transparent !important;
 }
 
 .card-title {
     color: var(--color-ink);
+    font-weight: 600;
 }
 
-/* ── Tombol ────────────────────────────────────────────────────────── */
+.card-footer {
+    background-color: var(--color-surface-2);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+ * 7. Tombol
+ * ════════════════════════════════════════════════════════════════════ */
 .btn {
     border-radius: var(--radius-control);
     box-shadow: none;
+    font-weight: 500;
 }
 
 .btn.shadow,
@@ -343,6 +603,44 @@ body {
     --tblr-btn-hover-color: var(--color-accent-ink);
 }
 
+/* Toolbar judul halaman: satu tombol utama (navy), sisanya netral.
+   Makna warna tetap terbawa di ikon. */
+.page-header .btn:is(.btn-secondary, .btn-info, .btn-success, .btn-warning, .btn-light, .btn-dark, .btn-outline-secondary, .btn-outline-primary) {
+    --tblr-btn-bg: var(--color-surface);
+    --tblr-btn-border-color: var(--color-rule-2);
+    --tblr-btn-color: var(--color-ink-2);
+    --tblr-btn-hover-bg: var(--color-surface-2);
+    --tblr-btn-hover-border-color: var(--color-rule-2);
+    --tblr-btn-hover-color: var(--color-ink);
+    --tblr-btn-active-bg: var(--color-surface-2);
+    --tblr-btn-active-color: var(--color-ink);
+    background: var(--tblr-btn-bg) !important;
+    color: var(--tblr-btn-color) !important;
+    border-color: var(--tblr-btn-border-color) !important;
+}
+
+.page-header .btn:is(.btn-secondary, .btn-info, .btn-success, .btn-warning, .btn-light, .btn-dark, .btn-outline-secondary, .btn-outline-primary):hover {
+    background: var(--tblr-btn-hover-bg) !important;
+    color: var(--tblr-btn-hover-color) !important;
+}
+
+.page-header .btn-success .icon {
+    color: var(--color-success);
+}
+
+.page-header .btn-info .icon,
+.page-header .btn-outline-primary .icon {
+    color: var(--color-info);
+}
+
+.page-header .btn-warning .icon {
+    color: var(--color-warning);
+}
+
+.page-header .btn .icon {
+    stroke-width: 1.75;
+}
+
 .btn:active:not(:disabled) {
     transform: translateY(1px);
 }
@@ -357,13 +655,16 @@ body {
 .nav-link:focus-visible,
 .dropdown-item:focus-visible,
 a:focus-visible,
-.form-check-input:focus-visible {
+.form-check-input:focus-visible,
+.admin-palette-trigger:focus-visible {
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;
     box-shadow: none;
 }
 
-/* ── Form ──────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════
+ * 8. Form
+ * ════════════════════════════════════════════════════════════════════ */
 .form-control,
 .form-select,
 .input-group-text {
@@ -399,6 +700,7 @@ a:focus-visible,
 
 .form-label {
     color: var(--color-ink);
+    font-weight: 500;
 }
 
 /* Select2 disamakan dengan input bawaan. */
@@ -430,26 +732,91 @@ a:focus-visible,
     color: var(--color-accent-ink);
 }
 
-/* ── Tabel ─────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════
+ * 9. Tabel
+ * ════════════════════════════════════════════════════════════════════ */
 .table {
     --tblr-table-color: var(--color-ink-2);
     --tblr-table-border-color: var(--color-rule);
     --tblr-table-hover-bg: var(--color-surface-2);
     --tblr-table-hover-color: var(--color-ink);
+    --tblr-table-striped-bg: var(--color-surface-2);
     color: var(--color-ink-2);
 }
 
 .table thead th {
-    background: var(--color-surface-2);
+    background: transparent;
     color: var(--color-muted);
-    border-bottom-color: var(--color-rule);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    padding-block: var(--space-sm);
+    border-bottom: 1px solid var(--color-rule-2);
+    white-space: nowrap;
 }
 
-.table td {
+.table > tbody > tr > td {
+    padding-block: var(--space-sm);
     font-variant-numeric: tabular-nums;
 }
 
-/* ── Menu, modal, badge ────────────────────────────────────────────── */
+.table > tbody > tr:last-child > td {
+    border-bottom: 0;
+}
+
+.table > tbody > tr {
+    transition: background-color var(--dur-short) var(--ease-out);
+}
+
+.table > tbody > tr:hover > td {
+    background-color: var(--color-surface-2);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+ * 10. Badge status: tint lembut, bukan blok warna penuh
+ * ════════════════════════════════════════════════════════════════════ */
+.badge {
+    border-radius: var(--radius-control);
+    font-weight: 500;
+}
+
+.page-body .badge:is(.bg-success, .bg-green) {
+    --badge-tone: var(--color-success);
+}
+
+.page-body .badge:is(.bg-danger, .bg-red) {
+    --badge-tone: var(--color-danger);
+}
+
+.page-body .badge:is(.bg-warning, .bg-yellow, .bg-orange) {
+    --badge-tone: var(--color-warning);
+}
+
+.page-body .badge:is(.bg-info, .bg-cyan, .bg-azure) {
+    --badge-tone: var(--color-info);
+}
+
+.page-body .badge:is(.bg-primary, .bg-blue) {
+    --badge-tone: var(--color-accent);
+}
+
+.page-body .badge:is(.bg-secondary, .bg-dark) {
+    --badge-tone: var(--color-muted);
+}
+
+.page-body .badge:is(.bg-success, .bg-green, .bg-danger, .bg-red, .bg-warning, .bg-yellow, .bg-orange, .bg-info, .bg-cyan, .bg-azure, .bg-primary, .bg-blue, .bg-secondary, .bg-dark) {
+    background: color-mix(in oklab, var(--badge-tone) 14%, var(--color-surface)) !important;
+    color: color-mix(in oklab, var(--badge-tone) 82%, var(--color-ink)) !important;
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--badge-tone) 22%, transparent);
+}
+
+[data-bs-theme=dark] .page-body .badge:is(.bg-success, .bg-green, .bg-danger, .bg-red, .bg-warning, .bg-yellow, .bg-orange, .bg-info, .bg-cyan, .bg-azure, .bg-primary, .bg-blue, .bg-secondary, .bg-dark) {
+    background: color-mix(in oklab, var(--badge-tone) 18%, var(--color-surface)) !important;
+    color: var(--badge-tone) !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+ * 11. Menu, modal, tab, paginasi, SweetAlert
+ * ════════════════════════════════════════════════════════════════════ */
 .dropdown-menu {
     background-color: var(--color-surface);
     border: 1px solid var(--color-rule);
@@ -467,6 +834,11 @@ a:focus-visible,
     color: var(--color-ink);
 }
 
+.modal-backdrop.show {
+    opacity: 1;
+    background: var(--color-backdrop);
+}
+
 .modal-content {
     background-color: var(--color-surface);
     border: 1px solid var(--color-rule);
@@ -479,18 +851,28 @@ a:focus-visible,
     border-color: var(--color-rule);
 }
 
-.badge {
-    border-radius: var(--radius-control);
-    font-weight: 500;
+.modal-title {
+    color: var(--color-ink);
+    font-weight: 600;
+}
+
+.modal-footer {
+    background-color: var(--color-surface-2);
 }
 
 .nav-tabs {
     border-bottom-color: var(--color-rule);
 }
 
+.nav-tabs .nav-link {
+    color: var(--color-muted);
+}
+
 .nav-tabs .nav-link.active {
-    color: var(--color-accent);
-    border-color: var(--color-rule) var(--color-rule) var(--color-surface);
+    color: var(--color-ink);
+    border-color: transparent;
+    box-shadow: inset 0 -2px 0 var(--color-accent);
+    background: transparent;
 }
 
 .pagination .page-link {
@@ -503,7 +885,6 @@ a:focus-visible,
     color: var(--color-accent-ink);
 }
 
-/* SweetAlert: tombol konfirmasi ikut warna brand (default-nya ungu). */
 .swal2-popup {
     border-radius: var(--radius-card) !important;
     background: var(--color-surface) !important;
@@ -523,7 +904,20 @@ a:focus-visible,
     box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-focus) 35%, transparent) !important;
 }
 
-/* ── Utilitas bawaan view yang di-hardcode (bg-white, text-dark, dst.) ── */
+/* ════════════════════════════════════════════════════════════════════
+ * 12. Footer
+ * ════════════════════════════════════════════════════════════════════ */
+.page > .page-wrapper > .footer {
+    border-top: 1px solid var(--color-rule);
+    background: transparent;
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    padding-block: var(--space-md);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+ * 13. Utilitas yang di-hardcode di view (bg-white, text-dark, dst.)
+ * ════════════════════════════════════════════════════════════════════ */
 [data-bs-theme=dark] .bg-white,
 [data-bs-theme=dark] .bg-light {
     background-color: var(--color-surface) !important;
@@ -545,7 +939,9 @@ a:focus-visible,
     color: var(--color-ink) !important;
 }
 
-/* ── Gerak ─────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════
+ * 14. Gerak
+ * ════════════════════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

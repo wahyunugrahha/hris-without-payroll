@@ -1,5 +1,17 @@
 <header class="navbar navbar-expand-md d-print-none d-none d-xl-block app-header">
     <div class="container-xl">
+        {{-- Pencarian menu (command palette, lihat assets/js/admin-palette.js) --}}
+        <button type="button" class="admin-palette-trigger" data-admin-palette-open aria-haspopup="dialog">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="18" height="18" viewBox="0 0 24 24"
+                stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                aria-hidden="true">
+                <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
+                <path d="M21 21l-6 -6" />
+            </svg>
+            <span>Cari menu…</span>
+            <kbd>Ctrl K</kbd>
+        </button>
+
         <div class="navbar-nav flex-row ms-auto align-items-center">
 
             {{-- 1. THEME TOGGLE (Dark/Light Mode) --}}
