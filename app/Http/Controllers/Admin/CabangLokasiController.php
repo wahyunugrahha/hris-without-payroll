@@ -22,7 +22,7 @@ class CabangLokasiController extends Controller
             abort(401);
         }
 
-        if ($user->hasRole('admin cabang') && $user->kode_cabang !== $kodeCabang) {
+        if ($user->isAdminCabang() && $user->kode_cabang !== $kodeCabang) {
             abort(403, 'Anda hanya bisa mengelola cabang Anda sendiri.');
         }
     }

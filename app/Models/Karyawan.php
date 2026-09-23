@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -208,6 +209,16 @@ class Karyawan extends Authenticatable
     }
 
     // --- RELASI ---
+    /**
+     * Admin cabang hanya melihat karyawan di cabangnya.
+     */
+    public function scopeVisibleTo(Builder $query, ?User $user): Builder
+    {
+        $cabang = $user?->scopedCabang();
+
+        return $query->when($cabang !== null, fn (Builder $q) => $q->where('kode_cabang', $cabang));
+    }
+
     public function jabatanRel()
     {
         return $this->belongsTo(Jabatan::class, 'jabatan_id', 'id');

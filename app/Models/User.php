@@ -71,4 +71,18 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Jabatan::class, 'jabatan_id');
     }
+
+    public function isAdminCabang(): bool
+    {
+        return $this->hasRole('admin cabang');
+    }
+
+    /**
+     * Cabang yang membatasi akses user ini, atau null jika boleh melihat semua cabang.
+     * Satu-satunya aturan: role "admin cabang" dibatasi ke kode_cabang miliknya.
+     */
+    public function scopedCabang(): ?string
+    {
+        return $this->isAdminCabang() ? (string) $this->kode_cabang : null;
+    }
 }

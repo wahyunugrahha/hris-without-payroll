@@ -157,7 +157,7 @@ class KonfigurasiController extends Controller
     public function jamkerjadept(Request $request)
     {
         $user = Auth::guard('user')->user();
-        $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
+        $isAdminCabang = (bool) $user?->isAdminCabang();
         $forcedKodeCabang = $isAdminCabang ? ($user->kode_cabang ?? null) : null;
 
         $jamkerjadept = DB::table('konfigurasi_jk_dept')
@@ -184,7 +184,7 @@ class KonfigurasiController extends Controller
     {
         $jamkerja = JamKerja::orderBy('nama_jam_kerja')->get();
         $user = Auth::guard('user')->user();
-        $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
+        $isAdminCabang = (bool) $user?->isAdminCabang();
         $cabang = $isAdminCabang && ! empty($user->kode_cabang)
             ? Cabang::where('kode_cabang', $user->kode_cabang)->get()
             : Cabang::get();
@@ -202,7 +202,7 @@ class KonfigurasiController extends Controller
         $kode_jk_dept = 'J'.$kode_cabang.$kode_dept;
 
         $user = Auth::guard('user')->user();
-        $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
+        $isAdminCabang = (bool) $user?->isAdminCabang();
         if ($isAdminCabang && ! empty($user->kode_cabang) && $user->kode_cabang !== $kode_cabang) {
             return redirect('/konfigurasi/jamkerjadept')->with(['warning' => 'Anda hanya dapat mengatur jam kerja departemen untuk cabang Anda.']);
         }
@@ -239,7 +239,7 @@ class KonfigurasiController extends Controller
     {
         $jamkerja = JamKerja::orderBy('nama_jam_kerja')->get();
         $user = Auth::guard('user')->user();
-        $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
+        $isAdminCabang = (bool) $user?->isAdminCabang();
         $cabang = $isAdminCabang && ! empty($user->kode_cabang)
             ? Cabang::where('kode_cabang', $user->kode_cabang)->get()
             : Cabang::get();
@@ -265,7 +265,7 @@ class KonfigurasiController extends Controller
     public function updatejamkerjadept($kode_jk_dept, Request $request)
     {
         $user = Auth::guard('user')->user();
-        $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
+        $isAdminCabang = (bool) $user?->isAdminCabang();
         $header = DB::table('konfigurasi_jk_dept')->where('kode_jk_dept', $kode_jk_dept)->first();
         if (! $header) {
             return redirect('/konfigurasi/jamkerjadept')->with(['warning' => 'Data tidak ditemukan']);
@@ -305,7 +305,7 @@ class KonfigurasiController extends Controller
     {
         $jamkerja = JamKerja::orderBy('nama_jam_kerja')->get();
         $user = Auth::guard('user')->user();
-        $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
+        $isAdminCabang = (bool) $user?->isAdminCabang();
         $cabang = DB::table('cabang')
             ->when($isAdminCabang && ! empty($user->kode_cabang), function ($q) use ($user) {
                 $q->where('kode_cabang', $user->kode_cabang);
@@ -352,7 +352,7 @@ class KonfigurasiController extends Controller
     {
         try {
             $user = Auth::guard('user')->user();
-            $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
+            $isAdminCabang = (bool) $user?->isAdminCabang();
             $header = KonfigurasiJkDept::where('kode_jk_dept', $kode_jk_dept)->first();
 
             if (! $header) {
@@ -376,7 +376,7 @@ class KonfigurasiController extends Controller
     {
         $karyawan = Karyawan::where('nik', $nik)->firstOrFail();
         $user = Auth::guard('user')->user();
-        $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
+        $isAdminCabang = (bool) $user?->isAdminCabang();
         if ($isAdminCabang && $user->kode_cabang !== $karyawan->kode_cabang) {
             return Redirect::back()->with(['warning' => 'Anda hanya bisa mengatur jam kerja karyawan di cabang Anda.']);
         }
@@ -403,7 +403,7 @@ class KonfigurasiController extends Controller
 
         $karyawan = Karyawan::where('nik', $nik)->first();
         $user = Auth::guard('user')->user();
-        $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
+        $isAdminCabang = (bool) $user?->isAdminCabang();
 
         if ($isAdminCabang && $karyawan && $user->kode_cabang !== $karyawan->kode_cabang) {
             return Redirect::back()->with(['warning' => 'Anda hanya bisa mengatur jam kerja karyawan di cabang Anda.']);
@@ -461,7 +461,7 @@ class KonfigurasiController extends Controller
 
         $karyawan = Karyawan::where('nik', $nik)->first();
         $user = Auth::guard('user')->user();
-        $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
+        $isAdminCabang = (bool) $user?->isAdminCabang();
 
         if ($isAdminCabang && $karyawan && $user->kode_cabang !== $karyawan->kode_cabang) {
             return redirect('/karyawan')->with(['warning' => 'Anda hanya bisa mengatur jam kerja karyawan di cabang Anda.']);
@@ -519,7 +519,7 @@ class KonfigurasiController extends Controller
             ]);
 
             $user = Auth::guard('user')->user();
-            $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
+            $isAdminCabang = (bool) $user?->isAdminCabang();
             $kodeCabang = $request->kode_cabang_set;
 
             // Validasi admin cabang hanya bisa set untuk cabang mereka

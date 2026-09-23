@@ -14,7 +14,6 @@ use App\Models\Karyawan;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -30,19 +29,6 @@ class KaryawanController extends Controller
 
     private $angka_regex = 'regex:/^[0-9]+$/';
 
-    /**
-     * Helper untuk mendapatkan Kode Cabang jika user adalah Admin Cabang
-     */
-    private function getForcedCabang()
-    {
-        $user = Auth::guard('user')->user();
-        if ($user && $user->roles->pluck('name')->contains('admin cabang')) {
-            return $user->kode_cabang;
-        }
-
-        return null;
-    }
-
     private function getStatusFilterOptions()
     {
         return Karyawan::FILTERABLE_STATUSES;
@@ -55,7 +41,7 @@ class KaryawanController extends Controller
 
     public function index(Request $request)
     {
-        $forcedKodeCabang = $this->getForcedCabang();
+        $forcedKodeCabang = $this->scopedCabang();
         $statusFilter = $this->normalizeStatusFilter($request->get('status_filter'), Karyawan::STATUS_AKTIF);
 
         // Menggunakan Eloquent pure agar lebih bersih dan aman dari collision nama kolom
@@ -128,7 +114,7 @@ class KaryawanController extends Controller
 
         DB::beginTransaction();
         try {
-            $forcedCabang = $this->getForcedCabang();
+            $forcedCabang = $this->scopedCabang();
             $nik = $request->nik;
             $foto = null;
 
@@ -199,7 +185,7 @@ class KaryawanController extends Controller
     {
         try {
             $karyawan = Karyawan::findOrFail($nik);
-            $forcedCabang = $this->getForcedCabang();
+            $forcedCabang = $this->scopedCabang();
 
             // Security Check: Status Diberhentikan tidak bisa diedit
             if ($karyawan->status_aktif === Karyawan::STATUS_DIBERHENTIKAN) {
@@ -267,7 +253,7 @@ class KaryawanController extends Controller
         DB::beginTransaction();
         try {
             $karyawan = Karyawan::where('nik', $nik)->firstOrFail();
-            $forcedCabang = $this->getForcedCabang();
+            $forcedCabang = $this->scopedCabang();
 
             // Security Check
             if (! empty($forcedCabang) && $karyawan->kode_cabang !== $forcedCabang) {
@@ -432,7 +418,7 @@ class KaryawanController extends Controller
         DB::beginTransaction();
         try {
             $karyawan = Karyawan::findOrFail($nik);
-            $forcedCabang = $this->getForcedCabang();
+            $forcedCabang = $this->scopedCabang();
 
             // Security Check
             if (! empty($forcedCabang) && $karyawan->kode_cabang !== $forcedCabang) {
@@ -469,7 +455,7 @@ class KaryawanController extends Controller
 
     public function export(Request $request)
     {
-        $forcedCabang = $this->getForcedCabang();
+        $forcedCabang = $this->scopedCabang();
 
         $filters = [
             'nama_karyawan' => $request->nama_karyawan,
@@ -537,7 +523,7 @@ class KaryawanController extends Controller
 
     public function monitoringTurnover(Request $request)
     {
-        $forcedKodeCabang = $this->getForcedCabang();
+        $forcedKodeCabang = $this->scopedCabang();
         $statusFilter = $this->normalizeStatusFilter($request->get('status_filter'));
 
         $query = Karyawan::with(['jabatanRel', 'departemen', 'cabang'])
@@ -601,7 +587,7 @@ class KaryawanController extends Controller
 
         try {
             $karyawan = Karyawan::findOrFail($nik);
-            $forcedCabang = $this->getForcedCabang();
+            $forcedCabang = $this->scopedCabang();
 
             if ($karyawan->status_aktif === Karyawan::STATUS_DIBERHENTIKAN) {
                 return Redirect::back()->with(['warning' => 'Data karyawan yang sudah Diberhentikan tidak dapat diubah lagi.']);

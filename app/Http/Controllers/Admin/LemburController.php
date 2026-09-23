@@ -15,32 +15,6 @@ use Illuminate\Support\Facades\Redirect;
 
 class LemburController extends Controller
 {
-    /**
-     * Helper privat untuk membatasi query database.
-     * Jika user yang login adalah Admin Cabang, query otomatis difilter hanya menampilkan
-     * data karyawan dari cabang yang sama dengan user tersebut.
-     *
-     * FIX BUG: Jika cabang dihapus, user masih punya kode_cabang lama tapi tidak ada karyawan terkait.
-     * Solusi: Filter berdasarkan kode_cabang di tabel karyawan, bukan hanya whereHas.
-     */
-    private function getScopedQuery()
-    {
-        $user = Auth::guard('user')->user();
-        $query = Lembur::query();
-
-        // Jika user memiliki role admin cabang atau memiliki kode_cabang
-        if ($user && ($user->hasRole('admin cabang') || ! empty($user->kode_cabang))) {
-            $kodeCabang = $user->kode_cabang;
-
-            // Filter berdasarkan cabang karyawan (bukan hanya whereHas yang mungkin gagal jika relasi tidak valid)
-            $query->whereHas('karyawan', function ($q) use ($kodeCabang) {
-                $q->where('kode_cabang', $kodeCabang);
-            });
-        }
-
-        return $query;
-    }
-
     public function index(Request $request)
     {
         return $this->approval($request);
@@ -49,10 +23,10 @@ class LemburController extends Controller
     public function approval(Request $request)
     {
         $loggedInUser = Auth::guard('user')->user();
-        $hasRoleAdminCabang = $loggedInUser && $loggedInUser->roles->pluck('name')->contains('admin cabang');
+        $hasRoleAdminCabang = (bool) $loggedInUser?->isAdminCabang();
 
         // Menggunakan scoped query dan eager loading untuk performa
-        $query = $this->getScopedQuery()->with(['karyawan.departemen', 'karyawan.cabang']);
+        $query = Lembur::visibleTo(Auth::guard('user')->user())->with(['karyawan.departemen', 'karyawan.cabang']);
 
         // Filter berdasarkan status approval, tanggal, dan departemen
         if ($request->filled('status')) {
@@ -80,7 +54,7 @@ class LemburController extends Controller
         }
 
         // Filter Cabang - hanya untuk Super Admin yang ingin filter cabang spesifik
-        // Admin Cabang sudah ter-filter otomatis di getScopedQuery()
+        // Admin Cabang sudah ter-filter otomatis di scope visibleTo()
         if (! $hasRoleAdminCabang && $request->filled('kode_cabang')) {
             $query->whereHas('karyawan', fn ($q) => $q->where('kode_cabang', $request->kode_cabang));
         }
@@ -115,8 +89,8 @@ class LemburController extends Controller
     public function approve(Request $request)
     {
         try {
-            // Menggunakan getScopedQuery()->find() untuk mencegah user meng-approve data cabang lain (IDOR Protection)
-            $lembur = $this->getScopedQuery()->find($request->id);
+            // Menggunakan visibleTo()->find() untuk mencegah user meng-approve data cabang lain (IDOR Protection)
+            $lembur = Lembur::visibleTo(Auth::guard('user')->user())->find($request->id);
 
             if (! $lembur) {
                 return Redirect::back()->with('error', 'Data lembur tidak ditemukan atau akses ditolak.');
@@ -140,7 +114,7 @@ class LemburController extends Controller
 
         try {
             // Validasi kepemilikan data sebelum reject
-            $lembur = $this->getScopedQuery()->find($request->id);
+            $lembur = Lembur::visibleTo(Auth::guard('user')->user())->find($request->id);
 
             if (! $lembur) {
                 return Redirect::back()->with('error', 'Data tidak ditemukan atau akses ditolak.');
@@ -161,7 +135,7 @@ class LemburController extends Controller
     public function cancel(Request $request)
     {
         try {
-            $lembur = $this->getScopedQuery()->find($request->id);
+            $lembur = Lembur::visibleTo(Auth::guard('user')->user())->find($request->id);
 
             if (! $lembur) {
                 return Redirect::back()->with('error', 'Data tidak ditemukan atau akses ditolak.');
@@ -190,7 +164,7 @@ class LemburController extends Controller
         ]);
 
         try {
-            $lembur = $this->getScopedQuery()->find($request->id);
+            $lembur = Lembur::visibleTo(Auth::guard('user')->user())->find($request->id);
 
             if (! $lembur) {
                 return Redirect::back()->with('error', 'Data lembur tidak ditemukan atau akses ditolak.');
@@ -257,7 +231,7 @@ class LemburController extends Controller
         $departemen = Departemen::orderBy('nama_dept')->get();
 
         $loggedInUser = Auth::guard('user')->user();
-        $hasRoleAdminCabang = $loggedInUser && $loggedInUser->roles->pluck('name')->contains('admin cabang');
+        $hasRoleAdminCabang = (bool) $loggedInUser?->isAdminCabang();
 
         $forcedKodeCabang = $hasRoleAdminCabang && ! empty($loggedInUser->kode_cabang) ? $loggedInUser->kode_cabang : null;
         $cabang = $hasRoleAdminCabang
@@ -275,7 +249,7 @@ class LemburController extends Controller
         ]);
 
         $loggedInUser = Auth::guard('user')->user();
-        $hasRoleAdminCabang = $loggedInUser && $loggedInUser->roles->pluck('name')->contains('admin cabang');
+        $hasRoleAdminCabang = (bool) $loggedInUser?->isAdminCabang();
 
         // Penentuan kode cabang: Jika admin cabang, dipaksa kode sendiri. Jika super admin, ambil dari request.
         $filterCabang = $hasRoleAdminCabang && ! empty($loggedInUser->kode_cabang)

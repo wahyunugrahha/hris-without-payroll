@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -53,10 +54,10 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6',
+            'password' => 'required|min:8',
             'kode_dept' => 'required',
             'jabatan_id' => 'required|exists:jabatan,id',
-            'kode_cabang' => 'nullable|string|max:8',
+            'kode_cabang' => $this->kodeCabangRules($request),
         ]);
 
         DB::transaction(function () use ($request) {
@@ -104,7 +105,8 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email,'.$id,
             'kode_dept' => 'required',
             'jabatan_id' => 'required|exists:jabatan,id',
-            'kode_cabang' => 'nullable|string|max:8',
+            'kode_cabang' => $this->kodeCabangRules($request),
+            'password' => 'nullable|min:8',
         ]);
 
         DB::transaction(function () use ($request, $id) {
@@ -132,6 +134,17 @@ class UserController extends Controller
         });
 
         return back()->with('success', 'Data user berhasil diupdate');
+    }
+
+    /**
+     * Admin cabang wajib punya cabang; tanpa cabang, pembatasan datanya tidak berlaku.
+     */
+    private function kodeCabangRules(Request $request): array
+    {
+        return [
+            'nullable', 'string', 'max:8', 'exists:cabang,kode_cabang',
+            Rule::requiredIf(fn () => Jabatan::with('role')->find($request->jabatan_id)?->role?->name === 'admin cabang'),
+        ];
     }
 
     public function destroy($id)

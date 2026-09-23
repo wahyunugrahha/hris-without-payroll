@@ -8,16 +8,22 @@ use Throwable;
 abstract class Controller
 {
     /**
-     * True jika user adalah admin cabang dan karyawan target berada di cabang lain.
-     * Dipakai di setiap aksi admin yang menerima ID dari request (approve, batal, hapus, detail).
+     * Cabang yang membatasi admin yang login, atau null jika boleh melihat semua cabang.
+     */
+    protected function scopedCabang(): ?string
+    {
+        return auth('user')->user()?->scopedCabang();
+    }
+
+    /**
+     * True jika admin yang login dibatasi cabang dan karyawan target berada di cabang lain.
+     * Dipakai di aksi admin yang menerima ID dari request (approve, batal, hapus, detail).
      */
     protected function outsideAdminCabang($karyawan): bool
     {
-        $user = auth('user')->user();
+        $cabang = $this->scopedCabang();
 
-        return $user
-            && $user->hasRole('admin cabang')
-            && ($karyawan?->kode_cabang === null || $karyawan->kode_cabang !== $user->kode_cabang);
+        return $cabang !== null && $karyawan?->kode_cabang !== $cabang;
     }
 
     /**

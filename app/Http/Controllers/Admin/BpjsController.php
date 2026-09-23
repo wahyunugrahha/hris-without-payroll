@@ -11,19 +11,9 @@ use Illuminate\Support\Facades\Storage;
 
 class BpjsController extends Controller
 {
-    private function getForcedCabang(): ?string
-    {
-        $user = Auth::guard('user')->user();
-        if ($user && $user->roles->pluck('name')->contains('admin cabang')) {
-            return $user->kode_cabang;
-        }
-
-        return null;
-    }
-
     public function index(Request $request)
     {
-        $forcedKodeCabang = $this->getForcedCabang();
+        $forcedKodeCabang = $this->scopedCabang();
 
         $query = BpjsRequest::query()
             ->select('bpjs_tk_requests.*', 'karyawan.nama_lengkap', 'karyawan.kode_cabang')
@@ -61,7 +51,7 @@ class BpjsController extends Controller
 
     public function show($id)
     {
-        $forcedKodeCabang = $this->getForcedCabang();
+        $forcedKodeCabang = $this->scopedCabang();
 
         $pengajuan = BpjsRequest::with('karyawan')->findOrFail($id);
         $karyawan = Karyawan::findOrFail($pengajuan->nik);
@@ -83,7 +73,7 @@ class BpjsController extends Controller
             'catatan' => 'nullable|string',
         ]);
 
-        $forcedKodeCabang = $this->getForcedCabang();
+        $forcedKodeCabang = $this->scopedCabang();
 
         $pengajuan = BpjsRequest::findOrFail($id);
 

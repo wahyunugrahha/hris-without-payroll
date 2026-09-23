@@ -15,7 +15,7 @@ class CabangController extends Controller
     public function index(Request $request)
     {
         $user = Auth::guard('user')->user();
-        $isAdminCabang = $user?->hasRole('admin cabang');
+        $isAdminCabang = $user?->isAdminCabang();
         $forcedKodeCabang = $isAdminCabang ? $user->kode_cabang : null;
 
         $cabang = Cabang::query()
@@ -45,7 +45,7 @@ class CabangController extends Controller
     {
         $user = Auth::guard('user')->user();
 
-        if ($user?->hasRole('admin cabang')) {
+        if ($user?->isAdminCabang()) {
             return back()->with('warning', 'Admin cabang tidak diizinkan menambah cabang baru.');
         }
 
@@ -100,7 +100,7 @@ class CabangController extends Controller
     {
         $user = Auth::guard('user')->user();
 
-        if ($user?->hasRole('admin cabang') && $user->kode_cabang !== $kode_cabang) {
+        if ($user?->isAdminCabang() && $user->kode_cabang !== $kode_cabang) {
             return back()->with('warning', 'Anda hanya bisa mengelola cabang Anda sendiri.');
         }
 
@@ -113,7 +113,7 @@ class CabangController extends Controller
     {
         $user = Auth::guard('user')->user();
 
-        if ($user?->hasRole('admin cabang') && $user->kode_cabang !== $kode_cabang) {
+        if ($user?->isAdminCabang() && $user->kode_cabang !== $kode_cabang) {
             return back()->with('warning', 'Anda hanya bisa mengelola cabang Anda sendiri.');
         }
 
@@ -216,7 +216,7 @@ class CabangController extends Controller
             $cabang = Cabang::findOrFail($kode_cabang);
             $user = Auth::guard('user')->user();
 
-            if ($user?->hasRole('admin cabang') && $user->kode_cabang !== $kode_cabang) {
+            if ($user?->isAdminCabang() && $user->kode_cabang !== $kode_cabang) {
                 return back()->with('warning', 'Anda hanya bisa menghapus cabang Anda sendiri.');
             }
 

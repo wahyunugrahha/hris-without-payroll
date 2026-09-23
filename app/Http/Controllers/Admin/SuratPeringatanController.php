@@ -15,30 +15,15 @@ use Illuminate\Validation\ValidationException;
 
 class SuratPeringatanController extends Controller
 {
-    private function getScopedQuery()
-    {
-        $user = Auth::guard('user')->user();
-        $query = SuratPeringatan::query();
-
-        // Jika user adalah admin cabang, filter berdasarkan karyawan di cabangnya
-        if ($user && ($user->hasRole('admin cabang') || ! empty($user->kode_cabang))) {
-            $query->whereHas('karyawan', function ($q) use ($user) {
-                $q->where('kode_cabang', $user->kode_cabang);
-            });
-        }
-
-        return $query;
-    }
-
     public function index(Request $request)
     {
         $loggedInUser = Auth::guard('user')->user();
-        $hasRoleAdminCabang = $loggedInUser && $loggedInUser->roles->pluck('name')->contains('admin cabang');
+        $hasRoleAdminCabang = (bool) $loggedInUser?->isAdminCabang();
         $forcedKodeCabang = $hasRoleAdminCabang && ! empty($loggedInUser->kode_cabang) ? $loggedInUser->kode_cabang : null;
 
         // 1. Base Query menggunakan Scope Keamanan
         // Eager load Cabang dan Departemen melalui Karyawan
-        $baseQuery = $this->getScopedQuery()->with(['karyawan.cabang', 'karyawan.departemen']);
+        $baseQuery = SuratPeringatan::visibleTo(Auth::guard('user')->user())->with(['karyawan.cabang', 'karyawan.departemen']);
 
         // 2. Ambil Statistik Ringkas (Selalu total global aktif)
         $stats = [
@@ -75,7 +60,7 @@ class SuratPeringatanController extends Controller
         }
 
         // Filter Cabang (Untuk Super Admin yang ingin filter manual)
-        // Jika Admin Cabang, forcedKodeCabang sudah di-handle oleh getScopedQuery()
+        // Jika Admin Cabang, forcedKodeCabang sudah di-handle oleh scope visibleTo()
         if (! $forcedKodeCabang && $request->filled('kode_cabang')) {
             $query->whereHas('karyawan', function ($qk) use ($request) {
                 $qk->where('kode_cabang', $request->kode_cabang);
@@ -113,7 +98,7 @@ class SuratPeringatanController extends Controller
     public function store(Request $request)
     {
         $user = Auth::guard('user')->user();
-        $forcedKodeCabang = ($user && $user->hasRole('admin cabang')) ? $user->kode_cabang : null;
+        $forcedKodeCabang = $user?->scopedCabang();
 
         try {
             $validated = $request->validate([
@@ -176,7 +161,7 @@ class SuratPeringatanController extends Controller
     public function pemutihan($id)
     {
         try {
-            $sp = $this->getScopedQuery()->find($id);
+            $sp = SuratPeringatan::visibleTo(Auth::guard('user')->user())->find($id);
 
             if (! $sp) {
                 return back()->with('error', 'Data tidak ditemukan atau akses ditolak.');
@@ -202,7 +187,7 @@ class SuratPeringatanController extends Controller
 
     public function cetak($id)
     {
-        $sp = $this->getScopedQuery()->with('karyawan')->find($id);
+        $sp = SuratPeringatan::visibleTo(Auth::guard('user')->user())->with('karyawan')->find($id);
 
         if (! $sp) {
             return back()->with('error', 'Data tidak ditemukan atau akses ditolak.');

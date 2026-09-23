@@ -10,22 +10,9 @@ use Illuminate\Support\Facades\Auth;
 
 class KenaikanGajiController extends Controller
 {
-    /**
-     * Helper untuk mendapatkan Kode Cabang jika user adalah Admin Cabang
-     */
-    private function getForcedCabang()
-    {
-        $user = Auth::guard('user')->user();
-        if ($user && $user->roles->pluck('name')->contains('admin cabang')) {
-            return $user->kode_cabang;
-        }
-
-        return null;
-    }
-
     public function index(Request $request)
     {
-        $forcedKodeCabang = $this->getForcedCabang();
+        $forcedKodeCabang = $this->scopedCabang();
 
         $query = SalaryIncrease::query();
         $query->select('salary_increases.*', 'karyawan.nama_lengkap', 'karyawan.jabatan_id', 'karyawan.kode_dept', 'karyawan.kode_cabang')
@@ -66,7 +53,7 @@ class KenaikanGajiController extends Controller
 
     public function approve($id)
     {
-        $forcedKodeCabang = $this->getForcedCabang();
+        $forcedKodeCabang = $this->scopedCabang();
 
         $pengajuan = SalaryIncrease::select('salary_increases.*')
             ->join('karyawan', 'salary_increases.nik', '=', 'karyawan.nik')
@@ -90,7 +77,7 @@ class KenaikanGajiController extends Controller
 
     public function reject(Request $request, $id)
     {
-        $forcedKodeCabang = $this->getForcedCabang();
+        $forcedKodeCabang = $this->scopedCabang();
 
         $pengajuan = SalaryIncrease::select('salary_increases.*')
             ->join('karyawan', 'salary_increases.nik', '=', 'karyawan.nik')

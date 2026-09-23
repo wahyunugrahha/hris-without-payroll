@@ -16,7 +16,7 @@ class HariLiburController extends Controller
     public function index(Request $request)
     {
         $user = Auth::guard('user')->user();
-        $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
+        $isAdminCabang = (bool) $user?->isAdminCabang();
         $forcedKodeCabang = $isAdminCabang ? $user->kode_cabang : null;
 
         $query = HariLibur::query();

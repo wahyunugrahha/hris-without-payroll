@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\VisibleByCabang;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class DinasLuar extends Model
 {
-    use HasFactory;
+    use HasFactory, VisibleByCabang;
 
     protected $table = 'dinas_luar';
 

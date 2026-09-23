@@ -31,7 +31,7 @@ class KPIController extends Controller
     public function masterKPI(Request $request)
     {
         $user = Auth::guard('user')->user();
-        $isAdminCabang = $user->hasRole('admin cabang');
+        $isAdminCabang = $user->isAdminCabang();
         $isHR = $user->hasRole(['hrd', 'administrator']);
 
         $kpiMaster = KPIMaster::with(['departemen', 'jabatan'])
@@ -130,7 +130,7 @@ class KPIController extends Controller
     {
         try {
             $user = Auth::guard('user')->user();
-            $isAdminCabang = $user->hasRole('admin cabang');
+            $isAdminCabang = $user->isAdminCabang();
 
             $kpi = KPIMaster::findOrFail($id);
             $kodeMaster = $kpi->kode_master;
@@ -669,7 +669,7 @@ class KPIController extends Controller
         $kode_cabang = $request->input('kode_cabang');
 
         $user = Auth::guard('user')->user();
-        if ($user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang')) {
+        if ($user?->isAdminCabang()) {
             $kode_cabang = $user->kode_cabang;
         }
 
@@ -762,7 +762,7 @@ class KPIController extends Controller
         $niks = $request->input('niks', []);
 
         $user = Auth::guard('user')->user();
-        if ($user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang')) {
+        if ($user?->isAdminCabang()) {
             $kode_cabang = $user->kode_cabang;
         }
 

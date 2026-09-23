@@ -80,7 +80,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             // 2. Cek Role & Cabang untuk filtering query
-            $isAdminCabang = method_exists($authUser, 'hasRole') && $authUser->hasRole('admin cabang');
+            $isAdminCabang = $authUser->isAdminCabang();
             $kodeCabang = $isAdminCabang ? $authUser->kode_cabang : null;
 
             // 3. Hitung Jumlah Pending (Counts)

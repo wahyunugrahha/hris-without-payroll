@@ -192,7 +192,7 @@ class PresensiController extends Controller
         $loggedInUser = Auth::guard('user')->user();
 
         // Cek role admin cabang
-        $isAdminCabang = $loggedInUser && method_exists($loggedInUser, 'hasRole') && $loggedInUser->hasRole('admin cabang');
+        $isAdminCabang = (bool) $loggedInUser?->isAdminCabang();
         $kode_cabang = $isAdminCabang ? ($loggedInUser->kode_cabang ?? null) : $request->kode_cabang;
 
         $search = $request->search;
@@ -412,7 +412,7 @@ class PresensiController extends Controller
         $defaultTahun = $periodeIni->tahun();
 
         $user = Auth::guard('user')->user();
-        $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
+        $isAdminCabang = (bool) $user?->isAdminCabang();
         $forcedKodeCabang = $isAdminCabang ? ($user->kode_cabang ?? null) : null;
 
         $karyawan = Karyawan::orderBy('nama_lengkap')
@@ -437,7 +437,7 @@ class PresensiController extends Controller
         $tahun = $request->tahun;
         $user = Auth::guard('user')->user();
 
-        $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
+        $isAdminCabang = (bool) $user?->isAdminCabang();
         $forcedKodeCabang = $isAdminCabang ? ($user->kode_cabang ?? null) : null;
 
         $namabulan = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -647,7 +647,7 @@ class PresensiController extends Controller
         $departemen = Departemen::orderBy('nama_dept')->get();
         $cabang = Cabang::orderBy('nama_cabang')->get();
         $user = Auth::guard('user')->user();
-        $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
+        $isAdminCabang = (bool) $user?->isAdminCabang();
         $forcedKodeCabang = $isAdminCabang ? ($user->kode_cabang ?? null) : null;
 
         return view('admin.presensi.rekap', compact('namabulan', 'list_periode', 'defaultBulan', 'defaultTahun', 'departemen', 'cabang', 'forcedKodeCabang', 'isAdminCabang'));
@@ -672,7 +672,7 @@ class PresensiController extends Controller
 
         $user = Auth::guard('user')->user();
 
-        $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
+        $isAdminCabang = (bool) $user?->isAdminCabang();
         if ($isAdminCabang) {
             $kode_cabang = $user->kode_cabang;
         }
@@ -895,7 +895,7 @@ class PresensiController extends Controller
         }
 
         $user = Auth::guard('user')->user();
-        $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
+        $isAdminCabang = (bool) $user?->isAdminCabang();
         $forcedKodeCabang = $isAdminCabang ? ($user->kode_cabang ?? null) : null;
 
         // Set default filter ke bulan sekarang jika tidak ada filter tanggal yang ditentukan

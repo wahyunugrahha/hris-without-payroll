@@ -10,26 +10,9 @@ use Illuminate\Support\Facades\Auth;
 
 class DinasLuarController extends Controller
 {
-    /**
-     * Helper scope query.
-     */
-    private function getScopedQuery()
-    {
-        $user = Auth::guard('user')->user();
-        $query = DinasLuar::query();
-
-        if ($user && ($user->hasRole('admin cabang') || ! empty($user->kode_cabang))) {
-            $query->whereHas('karyawan', function ($q) use ($user) {
-                $q->where('kode_cabang', $user->kode_cabang);
-            });
-        }
-
-        return $query;
-    }
-
     public function dashboard()
     {
-        $baseQuery = $this->getScopedQuery();
+        $baseQuery = DinasLuar::visibleTo(Auth::guard('user')->user());
 
         $menunggu = (clone $baseQuery)->where('status_acc', 'menunggu')->count();
         $acc = (clone $baseQuery)->where('status_acc', 'acc')->count();
@@ -40,7 +23,7 @@ class DinasLuarController extends Controller
 
     public function index(Request $request)
     {
-        $dinasluars = $this->getScopedQuery()
+        $dinasluars = DinasLuar::visibleTo(Auth::guard('user')->user())
             ->with(['karyawan.cabang', 'approver'])
             ->orderBy('created_at', 'desc')
             ->paginate(25)
@@ -54,10 +37,10 @@ class DinasLuarController extends Controller
         $user = Auth::guard('user')->user();
 
         // PERBAIKAN: Definisi variabel untuk View
-        $hasRoleAdminCabang = $user->hasRole('admin cabang');
+        $hasRoleAdminCabang = $user->isAdminCabang();
         $isAdminCabang = ! empty($user->kode_cabang); // Variabel ini sebelumnya hilang
 
-        $query = $this->getScopedQuery()->with(['karyawan.cabang', 'approver']);
+        $query = DinasLuar::visibleTo(Auth::guard('user')->user())->with(['karyawan.cabang', 'approver']);
 
         // Filter Tanggal
         if ($request->filled('dari') && $request->filled('sampai')) {
@@ -128,7 +111,7 @@ class DinasLuarController extends Controller
             'dana_disetujui' => 'nullable|numeric|min:0',
         ]);
 
-        $dinasLuar = $this->getScopedQuery()->find($request->id);
+        $dinasLuar = DinasLuar::visibleTo(Auth::guard('user')->user())->find($request->id);
 
         if (! $dinasLuar) {
             return redirect()->back()->with('error', 'Data tidak ditemukan atau Anda tidak memiliki akses.');
@@ -161,7 +144,7 @@ class DinasLuarController extends Controller
 
     public function cancel($id)
     {
-        $dinasLuar = $this->getScopedQuery()->find($id);
+        $dinasLuar = DinasLuar::visibleTo(Auth::guard('user')->user())->find($id);
 
         if (! $dinasLuar) {
             return redirect()->back()->with('error', 'Data tidak ditemukan atau akses ditolak.');
@@ -182,7 +165,7 @@ class DinasLuarController extends Controller
      */
     public function cetak($id)
     {
-        $dinasLuar = $this->getScopedQuery()
+        $dinasLuar = DinasLuar::visibleTo(Auth::guard('user')->user())
             ->with(['karyawan.cabang', 'approver.jabatan'])
             ->find($id);
 

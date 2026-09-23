@@ -55,7 +55,7 @@ class DashboardController extends Controller
 
         // 2. Cek Role & Filter Cabang
         $user = Auth::guard('user')->user();
-        $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
+        $isAdminCabang = (bool) $user?->isAdminCabang();
         $filterQ = trim((string) $request->query('q', ''));
         $filterCabang = (string) $request->query('cabang', '');
         $filterDept = (string) $request->query('dept', '');
