@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
@@ -19,7 +18,7 @@ class KonfigurasiUmumTest extends TestCase
         foreach (['dashboard-view-admin', 'konfigurasi-umum-edit-admin'] as $permission) {
             Permission::create(['name' => $permission, 'guard_name' => 'user']);
         }
-        $admin = User::create(['name' => 'Admin', 'email' => 'a@test.id', 'password' => Hash::make($this->passwordUji())])
+        $admin = User::factory()->create(['name' => 'Admin', 'email' => 'a@test.id'])
             ->givePermissionTo(['dashboard-view-admin', 'konfigurasi-umum-edit-admin']);
 
         $this->actingAs($admin, 'user')

@@ -40,7 +40,7 @@ class KaryawanAdminTest extends TestCase
 
     private function admin(?string $cabang = null): User
     {
-        $user = User::create(['name' => 'Admin', 'email' => uniqid().'@test.id', 'password' => Hash::make($this->passwordUji()), 'kode_cabang' => $cabang]);
+        $user = User::factory()->create(['name' => 'Admin', 'email' => uniqid().'@test.id', 'kode_cabang' => $cabang]);
         $user->givePermissionTo(['dashboard-view-admin', 'karyawan-create-admin', 'karyawan-edit-admin']);
 
         return $cabang ? $user->assignRole('admin cabang') : $user;

@@ -8,7 +8,6 @@ use App\Models\KPIDailyExtra;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -49,10 +48,8 @@ class VerifikasiKpiTest extends TestCase
 
     private function user(string $role, ?string $cabang = null): User
     {
-        $user = User::create([
-            'name' => $role, 'email' => str_replace(' ', '', $role).'@test.id',
-            'password' => Hash::make($this->passwordUji()), 'kode_cabang' => $cabang,
-        ]);
+        $user = User::factory()->create([
+            'name' => $role, 'email' => str_replace(' ', '', $role).'@test.id', 'kode_cabang' => $cabang]);
 
         return $user->assignRole($role)->givePermissionTo(['dashboard-view-admin', 'kpi-view-admin', 'kpi-edit-admin']);
     }

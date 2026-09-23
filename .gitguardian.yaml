@@ -1,0 +1,6 @@
+# Konfigurasi pemindaian secret GitGuardian (GitHub app & ggshield).
+version: 2
+secret:
+  # Test hanya berisi data contoh untuk database test (bukan kredensial sungguhan).
+  ignored_paths:
+    - "tests/**"

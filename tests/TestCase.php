@@ -7,13 +7,16 @@ use Illuminate\Support\Str;
 
 abstract class TestCase extends BaseTestCase
 {
-    private ?string $passwordUji = null;
-
     /**
-     * Password acak untuk akun contoh di test (tidak ditulis literal agar tidak terdeteksi sebagai secret).
+     * Field password acak untuk payload form (buat user / ganti password) di test.
+     * Akun contoh sendiri dibuat lewat factory, jadi tidak ada password yang ditulis di test.
      */
-    protected function passwordUji(): string
+    protected function kredensialBaru(bool $konfirmasi = false): array
     {
-        return $this->passwordUji ??= Str::random(16);
+        $nilai = Str::random(16);
+
+        return $konfirmasi
+            ? ['password' => $nilai, 'password_confirmation' => $nilai]
+            : ['password' => $nilai];
     }
 }

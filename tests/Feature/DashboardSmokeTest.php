@@ -8,7 +8,6 @@ use App\Models\Presensi;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -53,7 +52,7 @@ class DashboardSmokeTest extends TestCase
 
         Permission::create(['name' => 'dashboard-view-admin', 'guard_name' => 'user']);
         Role::create(['name' => 'admin cabang', 'guard_name' => 'user']);
-        $this->admin = User::create(['name' => 'HRD', 'email' => 'hrd@test.id', 'password' => Hash::make($this->passwordUji())]);
+        $this->admin = User::factory()->create(['name' => 'HRD', 'email' => 'hrd@test.id']);
         $this->admin->givePermissionTo('dashboard-view-admin');
     }
 
@@ -64,7 +63,7 @@ class DashboardSmokeTest extends TestCase
 
     public function test_dashboard_admin_cabang_dengan_filter(): void
     {
-        $admin = User::create(['name' => 'Admin Cabang', 'email' => 'ac@test.id', 'password' => Hash::make($this->passwordUji()), 'kode_cabang' => 'CBG1']);
+        $admin = User::factory()->create(['name' => 'Admin Cabang', 'email' => 'ac@test.id', 'kode_cabang' => 'CBG1']);
         $admin->assignRole('admin cabang')->givePermissionTo('dashboard-view-admin');
 
         $this->actingAs($admin, 'user')->get('/panel/dashboardadmin?q=karyawan&dept=OPS')->assertOk();

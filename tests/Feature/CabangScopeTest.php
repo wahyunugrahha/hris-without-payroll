@@ -8,7 +8,6 @@ use App\Models\Lembur;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -42,10 +41,8 @@ class CabangScopeTest extends TestCase
 
     private function user(string $role, ?string $cabang): User
     {
-        $user = User::create([
-            'name' => $role, 'email' => str_replace(' ', '', $role).'@test.id',
-            'password' => Hash::make($this->passwordUji()), 'kode_cabang' => $cabang,
-        ]);
+        $user = User::factory()->create([
+            'name' => $role, 'email' => str_replace(' ', '', $role).'@test.id', 'kode_cabang' => $cabang]);
 
         return $user->assignRole($role);
     }
@@ -79,7 +76,7 @@ class CabangScopeTest extends TestCase
 
         $this->actingAs($superAdmin, 'user')
             ->post('/users/store', [
-                'name' => 'Baru', 'email' => 'baru@test.id', 'password' => $this->passwordUji(),
+                'name' => 'Baru', 'email' => 'baru@test.id', ...$this->kredensialBaru(),
                 'kode_dept' => 'OPS', 'jabatan_id' => $jabatan->id, 'kode_cabang' => '',
             ])
             ->assertSessionHasErrors('kode_cabang');

@@ -6,7 +6,6 @@ use App\Models\Jabatan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -38,9 +37,8 @@ class ManajemenAksesTest extends TestCase
 
     private function user(string $role): User
     {
-        return User::create([
-            'name' => $role, 'email' => str_replace(' ', '', $role).uniqid().'@test.id', 'password' => Hash::make($this->passwordUji()),
-        ])->assignRole($role);
+        return User::factory()->create([
+            'name' => $role, 'email' => str_replace(' ', '', $role).uniqid().'@test.id'])->assignRole($role);
     }
 
     public function test_hrd_tidak_bisa_mengubah_role_administrator(): void
@@ -71,7 +69,7 @@ class ManajemenAksesTest extends TestCase
 
         $this->actingAs($this->user('hrd'), 'user')
             ->post('/users/store', [
-                'name' => 'Baru', 'email' => 'baru@test.id', 'password' => $this->passwordUji(),
+                'name' => 'Baru', 'email' => 'baru@test.id', ...$this->kredensialBaru(),
                 'kode_dept' => 'HRD', 'jabatan_id' => $jabatanAdmin->id,
             ])
             ->assertForbidden();
@@ -85,7 +83,7 @@ class ManajemenAksesTest extends TestCase
 
         $this->actingAs($this->user('administrator'), 'user')
             ->post('/users/store', [
-                'name' => 'Baru', 'email' => 'baru@test.id', 'password' => $this->passwordUji(),
+                'name' => 'Baru', 'email' => 'baru@test.id', ...$this->kredensialBaru(),
                 'kode_dept' => 'HRD', 'jabatan_id' => $jabatanAdmin->id,
             ])
             ->assertSessionHas('success');

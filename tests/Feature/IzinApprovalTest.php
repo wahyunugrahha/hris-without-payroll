@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Support\CutiDatesMeta;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
@@ -33,7 +32,7 @@ class IzinApprovalTest extends TestCase
         foreach (['dashboard-view-admin', 'pengajuan-izin-approve-admin'] as $permission) {
             Permission::create(['name' => $permission, 'guard_name' => 'user']);
         }
-        $admin = User::create(['name' => 'HRD', 'email' => 'hrd@test.id', 'password' => Hash::make($this->passwordUji())]);
+        $admin = User::factory()->create(['name' => 'HRD', 'email' => 'hrd@test.id']);
         $admin->givePermissionTo(['dashboard-view-admin', 'pengajuan-izin-approve-admin']);
         $this->actingAs($admin, 'user');
     }
