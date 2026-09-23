@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\BpjsRequest;
 use App\Models\Karyawan;
+use App\Services\FotoKaryawanService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class BpjsController extends Controller
 {
@@ -63,7 +63,7 @@ class BpjsController extends Controller
         return view('admin.bpjs.show', compact('pengajuan', 'karyawan'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, FotoKaryawanService $foto)
     {
         $request->validate([
             'no_bpjs_kesehatan' => 'nullable|string|max:255',
@@ -88,28 +88,10 @@ class BpjsController extends Controller
             'no_bpjs_ketenagakerjaan' => $request->no_bpjs_ketenagakerjaan,
         ];
 
-        if ($request->hasFile('foto_bpjs_kesehatan')) {
-            $fileKesehatan = $request->file('foto_bpjs_kesehatan');
-            $namaFotoKesehatan = $karyawan->nik.'_bpjs_kes_'.time().'.'.$fileKesehatan->extension();
-
-            if (! empty($karyawan->foto_bpjs_kesehatan) && Storage::disk('public')->exists('uploads/karyawan/bpjs/'.$karyawan->foto_bpjs_kesehatan)) {
-                Storage::disk('public')->delete('uploads/karyawan/bpjs/'.$karyawan->foto_bpjs_kesehatan);
+        foreach (['foto_bpjs_kesehatan', 'foto_bpjs_ketenagakerjaan'] as $jenis) {
+            if ($request->hasFile($jenis)) {
+                $dataKaryawan[$jenis] = $foto->ganti($jenis, $request->file($jenis), $karyawan->{$jenis}, $karyawan->nik);
             }
-
-            $fileKesehatan->storeAs('uploads/karyawan/bpjs/', $namaFotoKesehatan, 'public');
-            $dataKaryawan['foto_bpjs_kesehatan'] = $namaFotoKesehatan;
-        }
-
-        if ($request->hasFile('foto_bpjs_ketenagakerjaan')) {
-            $fileKetenagakerjaan = $request->file('foto_bpjs_ketenagakerjaan');
-            $namaFotoKetenagakerjaan = $karyawan->nik.'_bpjs_ket_'.time().'.'.$fileKetenagakerjaan->extension();
-
-            if (! empty($karyawan->foto_bpjs_ketenagakerjaan) && Storage::disk('public')->exists('uploads/karyawan/bpjs/'.$karyawan->foto_bpjs_ketenagakerjaan)) {
-                Storage::disk('public')->delete('uploads/karyawan/bpjs/'.$karyawan->foto_bpjs_ketenagakerjaan);
-            }
-
-            $fileKetenagakerjaan->storeAs('uploads/karyawan/bpjs/', $namaFotoKetenagakerjaan, 'public');
-            $dataKaryawan['foto_bpjs_ketenagakerjaan'] = $namaFotoKetenagakerjaan;
         }
 
         $karyawan->update($dataKaryawan);

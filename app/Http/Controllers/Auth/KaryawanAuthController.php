@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Karyawan;
 use App\Models\RegistrationToken;
+use App\Services\FotoKaryawanService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -121,7 +122,7 @@ class KaryawanAuthController extends Controller
         return view('auth.registrasi');
     }
 
-    public function storeRegistrasi(Request $request)
+    public function storeRegistrasi(Request $request, FotoKaryawanService $foto)
     {
         // Re-validate token on store
         $tokenStr = session('registration_token');
@@ -173,20 +174,10 @@ class KaryawanAuthController extends Controller
         $data['kode_cabang'] = null;
         $data['jabatan_id'] = null;
 
-        // Upload Foto Profile
-        if ($request->hasFile('foto')) {
-            $file = $request->file('foto');
-            $foto_baru = $request->nik.'_'.time().'.'.$file->extension();
-            $file->storeAs('uploads/karyawan/', $foto_baru, 'public');
-            $data['foto'] = $foto_baru;
-        }
-
-        // Upload Foto BPJS Kesehatan
-        if ($request->hasFile('foto_bpjs_kesehatan')) {
-            $fileBpjs = $request->file('foto_bpjs_kesehatan');
-            $foto_bpjs_baru = $request->nik.'_bpjs_kes_'.time().'.'.$fileBpjs->extension();
-            $fileBpjs->storeAs('uploads/karyawan/bpjs/', $foto_bpjs_baru, 'public');
-            $data['foto_bpjs_kesehatan'] = $foto_bpjs_baru;
+        foreach (['foto', 'foto_bpjs_kesehatan'] as $jenis) {
+            if ($request->hasFile($jenis)) {
+                $data[$jenis] = $foto->ganti($jenis, $request->file($jenis), null, $data['nik']);
+            }
         }
 
         Karyawan::create($data);

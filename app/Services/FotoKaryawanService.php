@@ -57,6 +57,17 @@ class FotoKaryawanService
         }
     }
 
+    /**
+     * Simpan upload baru untuk karyawan & buang file lamanya. Mengembalikan nama file baru untuk kolom.
+     */
+    public function ganti(string $jenis, UploadedFile $upload, ?string $namaLama, string $nik): string
+    {
+        $namaBaru = $this->namaBaru($jenis, $upload, $namaLama, $nik, $nik);
+        $this->terapkan($jenis, $upload, $namaLama, $namaBaru);
+
+        return $namaBaru;
+    }
+
     public function hapus(string $jenis, ?string $nama): void
     {
         if ($nama) {

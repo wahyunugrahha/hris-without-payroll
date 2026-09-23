@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Karyawan;
 use App\Http\Controllers\Controller;
 use App\Models\BpjsRequest;
 use App\Models\Karyawan;
+use App\Services\FotoKaryawanService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 
 class KaryawanController extends Controller
 {
+    public function __construct(private FotoKaryawanService $foto) {}
+
     // --- Profile & Izin ---
     public function profile()
     {
@@ -66,13 +68,7 @@ class KaryawanController extends Controller
             $data['password'] = Hash::make($request->password);
         }
         if ($request->hasFile('foto')) {
-            $file = $request->file('foto');
-            $foto_baru = $nik.'_'.time().'.'.$file->extension();
-            $data['foto'] = $foto_baru;
-            if ($karyawan->foto && Storage::disk('public')->exists('uploads/karyawan/'.$karyawan->foto)) {
-                Storage::disk('public')->delete('uploads/karyawan/'.$karyawan->foto);
-            }
-            $file->storeAs('uploads/karyawan/', $foto_baru, 'public');
+            $data['foto'] = $this->foto->ganti('foto', $request->file('foto'), $karyawan->foto, $nik);
         }
         $karyawan->update($data);
 
@@ -171,17 +167,8 @@ class KaryawanController extends Controller
             'no_bpjs_kesehatan' => $request->no_bpjs_kesehatan,
         ];
 
-        // Upload Foto BPJS Kesehatan
         if ($request->hasFile('foto_bpjs_kesehatan')) {
-            $fileBpjs = $request->file('foto_bpjs_kesehatan');
-            $foto_bpjs_baru = $nik.'_bpjs_kes_'.time().'.'.$fileBpjs->extension();
-            $data['foto_bpjs_kesehatan'] = $foto_bpjs_baru;
-
-            // Hapus foto lama jika ada
-            if ($karyawan->foto_bpjs_kesehatan && Storage::disk('public')->exists('uploads/karyawan/bpjs/'.$karyawan->foto_bpjs_kesehatan)) {
-                Storage::disk('public')->delete('uploads/karyawan/bpjs/'.$karyawan->foto_bpjs_kesehatan);
-            }
-            $fileBpjs->storeAs('uploads/karyawan/bpjs/', $foto_bpjs_baru, 'public');
+            $data['foto_bpjs_kesehatan'] = $this->foto->ganti('foto_bpjs_kesehatan', $request->file('foto_bpjs_kesehatan'), $karyawan->foto_bpjs_kesehatan, $nik);
         }
 
         $karyawan->update($data);
