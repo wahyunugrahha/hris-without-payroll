@@ -39,7 +39,7 @@ class KaryawanController extends Controller
             'status_pernikahan' => 'required|string|max:255',
             'pendidikan_terakhir' => 'required|string|max:255',
             'no_rekening' => 'nullable|string|max:255',
-            'password' => 'nullable|string|min:8|not_in:12345678,123456789',
+            'password' => 'nullable|string|min:6',
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:3072',
         ]);
 
@@ -64,7 +64,6 @@ class KaryawanController extends Controller
 
         if (! empty($request->password)) {
             $data['password'] = Hash::make($request->password);
-            $data['must_change_password'] = false;
         }
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');

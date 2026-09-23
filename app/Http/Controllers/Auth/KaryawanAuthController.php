@@ -159,13 +159,11 @@ class KaryawanAuthController extends Controller
             'no_bpjs_kesehatan' => 'nullable|string|max:255',
             'foto_bpjs_kesehatan' => 'nullable|image|mimes:jpg,jpeg,png|max:3072',
 
-            // Akun
-            'password' => 'required|string|min:8|confirmed',
         ]);
 
         // Hanya field tervalidasi yang disimpan, agar field sensitif lain di $fillable tidak bisa diisi dari form.
         $data = Arr::except($validated, ['foto', 'foto_bpjs_kesehatan']);
-        $data['password'] = Hash::make($validated['password']);
+        $data['password'] = Hash::make('123456'); // Default password
 
         // Auto-filled data
         $data['status_aktif'] = Karyawan::STATUS_MENUNGGU_APPROVAL;

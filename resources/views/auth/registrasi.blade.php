@@ -572,36 +572,6 @@
                 </div>
             </div>
 
-            <div class="section mb-4">
-                <div class="section-title">
-                    Keamanan Akun
-                </div>
-                <div class="card p-2">
-                    <div class="card-body p-3 p-md-4">
-                        <div class="row">
-                            <div class="col-12 col-md-6 mb-3">
-                                <div class="form-group">
-                                    <label class="form-label small mb-1">Password</label>
-                                    <input type="password" class="form-control @error('password') is-invalid @enderror"
-                                        name="password" minlength="8" autocomplete="new-password" required>
-                                    @error('password')
-                                        <small class="text-danger mt-1 d-block">{{ $message }}</small>
-                                    @enderror
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-6 mb-3">
-                                <div class="form-group">
-                                    <label class="form-label small mb-1">Ulangi Password</label>
-                                    <input type="password" class="form-control" name="password_confirmation"
-                                        minlength="8" autocomplete="new-password" required>
-                                </div>
-                            </div>
-                        </div>
-                        <small class="text-muted d-block">Minimal 8 karakter. Password ini dipakai untuk login setelah akun disetujui HR.</small>
-                    </div>
-                </div>
-            </div>
-
             <div class="section mb-5">
                 <button type="submit" id="btnSimpan"
                     class="btn btn-theme w-100 rounded-pill d-flex align-items-center justify-content-center gap-2">

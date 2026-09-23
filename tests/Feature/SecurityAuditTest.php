@@ -15,7 +15,7 @@ use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
- * Regression test untuk temuan audit keamanan (K-01 s/d K-04, T-02).
+ * Regression test untuk temuan audit keamanan (K-01 s/d K-04).
  */
 class SecurityAuditTest extends TestCase
 {
@@ -138,14 +138,5 @@ class SecurityAuditTest extends TestCase
             ->assertSessionHasErrors('current_password');
 
         $this->assertTrue(Hash::check('rahasia123', $admin->fresh()->password));
-    }
-
-    public function test_karyawan_dengan_password_default_dipaksa_ganti_password(): void
-    {
-        $a = $this->karyawan('1001', ['must_change_password' => true]);
-
-        $this->actingAs($a, 'karyawan')
-            ->get('/dashboard')
-            ->assertRedirect(route('karyawan.profile.edit'));
     }
 }

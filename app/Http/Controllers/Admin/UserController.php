@@ -54,7 +54,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8',
+            'password' => 'required|min:6',
             'kode_dept' => 'required',
             'jabatan_id' => 'required|exists:jabatan,id',
             'kode_cabang' => $this->kodeCabangRules($request),
@@ -106,7 +106,7 @@ class UserController extends Controller
             'kode_dept' => 'required',
             'jabatan_id' => 'required|exists:jabatan,id',
             'kode_cabang' => $this->kodeCabangRules($request),
-            'password' => 'nullable|min:8',
+            'password' => 'nullable|min:6',
         ]);
 
         DB::transaction(function () use ($request, $id) {
@@ -178,7 +178,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,'.$user->id,
-            'password' => 'nullable|string|min:8|confirmed',
+            'password' => 'nullable|string|min:6|confirmed',
             'current_password' => 'required_with:password|current_password:user',
         ]);
 

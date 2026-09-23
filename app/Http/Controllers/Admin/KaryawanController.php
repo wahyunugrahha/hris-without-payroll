@@ -145,8 +145,7 @@ class KaryawanController extends Controller
             $data['foto'] = $foto;
             $data['foto_bpjs_kesehatan'] = $foto_bpjs_kes;
             $data['foto_bpjs_ketenagakerjaan'] = $foto_bpjs_ket;
-            $data['password'] = Hash::make('123456'); // Default password, wajib diganti saat login pertama
-            $data['must_change_password'] = true;
+            $data['password'] = Hash::make('123456'); // Default password
             $data['status_aktif'] = 'Aktif';
             $data['is_whitelist'] = $request->boolean('is_whitelist') ? 1 : 0;
 
@@ -277,7 +276,6 @@ class KaryawanController extends Controller
 
             if ($request->filled('password')) {
                 $payload['password'] = Hash::make($request->password);
-                $payload['must_change_password'] = true; // password diketahui admin, karyawan wajib menggantinya
             }
 
             $payload['is_whitelist'] = $request->boolean('is_whitelist') ? 1 : 0;

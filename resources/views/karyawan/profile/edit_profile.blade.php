@@ -421,15 +421,6 @@
                 });
             @endif
 
-            @if (session('warning'))
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Ganti Password',
-                    text: @json(session('warning')),
-                    confirmButtonColor: '#f39c12'
-                });
-            @endif
-
             @if (session('error'))
                 Swal.fire({
                     icon: 'error',

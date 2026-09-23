@@ -95,8 +95,7 @@ class KaryawanImport implements SkipsOnError, SkipsOnFailure, ToModel, WithHeadi
                 'nik' => $nik,
                 'nama_lengkap' => trim($row['nama_lengkap']),
                 'nama_panggilan' => ! empty($row['nama_panggilan']) ? trim($row['nama_panggilan']) : trim($row['nama_lengkap']),
-                'password' => Hash::make('123456'), // Default password, wajib diganti saat login pertama
-                'must_change_password' => true,
+                'password' => Hash::make('123456'), // Default password
                 'jabatan_id' => $jabatanId,
                 'kode_dept' => $kodeDept,
                 'kode_cabang' => $kodeCabang,
