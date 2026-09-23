@@ -186,7 +186,7 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
         Route::get('/monitoring', [PresensiController::class, 'monitoring'])
             ->middleware('permission:presensi-monitoring-view-admin,user')
             ->name('presensi.monitoring');
-        Route::match(['get', 'post'], '/getpresensi', [PresensiController::class, 'getpresensi'])->name('presensi.getpresensi');
+        Route::match(['get', 'post'], '/getpresensi', [PresensiController::class, 'getpresensi'])->middleware('permission:presensi-monitoring-view-admin,user')->name('presensi.getpresensi');
 
         // Batal Presensi
         Route::post('/monitoring/{id}/batal', [PresensiController::class, 'batalpresensi'])
@@ -194,19 +194,17 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
             ->name('presensi.batal');
 
         // Peta
-        Route::post('/tampilkanpeta', [PresensiController::class, 'tampilkanpeta'])->name('presensi.tampilkanpeta');
+        Route::post('/tampilkanpeta', [PresensiController::class, 'tampilkanpeta'])->middleware('permission:presensi-monitoring-view-admin,user')->name('presensi.tampilkanpeta');
 
         // Laporan & Rekap
         Route::get('/laporan', [LaporanPresensiController::class, 'laporan'])
             ->middleware('permission:laporan-view-admin,user')
             ->name('presensi.laporan');
-        Route::post('/cetaklaporan', [LaporanPresensiController::class, 'cetaklaporan'])
-            ->name('presensi.cetaklaporan');
+        Route::post('/cetaklaporan', [LaporanPresensiController::class, 'cetaklaporan'])->middleware('permission:laporan-view-admin,user')->name('presensi.cetaklaporan');
         Route::get('/rekap', [LaporanPresensiController::class, 'rekap'])
             ->middleware('permission:laporan-view-admin,user')
             ->name('presensi.rekap');
-        Route::post('/cetakrekap', [LaporanPresensiController::class, 'cetakrekap'])
-            ->name('presensi.cetakrekap');
+        Route::post('/cetakrekap', [LaporanPresensiController::class, 'cetakrekap'])->middleware('permission:laporan-view-admin,user')->name('presensi.cetakrekap');
 
         // Izin Sakit (Halaman List Utama)
         Route::get('/izinsakit', [IzinApprovalController::class, 'index'])
@@ -257,7 +255,7 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
             Route::get('/rekap', 'rekap')
                 ->middleware('permission:laporan-view-admin,user')
                 ->name('admin.lembur.rekap');
-            Route::post('/cetakrekap', 'cetakrekap')->name('admin.lembur.cetakrekap');
+            Route::post('/cetakrekap', 'cetakrekap')->middleware('permission:laporan-view-admin,user')->name('admin.lembur.cetakrekap');
 
             // Approval via Form (POST)
             Route::get('/approval', 'approval')

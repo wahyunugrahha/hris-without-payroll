@@ -255,6 +255,8 @@ class PresensiController extends Controller
     {
         $id = $request->id;
         $presensi = Presensi::with('karyawan')->findOrFail($id);
+        abort_if($this->outsideAdminCabang($presensi->karyawan), 403, 'Anda tidak memiliki akses ke data cabang lain.');
+
         $presensi->kode_cabang = $presensi->karyawan->kode_cabang ?? null;
         $presensi->nama_lengkap = $presensi->karyawan->nama_lengkap ?? null;
         $radius = 50;

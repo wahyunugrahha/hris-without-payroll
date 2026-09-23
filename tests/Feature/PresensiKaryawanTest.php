@@ -38,8 +38,10 @@ class PresensiKaryawanTest extends TestCase
             DB::table('konfigurasi_jamkerja')->insert(['nik' => '1001', 'hari' => $hari, 'kode_jam_kerja' => 'JK01']);
         }
 
-        Permission::create(['name' => 'presensi-create-karyawan', 'guard_name' => 'karyawan']);
-        $karyawan->givePermissionTo('presensi-create-karyawan');
+        foreach (['presensi-create-karyawan', 'presensi-history-view-karyawan'] as $permission) {
+            Permission::create(['name' => $permission, 'guard_name' => 'karyawan']);
+        }
+        $karyawan->givePermissionTo(['presensi-create-karyawan', 'presensi-history-view-karyawan']);
         $this->actingAs($karyawan, 'karyawan');
     }
 

@@ -6,6 +6,7 @@ use App\Models\Karyawan;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
 class ProfilKaryawanTest extends TestCase
@@ -20,6 +21,9 @@ class ProfilKaryawanTest extends TestCase
             'nik' => '1001', 'nama_lengkap' => 'A', 'nama_panggilan' => 'A', 'no_hp' => '0812', 'password' => 'x',
             'status_aktif' => Karyawan::STATUS_AKTIF, 'foto' => '1001_lama.jpg',
         ]);
+
+        Permission::create(['name' => 'profile-edit-karyawan', 'guard_name' => 'karyawan']);
+        $karyawan->givePermissionTo('profile-edit-karyawan');
 
         $this->actingAs($karyawan, 'karyawan')->post('/updateprofile', [
             'no_hp' => '0812', 'email' => 'a@test.id', 'nama_panggilan' => 'A', 'alamat' => 'Jl. A',

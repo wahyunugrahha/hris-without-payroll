@@ -41,21 +41,18 @@ Route::middleware(['auth:karyawan'])->group(function () {
     Route::get('/presensi/editprofile', [KaryawanController::class, 'editprofile'])
         ->middleware('permission:profile-edit-karyawan,karyawan')
         ->name('karyawan.profile.edit');
-    Route::post('/updateprofile', [KaryawanController::class, 'updateprofile'])->name('karyawan.profile.update');
+    Route::post('/updateprofile', [KaryawanController::class, 'updateprofile'])->middleware('permission:profile-edit-karyawan,karyawan')->name('karyawan.profile.update');
 
     Route::get('/presensi/profile/darurat', [KaryawanController::class, 'profileDarurat'])
         ->middleware('permission:profile-edit-karyawan,karyawan')
         ->name('karyawan.profile.darurat');
-    Route::post('/presensi/profile/updatedarurat', [KaryawanController::class, 'updateDarurat'])
-        ->name('karyawan.profile.updatedarurat');
+    Route::post('/presensi/profile/updatedarurat', [KaryawanController::class, 'updateDarurat'])->middleware('permission:profile-edit-karyawan,karyawan')->name('karyawan.profile.updatedarurat');
 
     Route::get('/presensi/profile/administrasi', [KaryawanController::class, 'profileAdministrasi'])
         ->middleware('permission:profile-view-karyawan,karyawan')
         ->name('karyawan.profile.administrasi');
-    Route::post('/presensi/profile/updateadministrasi', [KaryawanController::class, 'updateAdministrasi'])
-        ->name('karyawan.profile.updateadministrasi');
-    Route::post('/presensi/profile/ajukan-bpjs', [KaryawanController::class, 'ajukanBpjs'])
-        ->name('karyawan.profile.ajukanbpjs');
+    Route::post('/presensi/profile/updateadministrasi', [KaryawanController::class, 'updateAdministrasi'])->middleware('permission:profile-edit-karyawan,karyawan')->name('karyawan.profile.updateadministrasi');
+    Route::post('/presensi/profile/ajukan-bpjs', [KaryawanController::class, 'ajukanBpjs'])->middleware('permission:profile-edit-karyawan,karyawan')->name('karyawan.profile.ajukanbpjs');
 
     // AUTH
     Route::post('/proseslogout', [KaryawanAuthController::class, 'logout'])->name('proseslogout');
@@ -76,12 +73,11 @@ Route::middleware(['auth:karyawan'])->group(function () {
     Route::get('/presensi/histori', [PresensiController::class, 'histori'])
         ->middleware('permission:presensi-history-view-karyawan,karyawan')
         ->name('karyawan.presensi.history');
-    Route::post('/presensi/gethistori', [PresensiController::class, 'gethistori'])
-        ->name('presensi.gethistori');
+    Route::post('/presensi/gethistori', [PresensiController::class, 'gethistori'])->middleware('permission:presensi-history-view-karyawan,karyawan')->name('presensi.gethistori');
 
     // PENGAJUAN IZIN DETAIL
-    Route::post('/presensi/cekpengajuanizin', [PengajuanIzinController::class, 'cekPengajuanIzin'])->name('pengajuanizin.cekpengajuanizin');
-    Route::post('/pengajuanizin/getblacklistdates', [PengajuanIzinController::class, 'getBlacklistDates'])->name('pengajuanizin.getblacklistdates');
+    Route::post('/presensi/cekpengajuanizin', [PengajuanIzinController::class, 'cekPengajuanIzin'])->middleware('permission:izin-create-karyawan,karyawan')->name('pengajuanizin.cekpengajuanizin');
+    Route::post('/pengajuanizin/getblacklistdates', [PengajuanIzinController::class, 'getBlacklistDates'])->middleware('permission:izin-create-karyawan,karyawan')->name('pengajuanizin.getblacklistdates');
 
     // PENGAJUAN IZIN PER JENIS (URL & nama route lama dipertahankan karena dipakai view)
     Route::prefix('pengajuanizin')->group(function () {
@@ -142,20 +138,20 @@ Route::middleware(['auth:karyawan'])->group(function () {
             Route::get('/create', 'create')
                 ->middleware('permission:lembur-create-karyawan,karyawan')
                 ->name('lembur.create');
-            Route::post('/store', 'store')->name('lembur.store');
+            Route::post('/store', 'store')->middleware('permission:lembur-create-karyawan,karyawan')->name('lembur.store');
 
             Route::get('/{id}/edit', 'edit')
                 ->middleware('permission:lembur-create-karyawan,karyawan')
                 ->name('lembur.edit');
-            Route::put('/{id}/update', 'update')->name('lembur.update');
-            Route::delete('/{id}/delete', 'destroy')->name('lembur.destroy');
+            Route::put('/{id}/update', 'update')->middleware('permission:lembur-create-karyawan,karyawan')->name('lembur.update');
+            Route::delete('/{id}/delete', 'destroy')->middleware('permission:lembur-create-karyawan,karyawan')->name('lembur.destroy');
 
-            Route::get('/{id}/absen-masuk', 'absenMasuk')->name('lembur.absenMasuk');
-            Route::post('/{id}/absen-masuk', 'storeAbsenMasuk')->name('lembur.storeAbsenMasuk');
-            Route::post('/{id}/cancel-draft', 'cancelDraft')->name('lembur.cancelDraft');
+            Route::get('/{id}/absen-masuk', 'absenMasuk')->middleware('permission:lembur-create-karyawan,karyawan')->name('lembur.absenMasuk');
+            Route::post('/{id}/absen-masuk', 'storeAbsenMasuk')->middleware('permission:lembur-create-karyawan,karyawan')->name('lembur.storeAbsenMasuk');
+            Route::post('/{id}/cancel-draft', 'cancelDraft')->middleware('permission:lembur-create-karyawan,karyawan')->name('lembur.cancelDraft');
 
-            Route::get('/{id}/absen-keluar', 'absenKeluar')->name('lembur.absenKeluar');
-            Route::post('/{id}/absen-keluar', 'storeAbsenKeluar')->name('lembur.storeAbsenKeluar');
+            Route::get('/{id}/absen-keluar', 'absenKeluar')->middleware('permission:lembur-create-karyawan,karyawan')->name('lembur.absenKeluar');
+            Route::post('/{id}/absen-keluar', 'storeAbsenKeluar')->middleware('permission:lembur-create-karyawan,karyawan')->name('lembur.storeAbsenKeluar');
         });
 
     // User KPI
@@ -165,12 +161,9 @@ Route::middleware(['auth:karyawan'])->group(function () {
     Route::get('/kpi/createkpi', [KpiSayaController::class, 'createKPI'])
         ->middleware('permission:kpi-input-karyawan,karyawan')
         ->name('kpi.user.create');
-    Route::post('/kpi/storekpi', [KpiSayaController::class, 'storeKPI'])
-        ->name('kpi.user.store');
-    Route::get('/kpi/{kpi_daily_id}/editkpi', [KpiSayaController::class, 'editKPI'])
-        ->name('kpi.user.edit');
-    Route::put('/kpi/{kpi_daily_id}/updatekpi', [KpiSayaController::class, 'updateKPI'])
-        ->name('kpi.user.update');
+    Route::post('/kpi/storekpi', [KpiSayaController::class, 'storeKPI'])->middleware('permission:kpi-input-karyawan,karyawan')->name('kpi.user.store');
+    Route::get('/kpi/{kpi_daily_id}/editkpi', [KpiSayaController::class, 'editKPI'])->middleware('permission:kpi-input-karyawan,karyawan')->name('kpi.user.edit');
+    Route::put('/kpi/{kpi_daily_id}/updatekpi', [KpiSayaController::class, 'updateKPI'])->middleware('permission:kpi-input-karyawan,karyawan')->name('kpi.user.update');
 
     // Atasan KPI
     Route::get('/kpi/atasankpi', [KpiBawahanController::class, 'atasanIndex'])
@@ -193,12 +186,12 @@ Route::middleware(['auth:karyawan'])->group(function () {
     Route::get('/dinasluars/create', [DinasLuarController::class, 'create'])
         ->middleware('permission:dinasluar-create-karyawan,karyawan')
         ->name('dinasluars.create');
-    Route::post('/dinasluars', [DinasLuarController::class, 'store'])->name('dinasluars.store');
+    Route::post('/dinasluars', [DinasLuarController::class, 'store'])->middleware('permission:dinasluar-create-karyawan,karyawan')->name('dinasluars.store');
     Route::get('/dinasluars/{id}/edit', [DinasLuarController::class, 'edit'])
         ->middleware('permission:dinasluar-create-karyawan,karyawan')
         ->name('dinasluars.edit');
-    Route::put('/dinasluars/{id}/update', [DinasLuarController::class, 'update'])->name('dinasluars.update');
-    Route::delete('/dinasluars/{id}/delete', [DinasLuarController::class, 'destroy'])->name('dinasluars.destroy');
+    Route::put('/dinasluars/{id}/update', [DinasLuarController::class, 'update'])->middleware('permission:dinasluar-create-karyawan,karyawan')->name('dinasluars.update');
+    Route::delete('/dinasluars/{id}/delete', [DinasLuarController::class, 'destroy'])->middleware('permission:dinasluar-create-karyawan,karyawan')->name('dinasluars.destroy');
 
     // Kenaikan Gaji
     Route::get('/kenaikan-gaji', [KenaikanGajiController::class, 'index'])

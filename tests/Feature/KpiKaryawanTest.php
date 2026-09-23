@@ -9,6 +9,7 @@ use App\Models\KPIMaster;
 use App\Models\KPIMasterDetail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -41,6 +42,8 @@ class KpiKaryawanTest extends TestCase
             'kode_cabang' => 'CBG1', 'kode_dept' => 'OPS', 'jabatan_id' => $this->jabatanOperator->id,
             'status_aktif' => Karyawan::STATUS_AKTIF, 'is_whitelist' => 1,
         ]);
+        Permission::create(['name' => 'kpi-input-karyawan', 'guard_name' => 'karyawan']);
+        $this->karyawan->givePermissionTo('kpi-input-karyawan');
         $this->actingAs($this->karyawan, 'karyawan');
     }
 
