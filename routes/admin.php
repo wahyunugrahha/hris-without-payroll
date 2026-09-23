@@ -8,12 +8,14 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DepartemenController;
 use App\Http\Controllers\Admin\DinasLuarController;
 use App\Http\Controllers\Admin\HariLiburController;
+use App\Http\Controllers\Admin\IzinApprovalController;
 use App\Http\Controllers\Admin\JabatanController;
 use App\Http\Controllers\Admin\KaryawanController;
 use App\Http\Controllers\Admin\KenaikanGajiController;
 use App\Http\Controllers\Admin\KonfigurasiController;
 use App\Http\Controllers\Admin\KonfigurasiUmumController;
 use App\Http\Controllers\Admin\KPIController;
+use App\Http\Controllers\Admin\LaporanPresensiController;
 use App\Http\Controllers\Admin\LemburController;
 use App\Http\Controllers\Admin\PengumumanController;
 use App\Http\Controllers\Admin\PresensiController;
@@ -193,30 +195,30 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
         Route::post('/tampilkanpeta', [PresensiController::class, 'tampilkanpeta'])->name('presensi.tampilkanpeta');
 
         // Laporan & Rekap
-        Route::get('/laporan', [PresensiController::class, 'laporan'])
+        Route::get('/laporan', [LaporanPresensiController::class, 'laporan'])
             ->middleware('permission:laporan-view-admin,user')
             ->name('presensi.laporan');
-        Route::post('/cetaklaporan', [PresensiController::class, 'cetaklaporan'])
+        Route::post('/cetaklaporan', [LaporanPresensiController::class, 'cetaklaporan'])
             ->name('presensi.cetaklaporan');
-        Route::get('/rekap', [PresensiController::class, 'rekap'])
+        Route::get('/rekap', [LaporanPresensiController::class, 'rekap'])
             ->middleware('permission:laporan-view-admin,user')
             ->name('presensi.rekap');
-        Route::post('/cetakrekap', [PresensiController::class, 'cetakrekap'])
+        Route::post('/cetakrekap', [LaporanPresensiController::class, 'cetakrekap'])
             ->name('presensi.cetakrekap');
 
         // Izin Sakit (Halaman List Utama)
-        Route::get('/izinsakit', [PresensiController::class, 'izinsakit'])
+        Route::get('/izinsakit', [IzinApprovalController::class, 'index'])
             ->middleware('permission:pengajuan-izin-view-admin,user')
             ->name('presensi.izinsakit');
         // Detail Izin Sakit
-        Route::get('/detailijinsakit/{id}', [PresensiController::class, 'detailijinsakit'])
+        Route::get('/detailijinsakit/{id}', [IzinApprovalController::class, 'show'])
             ->middleware('permission:pengajuan-izin-view-admin,user')
             ->name('presensi.detailijinsakit');
         // Approval via Form (POST)
-        Route::post('/approveizinsakit', [PresensiController::class, 'approveizinsakit'])
+        Route::post('/approveizinsakit', [IzinApprovalController::class, 'update'])
             ->middleware('permission:pengajuan-izin-approve-admin,user')
             ->name('presensi.approveizinsakit');
-        Route::post('/{id}/batalkanizinsakit', [PresensiController::class, 'batalkanizinsakit'])
+        Route::post('/{id}/batalkanizinsakit', [IzinApprovalController::class, 'cancel'])
             ->middleware('permission:pengajuan-izin-approve-admin,user')
             ->name('presensi.batalkanizinsakit');
     });
