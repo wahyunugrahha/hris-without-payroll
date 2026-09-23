@@ -1,35 +1,6 @@
 @extends('layouts.admin.tabler')
 
-@section('content')
-    <style>
-        .focus-border-primary:focus {
-            border-color: var(--color-accent) !important;
-            background: var(--color-surface) !important;
-            box-shadow: 0 0 0 0.25rem color-mix(in oklab, var(--color-focus) 25%, transparent) !important;
-        }
-
-        .table-vcenter textarea.form-control {
-            min-height: 38px;
-            transition: border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out);
-            border-color: transparent;
-            background: transparent;
-            resize: none;
-            overflow: hidden;
-        }
-
-        .table-vcenter textarea.form-control:focus {
-            border-color: var(--color-rule-2);
-            background: var(--color-surface);
-        }
-
-        .progress-label {
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-bottom: 0.25rem;
-        }
-    </style>
-
+@section('page-header')
     <div class="page-header d-print-none">
         <div class="container-xl">
             <div class="row g-2 align-items-start">
@@ -111,6 +82,38 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('content')
+    <style>
+        .focus-border-primary:focus {
+            border-color: var(--color-accent) !important;
+            background: var(--color-surface) !important;
+            box-shadow: 0 0 0 0.25rem color-mix(in oklab, var(--color-focus) 25%, transparent) !important;
+        }
+
+        .table-vcenter textarea.form-control {
+            min-height: 38px;
+            transition: border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out);
+            border-color: transparent;
+            background: transparent;
+            resize: none;
+            overflow: hidden;
+        }
+
+        .table-vcenter textarea.form-control:focus {
+            border-color: var(--color-rule-2);
+            background: var(--color-surface);
+        }
+
+        .progress-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+    </style>
+
 
     <div class="page-body">
         <div class="container-xl">

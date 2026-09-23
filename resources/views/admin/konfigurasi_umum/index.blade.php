@@ -1,9 +1,6 @@
 @extends('layouts.admin.tabler')
 
-@section('content')
-    <!-- Tom Select CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
-
+@section('page-header')
     <div class="page-header d-print-none">
         <div class="container-xl">
             <div class="row g-2 align-items-center">
@@ -14,6 +11,12 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('content')
+    <!-- Tom Select CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+
 
     <div class="page-body">
         <div class="container-xl">

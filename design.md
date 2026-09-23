@@ -45,14 +45,27 @@ Font **tidak diubah**: Inter (rsms.me/inter) bawaan Tabler. Angka di tabel memak
 - Kuning (`warning`) — terlambat/perlu perhatian. Merah (`danger`) — tolak/hapus/alpha.
 
 ## Kerangka (layout admin)
-- **Sidebar**: latar `--color-sidebar` (sedikit lebih gelap dari konten), item 36px,
-  submenu dengan garis panduan vertikal; item aktif = garis navy 2px + tint.
-- **Header**: sticky 56px, blur tipis; kanan tema/notifikasi/akun.
-- **Judul halaman** (`.page-header`): pita putih penuh + garis bawah; pretitle kecil,
-  judul 1.375rem/600, ikon judul navy.
-- **Toolbar judul**: hanya `btn-primary` yang berwarna; tombol lain otomatis netral
-  (outline), makna warnanya pindah ke ikon.
+- **Panel inset** (≥ 1200px): kanvas `--color-sidebar`, konten di panel membulat 12px.
+- **Sidebar** 256px: label utuh (tidak dipotong), submenu bergaris panduan + chevron,
+  aktif = latar putih + garis navy. Tombol di topbar meringkas sidebar jadi 72px
+  (ikon + tooltip, submenu tampil sebagai flyout); pilihan disimpan di localStorage.
+  < 1200px sidebar menjadi drawer (backdrop, Esc menutup).
+- **Topbar tunggal** (sticky, ±64px) — `layouts/admin/topbar.blade.php`:
+  tombol menu · konteks halaman · tema/notifikasi/akun (popover).
+- **Konteks halaman**: tiap view mengisi `@section('page-header')` dengan blok
+  `.page-header` (pretitle = breadcrumb, judul, `.page-subtitle` opsional, aksi).
+  Jangan menaruh judul halaman di `@section('content')` — itu membuat header ganda.
+- **Toolbar judul**: hanya `btn-primary` yang berwarna; tombol lain otomatis netral.
 - **Badge status** di konten: tint lembut dari warna status, bukan blok penuh.
+
+## Dashboard
+- Grid: kolom utama (Kehadiran → Karyawan → Persetujuan → Analitik) + kolom samping
+  30% (Perlu perhatian → Aksi cepat → Kalender → Informasi HR → Aktivitas);
+  Demografi selebar penuh. Mobile satu kolom dengan urutan prioritas (CSS `order`).
+- Kartu `.dash-card` 12px; tautan di kepala kartu = tombol kecil kanan atas.
+- Angka hanya dari data yang ada (`jmlkaryawan` untuk rasio/persen); data kosong
+  atau semua nol → empty state satu baris, bukan grafik kosong.
+- Warna grafik dari token `--chart-*` (dibaca JS), animasi grafik dimatikan.
 
 ## JavaScript
 - Perilaku global admin di `public/assets/js/admin.js` (tema, flash).

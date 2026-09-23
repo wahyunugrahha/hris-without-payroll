@@ -1,44 +1,6 @@
 @extends('layouts.admin.tabler')
 
-@section('content')
-    @if (Session::get('success'))
-        <div class="alert alert-success alert-important alert-dismissible" role="alert">
-            {{ Session::get('success') }}
-            <a class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="close"></a>
-        </div>
-    @endif
-
-    @if (Session::get('warning'))
-        <div class="alert alert-warning alert-important alert-dismissible" role="alert">
-            {{ Session::get('warning') }}
-            <a class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="close"></a>
-        </div>
-    @endif
-
-    @if ($errors->any())
-        <div class="alert alert-danger alert-important alert-dismissible" role="alert">
-            <div class="d-flex">
-                <div>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24"
-                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-                        <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
-                    </svg>
-                </div>
-                <div>
-                    <strong>Gagal Disimpan:</strong>
-                    <ul class="mb-0 ps-2">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-            <a class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="close"></a>
-        </div>
-    @endif
+@section('page-header')
     <div class="page-header d-print-none">
         <div class="container-xl">
             <div class="row g-2 align-items-center">
@@ -98,6 +60,47 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('content')
+    @if (Session::get('success'))
+        <div class="alert alert-success alert-important alert-dismissible" role="alert">
+            {{ Session::get('success') }}
+            <a class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="close"></a>
+        </div>
+    @endif
+
+    @if (Session::get('warning'))
+        <div class="alert alert-warning alert-important alert-dismissible" role="alert">
+            {{ Session::get('warning') }}
+            <a class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="close"></a>
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="alert alert-danger alert-important alert-dismissible" role="alert">
+            <div class="d-flex">
+                <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24"
+                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                        <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
+                    </svg>
+                </div>
+                <div>
+                    <strong>Gagal Disimpan:</strong>
+                    <ul class="mb-0 ps-2">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+            <a class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="close"></a>
+        </div>
+    @endif
 
     <div class="page-body">
         <div class="container-xl">

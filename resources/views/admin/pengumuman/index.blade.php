@@ -1,11 +1,21 @@
 @extends('layouts.admin.tabler')
 
+@section('page-header')
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <div class="page-pretitle">Data Master</div>
+                    <h2 class="page-title">Pengumuman</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
 @section('content')
     <div class="container">
         <div class="row">
-            <div class="col-12 mt-3">
-                <h3>Pengumuman</h3>
-            </div>
 
             @can('pengumuman-create-admin')
                 <div class="col-md-6">

@@ -29,6 +29,16 @@
     --color-info: oklch(58% 0.12 230);
     --color-warning-tint: oklch(96% 0.05 90);
     --color-backdrop: oklch(24% 0.02 258 / 0.35);
+
+    /* Warna grafik (ApexCharts butuh warna literal; dibaca lewat getComputedStyle). */
+    --chart-primary: #094b87;
+    --chart-success: #2f9e57;
+    --chart-warning: #d98a0b;
+    --chart-danger: #d6453d;
+    --chart-neutral: #8a94a6;
+    --chart-soft: #c5d3e6;
+    --chart-grid: #e6eaf0;
+    --chart-text: #6b7488;
     --shadow-lift: 0 1px 2px oklch(24% 0.02 258 / 0.05);
     --shadow-menu: 0 12px 32px oklch(24% 0.02 258 / 0.12), 0 1px 3px oklch(24% 0.02 258 / 0.08);
 
@@ -44,7 +54,7 @@
     --dur-short: 150ms;
 
     --admin-header-height: 56px;
-    --admin-sidebar-width: 260px;
+    --admin-sidebar-width: 256px;
 
     /* Petakan ke variabel Tabler supaya seluruh komponen ikut. */
     --tblr-primary: var(--color-accent);
@@ -75,7 +85,7 @@
     --color-paper: oklch(16.5% 0.014 258);
     --color-surface: oklch(20.5% 0.016 258);
     --color-surface-2: oklch(24% 0.017 258);
-    --color-sidebar: oklch(18.5% 0.015 258);
+    --color-sidebar: oklch(13.5% 0.013 258);
     --color-ink: oklch(96% 0.005 255);
     --color-ink-2: oklch(87% 0.01 255);
     --color-muted: oklch(70% 0.015 255);
@@ -93,6 +103,15 @@
     --color-info: oklch(74% 0.11 230);
     --color-warning-tint: oklch(30% 0.06 80);
     --color-backdrop: oklch(0% 0 0 / 0.55);
+
+    --chart-primary: #5b9be0;
+    --chart-success: #4cc27a;
+    --chart-warning: #f0a93a;
+    --chart-danger: #f07167;
+    --chart-neutral: #8f9bb0;
+    --chart-soft: #3a4a63;
+    --chart-grid: #2a3446;
+    --chart-text: #9aa5b8;
     --shadow-lift: none;
     --shadow-menu: 0 12px 32px oklch(0% 0 0 / 0.45);
 

@@ -2,6 +2,8 @@
  * Perilaku global panel admin (layouts.admin.tabler):
  *  1. Toggle tema terang/gelap.
  *  2. Notifikasi flash dari server (SweetAlert).
+ *  3. Popover notifikasi & akun di topbar.
+ *  4. Sidebar ringkas (desktop) / drawer (mobile).
  */
 (function () {
     'use strict';
@@ -59,8 +61,112 @@
         }
     }
 
+    // ── 3. Popover topbar (notifikasi & akun) ───────────────────────────
+    function initPopover() {
+        var tombol = document.querySelectorAll('[data-popover-toggle]');
+
+        function tutupSemua(kecuali) {
+            tombol.forEach(function (btn) {
+                if (btn === kecuali) {
+                    return;
+                }
+                btn.setAttribute('aria-expanded', 'false');
+                document.getElementById(btn.getAttribute('aria-controls')).hidden = true;
+            });
+        }
+
+        tombol.forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                var panel = document.getElementById(btn.getAttribute('aria-controls'));
+                var buka = panel.hidden;
+                tutupSemua(btn);
+                panel.hidden = !buka;
+                btn.setAttribute('aria-expanded', buka ? 'true' : 'false');
+            });
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.topbar-popover')) {
+                tutupSemua(null);
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                var terbuka = document.querySelector('[data-popover-toggle][aria-expanded="true"]');
+                tutupSemua(null);
+                if (terbuka) {
+                    terbuka.focus();
+                }
+            }
+        });
+    }
+
+    // ── 4. Sidebar: ringkas (desktop) / drawer (mobile) ─────────────────
+    function initSidebar() {
+        var root = document.documentElement;
+        var toggle = document.querySelector('[data-sidebar-toggle]');
+        var backdrop = document.querySelector('[data-sidebar-close]');
+        var desktop = window.matchMedia('(min-width: 1200px)');
+        if (!toggle) {
+            return;
+        }
+
+        // Label menu jadi tooltip saat sidebar ringkas (hanya ikon).
+        document.querySelectorAll('.navbar-vertical .nav-link').forEach(function (link) {
+            var judul = link.querySelector('.nav-link-title');
+            if (judul && !link.hasAttribute('title')) {
+                link.setAttribute('title', judul.textContent.trim());
+            }
+        });
+
+        function sinkron() {
+            var terbuka = desktop.matches
+                ? !root.classList.contains('sidebar-collapsed')
+                : root.classList.contains('sidebar-open');
+            toggle.setAttribute('aria-expanded', terbuka ? 'true' : 'false');
+            if (backdrop) {
+                backdrop.hidden = desktop.matches || !root.classList.contains('sidebar-open');
+            }
+        }
+
+        function tutupDrawer() {
+            root.classList.remove('sidebar-open');
+            sinkron();
+        }
+
+        toggle.addEventListener('click', function () {
+            if (desktop.matches) {
+                var ringkas = root.classList.toggle('sidebar-collapsed');
+                try {
+                    localStorage.setItem('sidebar', ringkas ? 'collapsed' : 'expanded');
+                } catch (e) {
+                    /* preferensi tidak tersimpan: tetap berlaku di halaman ini */
+                }
+            } else {
+                root.classList.toggle('sidebar-open');
+            }
+            sinkron();
+        });
+
+        if (backdrop) {
+            backdrop.addEventListener('click', tutupDrawer);
+        }
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && root.classList.contains('sidebar-open')) {
+                tutupDrawer();
+                toggle.focus();
+            }
+        });
+        desktop.addEventListener('change', tutupDrawer);
+        sinkron();
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         initTema();
         initFlash();
+        initPopover();
+        initSidebar();
     });
 })();

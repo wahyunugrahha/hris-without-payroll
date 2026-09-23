@@ -1,6 +1,6 @@
 @extends('layouts.admin.tabler')
 
-@section('content')
+@section('page-header')
     <div class="page-header d-print-none" aria-label="Page header">
         <div class="container-xl">
             <div class="row g-2 align-items-center">
@@ -11,6 +11,9 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('content')
     <div class="page-body">
         <div class="container-xl">
             <div class="row">

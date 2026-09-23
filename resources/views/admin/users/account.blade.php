@@ -1,12 +1,25 @@
 @extends('layouts.admin.tabler')
 
+@section('page-header')
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <div class="page-pretitle">Akun</div>
+                    <h2 class="page-title">Profil &amp; Pengaturan Akun</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
 @section('content')
 <div class="container-xl">
     <div class="row">
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Account Settings</h3>
+                    <h3 class="card-title">Data akun</h3>
                 </div>
                 <div class="card-body">
                     @if(session('success'))

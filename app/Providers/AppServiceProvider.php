@@ -48,7 +48,7 @@ class AppServiceProvider extends ServiceProvider
                 });
         });
 
-        $targetViews = ['layouts.admin.header', 'layouts.admin.tabler', 'layouts.master'];
+        $targetViews = ['layouts.admin.tabler', 'layouts.master'];
 
         View::composer($targetViews, function ($view) {
 

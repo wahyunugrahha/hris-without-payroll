@@ -29,6 +29,9 @@
         // Terapkan tema sebelum render agar tidak berkedip.
         try {
             document.documentElement.setAttribute('data-bs-theme', localStorage.getItem('theme') === 'dark' ? 'dark' : 'light');
+            if (localStorage.getItem('sidebar') === 'collapsed') {
+                document.documentElement.classList.add('sidebar-collapsed');
+            }
         } catch (e) {}
     </script>
 
@@ -43,8 +46,9 @@
 <body>
     <div class="page">
         @include('layouts.admin.sidebar')
+        <div class="sidebar-backdrop" data-sidebar-close hidden></div>
         <div class="page-wrapper">
-            @include('layouts.admin.header')
+            @include('layouts.admin.topbar')
 
             <div class="page-wrapper">
                 @yield('content')
