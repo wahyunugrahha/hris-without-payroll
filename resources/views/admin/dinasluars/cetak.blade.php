@@ -287,8 +287,7 @@
         $approvedDate = $approvedAt->format('d M Y');
         $approvedTime = $approvedAt->format('H:i');
         $ttdText = "telah di tanda tangani oleh :{$approverName} jabatan:{$approverJabatan} jam:{$approvedTime} tanggal:{$approvedDate}";
-        $ttdUrl = url('/ttd') . '?text=' . urlencode($ttdText);
-        $qrImage = 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' . urlencode($ttdUrl);
+        $qrImage = \App\Support\TandaTangan::qrImage($ttdText);
     @endphp
 
     <div class="main-container">

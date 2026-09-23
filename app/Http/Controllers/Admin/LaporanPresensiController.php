@@ -15,6 +15,7 @@ use App\Models\SalaryIncrease;
 use App\Models\Setjamkerja;
 use App\Services\JadwalKerjaService;
 use App\Support\PeriodeKerja;
+use App\Support\TandaTangan;
 use DateInterval;
 use DatePeriod;
 use DateTime;
@@ -233,8 +234,7 @@ class LaporanPresensiController extends Controller
         $approvedAt = Carbon::now()->translatedFormat('d F Y');
 
         $ttdText = "Telah ditandatangani oleh: {$approverName}, Jabatan: {$approverJabatan}, Tanggal: {$approvedAt}, Validasi: SAH";
-        $ttdUrl = url('/ttd').'?token='.base64_encode($ttdText);
-        $qrImage = 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data='.urlencode($ttdUrl);
+        $qrImage = TandaTangan::qrImage($ttdText);
 
         $cabang = $karyawan->cabang;
 
