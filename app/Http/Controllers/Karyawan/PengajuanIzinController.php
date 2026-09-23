@@ -8,10 +8,11 @@ use App\Models\Izin;
 use App\Models\MasterCuti;
 use App\Models\Presensi;
 use App\Models\SuratPeringatan;
+use App\Services\IzinService;
 use App\Services\JadwalKerjaService;
+use App\Support\CutiDatesMeta;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Schema;
@@ -20,14 +21,10 @@ use Illuminate\Validation\ValidationException;
 
 class PengajuanIzinController extends Controller
 {
-    public function __construct(private JadwalKerjaService $jadwalKerja) {}
-
-    private const CUTI_DATES_META_PREFIX = '[CUTI_DATES:';
-
-    private function isMultiDateStatus(?string $status): bool
-    {
-        return in_array($status, ['c', 'r'], true);
-    }
+    public function __construct(
+        private JadwalKerjaService $jadwalKerja,
+        private IzinService $izin,
+    ) {}
 
     private function getPengajuanTypeLabel(?string $status, ?Izin $izin = null): string
     {
@@ -40,278 +37,6 @@ class PengajuanIzinController extends Controller
         }
 
         return 'Pengajuan';
-    }
-
-    private function getApprovedCutiDates($nik, $dateFrom, $dateTo, ?string $izinStatus = 'c')
-    {
-        $approvedStatuses = ['c'];
-        if ($izinStatus === 'r') {
-            $approvedStatuses = ['r'];
-        }
-
-        return Presensi::where('nik', $nik)
-            ->whereIn('status', $approvedStatuses)
-            ->whereBetween('tgl_presensi', [$dateFrom, $dateTo])
-            ->orderBy('tgl_presensi')
-            ->pluck('tgl_presensi')
-            ->map(function ($date) {
-                if (empty($date)) {
-                    return null;
-                }
-
-                return date('Y-m-d', strtotime((string) $date));
-            })
-            ->filter(function ($date) {
-                return $date !== null;
-            })
-            ->unique()
-            ->values()
-            ->toArray();
-    }
-
-    private function parseCutiDatesMeta(?string $keterangan): array
-    {
-        if (empty($keterangan)) {
-            return [];
-        }
-
-        $metaContent = null;
-        if (preg_match('/\[CUTI_DATES:([^\]]*)\]?/i', $keterangan, $matches)) {
-            $metaContent = $matches[1] ?? '';
-        }
-
-        // Fallback untuk data lama/format rusak: ambil semua tanggal ISO dari keterangan.
-        if ($metaContent === null) {
-            preg_match_all('/\d{4}-\d{2}-\d{2}/', $keterangan, $allDateMatches);
-            $metaContent = implode(',', $allDateMatches[0] ?? []);
-        }
-
-        return collect(explode(',', (string) $metaContent))
-            ->map(function ($date) {
-                return trim($date);
-            })
-            ->filter(function ($date) {
-                return preg_match('/^\d{4}-\d{2}-\d{2}$/', $date);
-            })
-            ->unique()
-            ->sort()
-            ->values()
-            ->all();
-    }
-
-    private function buildCompactDateSegmentsText(array $isoDates): string
-    {
-        $dates = collect($isoDates)
-            ->filter(function ($date) {
-                return preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $date);
-            })
-            ->unique()
-            ->sort()
-            ->values()
-            ->all();
-
-        if (empty($dates)) {
-            return '';
-        }
-
-        $segments = [];
-        $segmentStart = $dates[0];
-        $segmentEnd = $dates[0];
-
-        for ($i = 1; $i < count($dates); $i++) {
-            $current = $dates[$i];
-            $nextExpected = date('Y-m-d', strtotime($segmentEnd.' +1 day'));
-
-            if ($current === $nextExpected) {
-                $segmentEnd = $current;
-
-                continue;
-            }
-
-            $segments[] = [$segmentStart, $segmentEnd];
-            $segmentStart = $current;
-            $segmentEnd = $current;
-        }
-        $segments[] = [$segmentStart, $segmentEnd];
-
-        $format = function ($date) {
-            return date('d-m-Y', strtotime($date));
-        };
-
-        return collect($segments)->map(function ($segment) use ($format) {
-            [$start, $end] = $segment;
-            if ($start === $end) {
-                return $format($start);
-            }
-
-            return $format($start).' s/d '.$format($end);
-        })->implode(', ');
-    }
-
-    private function stripCutiDatesMeta(?string $keterangan): string
-    {
-        if (empty($keterangan)) {
-            return '';
-        }
-
-        $clean = preg_replace('/\s*\[CUTI_DATES:[^\]]*\]?\s*/i', ' ', $keterangan);
-        $clean = preg_replace('/\s*\|\s*$/', '', (string) $clean);
-
-        return trim(preg_replace('/\s{2,}/', ' ', (string) $clean));
-    }
-
-    private function appendCutiDatesMeta(string $keterangan, $selectedDates): string
-    {
-        $cleanKeterangan = $this->stripCutiDatesMeta($keterangan);
-        $dates = $selectedDates instanceof Collection
-            ? $selectedDates->all()
-            : (array) $selectedDates;
-
-        if (empty($dates)) {
-            return $cleanKeterangan;
-        }
-
-        $meta = self::CUTI_DATES_META_PREFIX.implode(',', $dates).']';
-
-        return trim($cleanKeterangan.' '.$meta);
-    }
-
-    private function getDatesFromRange($fromDate, $toDate): array
-    {
-        if (empty($fromDate)) {
-            return [];
-        }
-
-        $result = [];
-        try {
-            $start = new \DateTime($fromDate);
-            $end = new \DateTime($toDate ?: $fromDate);
-            if ($end < $start) {
-                $end = new \DateTime($fromDate);
-            }
-
-            $period = new \DatePeriod($start, new \DateInterval('P1D'), (clone $end)->modify('+1 day'));
-            foreach ($period as $date) {
-                $result[] = $date->format('Y-m-d');
-            }
-        } catch (\Exception $e) {
-            return [];
-        }
-
-        return $result;
-    }
-
-    private function getEffectiveIzinDates($izin): array
-    {
-        if ($this->isMultiDateStatus($izin->status)) {
-            $metaDates = $this->parseCutiDatesMeta($izin->keterangan);
-            if (! empty($metaDates)) {
-                return $metaDates;
-            }
-        }
-
-        return $this->getDatesFromRange($izin->tgl_izin_dari, $izin->tgl_izin_sampai);
-    }
-
-    private function hasIzinDateConflict($nik, Collection $selectedDates, $excludeKodeIzin = null): bool
-    {
-        if ($selectedDates->isEmpty()) {
-            return false;
-        }
-
-        $query = Izin::query()
-            ->where('nik', $nik)
-            ->whereIn('status_approved', [0, 1])
-            ->where(function ($q) use ($selectedDates) {
-                $q->where('tgl_izin_dari', '<=', $selectedDates->last())
-                    ->where('tgl_izin_sampai', '>=', $selectedDates->first());
-            });
-
-        if (! empty($excludeKodeIzin)) {
-            $query->where('kode_izin', '!=', $excludeKodeIzin);
-        }
-
-        $existingIzins = $query->get();
-        $selectedLookup = array_flip($selectedDates->all());
-
-        foreach ($existingIzins as $existingIzin) {
-            foreach ($this->getEffectiveIzinDates($existingIzin) as $existingDate) {
-                if (isset($selectedLookup[$existingDate])) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private function getHariLiburDatesByScope($kodeCabang = null, $kodeDept = null, $dateFrom = null, $dateTo = null)
-    {
-        $query = HariLibur::query();
-
-        if (! empty($dateFrom) && ! empty($dateTo)) {
-            $query->whereBetween('tanggal_libur', [$dateFrom, $dateTo]);
-        }
-
-        $query->where(function ($query) use ($kodeCabang, $kodeDept) {
-            $query->where(function ($q) {
-                $q->where(function ($c) {
-                    $c->whereNull('kode_cabang')
-                        ->orWhere('kode_cabang', '')
-                        ->orWhere('kode_cabang', 'Semua Cabang');
-                })->where(function ($d) {
-                    $d->whereNull('kode_dept')
-                        ->orWhere('kode_dept', '')
-                        ->orWhere('kode_dept', 'Semua Departemen');
-                });
-            });
-
-            if (! empty($kodeCabang)) {
-                $query->orWhere(function ($q) use ($kodeCabang) {
-                    $q->where(function ($c) use ($kodeCabang) {
-                        $c->where('kode_cabang', $kodeCabang)
-                            ->orWhereRaw("concat(',', kode_cabang, ',') like ?", ["%,{$kodeCabang},%"]);
-                    })->where(function ($d) {
-                        $d->whereNull('kode_dept')
-                            ->orWhere('kode_dept', '')
-                            ->orWhere('kode_dept', 'Semua Departemen');
-                    });
-                });
-            }
-
-            if (! empty($kodeDept)) {
-                $query->orWhere(function ($q) use ($kodeDept) {
-                    $q->where(function ($d) use ($kodeDept) {
-                        $d->where('kode_dept', $kodeDept)
-                            ->orWhereRaw("concat(',', kode_dept, ',') like ?", ["%,{$kodeDept},%"]);
-                    })->where(function ($c) {
-                        $c->whereNull('kode_cabang')
-                            ->orWhere('kode_cabang', '')
-                            ->orWhere('kode_cabang', 'Semua Cabang');
-                    });
-                });
-            }
-
-            if (! empty($kodeCabang) && ! empty($kodeDept)) {
-                $query->orWhere(function ($q) use ($kodeCabang, $kodeDept) {
-                    $q->where(function ($c) use ($kodeCabang) {
-                        $c->where('kode_cabang', $kodeCabang)
-                            ->orWhereRaw("concat(',', kode_cabang, ',') like ?", ["%,{$kodeCabang},%"]);
-                    })->where(function ($d) use ($kodeDept) {
-                        $d->where('kode_dept', $kodeDept)
-                            ->orWhereRaw("concat(',', kode_dept, ',') like ?", ["%,{$kodeDept},%"]);
-                    });
-                });
-            }
-        });
-
-        return $query->pluck('tanggal_libur')
-            ->map(function ($item) {
-                return date('Y-m-d', strtotime($item));
-            })
-            ->unique()
-            ->values()
-            ->toArray();
     }
 
     public function index(Request $request)
@@ -360,9 +85,9 @@ class PengajuanIzinController extends Controller
             ->get();
 
         foreach ($data_izin as $izin) {
-            $effectiveDates = $this->getEffectiveIzinDates($izin);
+            $effectiveDates = $izin->tanggalDiajukan();
 
-            if ($this->isMultiDateStatus($izin->status) && count($effectiveDates) > 0) {
+            if (Izin::isMultiDateStatus($izin->status) && count($effectiveDates) > 0) {
                 $izin->total_hari_view = count($effectiveDates);
             } else {
                 $tglMulai = new \DateTime($izin->tgl_izin_dari);
@@ -370,12 +95,12 @@ class PengajuanIzinController extends Controller
                 $izin->total_hari_view = $tglMulai->diff($tglAkhir)->days + 1;
             }
 
-            $izin->keterangan_view = $this->stripCutiDatesMeta($izin->keterangan);
+            $izin->keterangan_view = CutiDatesMeta::strip($izin->keterangan);
             $izin->requested_dates_view = [];
             $izin->requested_dates_text = '';
             $izin->requested_dates_compact = '';
 
-            if ($this->isMultiDateStatus($izin->status) && count($effectiveDates) > 0) {
+            if (Izin::isMultiDateStatus($izin->status) && count($effectiveDates) > 0) {
                 $izin->requested_dates_view = collect($effectiveDates)
                     ->map(function ($date) {
                         return date('d-m-Y', strtotime($date));
@@ -384,7 +109,7 @@ class PengajuanIzinController extends Controller
                     ->all();
 
                 $izin->requested_dates_text = implode(', ', $izin->requested_dates_view);
-                $izin->requested_dates_compact = $this->buildCompactDateSegmentsText($effectiveDates);
+                $izin->requested_dates_compact = CutiDatesMeta::compactText($effectiveDates);
             }
         }
 
@@ -409,8 +134,8 @@ class PengajuanIzinController extends Controller
             $sampai = Carbon::parse($izin->tgl_izin_sampai ?? $izin->tgl_izin_dari);
 
             $requestedDates = [];
-            if ($this->isMultiDateStatus($izin->status)) {
-                $requestedDates = $this->getEffectiveIzinDates($izin);
+            if (Izin::isMultiDateStatus($izin->status)) {
+                $requestedDates = $izin->tanggalDiajukan();
             } else {
                 $period = new \DatePeriod(
                     $dari,
@@ -422,7 +147,7 @@ class PengajuanIzinController extends Controller
                 }
             }
 
-            $jumlahHari = $this->isMultiDateStatus($izin->status) && ! empty($requestedDates)
+            $jumlahHari = Izin::isMultiDateStatus($izin->status) && ! empty($requestedDates)
                 ? count($requestedDates)
                 : (abs($sampai->diffInDays($dari)) + 1);
 
@@ -450,13 +175,13 @@ class PengajuanIzinController extends Controller
                 $status_badge = '<span class="badge bg-warning-lt">Pending</span>';
             }
 
-            $approvedDates = $this->getApprovedCutiDates(
+            $approvedDates = $this->izin->approvedCutiDates(
                 $izin->nik,
                 $izin->tgl_izin_dari,
                 $izin->tgl_izin_sampai,
                 $izin->status
             );
-            if ($this->isMultiDateStatus($izin->status) && ! empty($requestedDates)) {
+            if (Izin::isMultiDateStatus($izin->status) && ! empty($requestedDates)) {
                 $approvedDates = array_values(array_intersect($requestedDates, $approvedDates));
 
                 // Fallback aman untuk data lama/inkonsisten: jika status sudah disetujui,
@@ -473,9 +198,9 @@ class PengajuanIzinController extends Controller
                 'tgl_sampai' => $sampai->format('d M Y'),
                 'tgl_dari_iso' => $dari->format('Y-m-d'),
                 'tgl_sampai_iso' => $sampai->format('Y-m-d'),
-                'keterangan' => $this->stripCutiDatesMeta($izin->keterangan),
+                'keterangan' => CutiDatesMeta::strip($izin->keterangan),
                 'status_badge' => $status_badge,
-                'is_cuti' => $this->isMultiDateStatus($izin->status),
+                'is_cuti' => Izin::isMultiDateStatus($izin->status),
                 'status' => $izin->status,
                 'approved_dates' => $approvedDates,
                 'requested_dates' => $requestedDates,
@@ -485,87 +210,6 @@ class PengajuanIzinController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => $this->failMessage('Gagal memproses data.', $e)], 500);
         }
-    }
-
-    private function getKodeCutiTahunan()
-    {
-        $record = MasterCuti::where('nama_cuti', 'like', '%Cuti Tahunan%')->first();
-
-        return $record->kode_cuti ?? 'CTH';
-    }
-
-    private function getCutiTakenDays($nik, $tahun, $kode_cuti, $excludeKodeIzin = null)
-    {
-        $karyawan = Auth::guard('karyawan')->user();
-        $kodeCabang = $karyawan->kode_cabang ?? null;
-        $kodeDept = $karyawan->kode_dept ?? null;
-
-        $holidayDates = $this->getHariLiburDatesByScope(
-            $kodeCabang,
-            $kodeDept,
-            $tahun.'-01-01',
-            $tahun.'-12-31'
-        );
-        $holidayLookup = array_flip($holidayDates);
-
-        $query = Izin::query()
-            ->select('nik', 'status', 'keterangan', 'tgl_izin_dari', 'tgl_izin_sampai')
-            ->where('nik', $nik)
-            ->where('status', 'c')
-            ->where('kode_cuti', $kode_cuti)
-            ->where('status_approved', 1)
-            ->whereYear('tgl_izin_dari', $tahun);
-
-        if ($excludeKodeIzin) {
-            $query->where('kode_izin', '!=', $excludeKodeIzin);
-        }
-
-        $rows = $query->get();
-        $sumDays = 0;
-        $approvedLookup = array_flip(Presensi::where('nik', $nik)
-            ->where('status', 'c')
-            ->whereYear('tgl_presensi', $tahun)
-            ->pluck('tgl_presensi')
-            ->map(function ($date) {
-                return $date ? $date->format('Y-m-d') : null;
-            })
-            ->filter(function ($date) {
-                return ! empty($date);
-            })
-            ->all());
-
-        foreach ($rows as $r) {
-            foreach ($this->getEffectiveIzinDates($r) as $dateStr) {
-                if ((int) date('Y', strtotime($dateStr)) !== (int) $tahun) {
-                    continue;
-                }
-
-                $namahari = $this->jadwalKerja->namaHari(date('D', strtotime($dateStr)));
-                [$jkObj, $isLiburShift] = $this->jadwalKerja->untukHari($nik, $kodeDept, $kodeCabang, $namahari);
-
-                if (isset($holidayLookup[$dateStr]) || $isLiburShift) {
-                    continue;
-                }
-                if (! isset($approvedLookup[$dateStr])) {
-                    continue;
-                }
-                $sumDays++;
-            }
-        }
-
-        return (int) $sumDays;
-    }
-
-    private function generateKodeIzin($lastKode, $format, $padLength)
-    {
-        if (empty($lastKode) || strpos($lastKode, $format) !== 0) {
-            $nextNumber = 1;
-        } else {
-            $lastNumber = (int) substr($lastKode, -4);
-            $nextNumber = $lastNumber + 1;
-        }
-
-        return $format.str_pad($nextNumber, $padLength, '0', STR_PAD_LEFT);
     }
 
     public function createizinabsen()
@@ -595,10 +239,10 @@ class PengajuanIzinController extends Controller
 
         $tahun_aktif = date('Y');
         $sisa_cuti_map = [];
-        $kodeCutiTahunan = $this->getKodeCutiTahunan();
+        $kodeCutiTahunan = $this->izin->kodeCutiTahunan();
 
         foreach ($mastercuti as $mc) {
-            $taken = $this->getCutiTakenDays($nik, $tahun_aktif, $mc->kode_cuti);
+            $taken = $this->izin->cutiTakenDays(Auth::guard('karyawan')->user(), $tahun_aktif, $mc->kode_cuti);
 
             if (empty($mc->jml_hari) || (int) $mc->jml_hari <= 0) {
                 $sisa_cuti_map[$mc->kode_cuti] = null;
@@ -651,7 +295,7 @@ class PengajuanIzinController extends Controller
 
         $lastkodeizin = $lastizin != null ? $lastizin->kode_izin : '';
         $format = 'IZ'.$bulan.$thn;
-        $kode_izin = $this->generateKodeIzin($lastkodeizin, $format, 4);
+        $kode_izin = $this->izin->generateKodeIzin($lastkodeizin, $format, 4);
 
         $data = [
             'kode_izin' => $kode_izin,
@@ -700,7 +344,7 @@ class PengajuanIzinController extends Controller
 
         $lastkodeizin = $lastizin != null ? $lastizin->kode_izin : '';
         $format = 'IZ'.$bulan.$thn;
-        $kode_izin = $this->generateKodeIzin($lastkodeizin, $format, 4);
+        $kode_izin = $this->izin->generateKodeIzin($lastkodeizin, $format, 4);
 
         $data = [
             'kode_izin' => $kode_izin,
@@ -759,7 +403,7 @@ class PengajuanIzinController extends Controller
 
         $lastkodeizin = $lastizin != null ? $lastizin->kode_izin : '';
         $format = 'IZ'.$bulan.$thn;
-        $kode_izin = $this->generateKodeIzin($lastkodeizin, $format, 4);
+        $kode_izin = $this->izin->generateKodeIzin($lastkodeizin, $format, 4);
 
         $data = [
             'kode_izin' => $kode_izin,
@@ -830,7 +474,7 @@ class PengajuanIzinController extends Controller
 
         $lastkodeizin = $lastizin != null ? $lastizin->kode_izin : '';
         $format = 'IZ'.$bulan.$thn;
-        $kode_izin = $this->generateKodeIzin($lastkodeizin, $format, 4);
+        $kode_izin = $this->izin->generateKodeIzin($lastkodeizin, $format, 4);
 
         $data = [
             'kode_izin' => $kode_izin,
@@ -887,7 +531,7 @@ class PengajuanIzinController extends Controller
 
         $jml_hari = $selectedDates->count();
 
-        $holidayDates = $this->getHariLiburDatesByScope(
+        $holidayDates = HariLibur::tanggalBerlaku(
             $karyawan->kode_cabang ?? null,
             $karyawan->kode_dept ?? null,
             $selectedDates->first(),
@@ -919,7 +563,7 @@ class PengajuanIzinController extends Controller
             ->whereIn('status', ['h', 'i', 's', 'c', 'r'])
             ->exists();
 
-        $existingIzinOverlap = $this->hasIzinDateConflict($nik, $finalSelectedDates);
+        $existingIzinOverlap = $this->izin->hasDateConflict($nik, $finalSelectedDates);
 
         if ($existingPresensi || $existingIzinOverlap) {
             throw ValidationException::withMessages([
@@ -930,7 +574,7 @@ class PengajuanIzinController extends Controller
         $masterCutiRec = MasterCuti::find($kode_cuti);
         if ($masterCutiRec && $masterCutiRec->jml_hari && (int) $masterCutiRec->jml_hari > 0) {
             $jatah_cuti = (int) $masterCutiRec->jml_hari;
-            $cuti_diambil = $this->getCutiTakenDays($nik, date('Y'), $kode_cuti);
+            $cuti_diambil = $this->izin->cutiTakenDays(Auth::guard('karyawan')->user(), date('Y'), $kode_cuti);
             $sisa_cuti = $jatah_cuti - $cuti_diambil;
 
             if ($jml_hari > $sisa_cuti) {
@@ -952,7 +596,7 @@ class PengajuanIzinController extends Controller
 
             $lastkodeizin = $lastizin != null ? $lastizin->kode_izin : '';
             $format = 'IZ'.$bulan.$thn;
-            $kode_izin = $this->generateKodeIzin($lastkodeizin, $format, 4);
+            $kode_izin = $this->izin->generateKodeIzin($lastkodeizin, $format, 4);
 
             Izin::create([
                 'kode_izin' => $kode_izin,
@@ -961,7 +605,7 @@ class PengajuanIzinController extends Controller
                 'tgl_izin_sampai' => $finalSelectedDates->last(),
                 'status' => 'c',
                 'kode_cuti' => $kode_cuti,
-                'keterangan' => $this->appendCutiDatesMeta($keterangan, $finalSelectedDates),
+                'keterangan' => CutiDatesMeta::append($keterangan, $finalSelectedDates),
             ]);
 
             return redirect('/presensi/izin')->with('success', 'Pengajuan cuti berhasil disimpan.');
@@ -995,7 +639,7 @@ class PengajuanIzinController extends Controller
             ]);
         }
 
-        $holidayDates = $this->getHariLiburDatesByScope(
+        $holidayDates = HariLibur::tanggalBerlaku(
             $karyawan->kode_cabang ?? null,
             $karyawan->kode_dept ?? null,
             $selectedDates->first(),
@@ -1023,7 +667,7 @@ class PengajuanIzinController extends Controller
             ->whereIn('status', ['h', 'i', 's', 'c', 'r'])
             ->exists();
 
-        $existingIzinOverlap = $this->hasIzinDateConflict($nik, $finalSelectedDates);
+        $existingIzinOverlap = $this->izin->hasDateConflict($nik, $finalSelectedDates);
 
         if ($existingPresensi || $existingIzinOverlap) {
             throw ValidationException::withMessages([
@@ -1043,7 +687,7 @@ class PengajuanIzinController extends Controller
 
             $lastkodeizin = $lastizin != null ? $lastizin->kode_izin : '';
             $format = 'IZ'.$bulan.$thn;
-            $kode_izin = $this->generateKodeIzin($lastkodeizin, $format, 4);
+            $kode_izin = $this->izin->generateKodeIzin($lastkodeizin, $format, 4);
 
             Izin::create([
                 'kode_izin' => $kode_izin,
@@ -1052,7 +696,7 @@ class PengajuanIzinController extends Controller
                 'tgl_izin_sampai' => $finalSelectedDates->last(),
                 'status' => 'r',
                 'kode_cuti' => null,
-                'keterangan' => $this->appendCutiDatesMeta($keterangan, $finalSelectedDates),
+                'keterangan' => CutiDatesMeta::append($keterangan, $finalSelectedDates),
             ]);
 
             return redirect('/presensi/izin')->with('success', 'Pengajuan roster berhasil disimpan.');
@@ -1119,13 +763,13 @@ class PengajuanIzinController extends Controller
 
         $izinDates = [];
         foreach ($izinRecords as $record) {
-            $izinDates = array_merge($izinDates, $this->getEffectiveIzinDates($record));
+            $izinDates = array_merge($izinDates, $record->tanggalDiajukan());
         }
 
         $today = date('Y-m-d');
         $oneYearAhead = date('Y-m-d', strtotime('+1 year'));
 
-        $holidayDates = $this->getHariLiburDatesByScope(
+        $holidayDates = HariLibur::tanggalBerlaku(
             $karyawan->kode_cabang ?? null,
             $karyawan->kode_dept ?? null,
             $today,
@@ -1425,10 +1069,10 @@ class PengajuanIzinController extends Controller
 
         $mastercuti = MasterCuti::orderBy('kode_cuti')->get();
         $sisa_cuti_map = [];
-        $kodeCutiTahunan = $this->getKodeCutiTahunan();
+        $kodeCutiTahunan = $this->izin->kodeCutiTahunan();
 
         foreach ($mastercuti as $mc) {
-            $taken = $this->getCutiTakenDays($nik, $tahun_aktif, $mc->kode_cuti, $kode_izin);
+            $taken = $this->izin->cutiTakenDays(Auth::guard('karyawan')->user(), $tahun_aktif, $mc->kode_cuti, $kode_izin);
 
             if (empty($mc->jml_hari) || (int) $mc->jml_hari <= 0) {
                 $sisa_cuti_map[$mc->kode_cuti] = null;
@@ -1440,8 +1084,8 @@ class PengajuanIzinController extends Controller
 
         $sisa_cuti = $sisa_cuti_map[$kodeCutiTahunan] ?? null;
 
-        $initialSelectedDates = $this->getEffectiveIzinDates($dataizin);
-        $keterangan_plain = $this->stripCutiDatesMeta($dataizin->keterangan);
+        $initialSelectedDates = $dataizin->tanggalDiajukan();
+        $keterangan_plain = CutiDatesMeta::strip($dataizin->keterangan);
 
         return view('karyawan.pengajuanizin.editizincuti', compact('dataizin', 'mastercuti', 'sisa_cuti', 'kodeCutiTahunan', 'sisa_cuti_map', 'kode_izin', 'initialSelectedDates', 'keterangan_plain') + [
             'submissionType' => 'cuti',
@@ -1460,8 +1104,8 @@ class PengajuanIzinController extends Controller
             return Redirect::back()->with('error', 'Pengajuan ini sudah diverifikasi dan tidak bisa diubah.');
         }
 
-        $initialSelectedDates = $this->getEffectiveIzinDates($dataizin);
-        $keterangan_plain = $this->stripCutiDatesMeta($dataizin->keterangan);
+        $initialSelectedDates = $dataizin->tanggalDiajukan();
+        $keterangan_plain = CutiDatesMeta::strip($dataizin->keterangan);
 
         return view('karyawan.pengajuanizin.editizincuti', [
             'dataizin' => $dataizin,
@@ -1517,7 +1161,7 @@ class PengajuanIzinController extends Controller
 
         $jml_hari = $selectedDates->count();
 
-        $holidayDates = $this->getHariLiburDatesByScope(
+        $holidayDates = HariLibur::tanggalBerlaku(
             $karyawan->kode_cabang ?? null,
             $karyawan->kode_dept ?? null,
             $selectedDates->first(),
@@ -1536,7 +1180,7 @@ class PengajuanIzinController extends Controller
             ->whereIn('status', ['h', 'i', 's', 'c', 'r'])
             ->exists();
 
-        $existingIzinOverlap = $this->hasIzinDateConflict($nik, $selectedDates, $kode_izin);
+        $existingIzinOverlap = $this->izin->hasDateConflict($nik, $selectedDates, $kode_izin);
 
         if ($existingPresensi || $existingIzinOverlap) {
             throw ValidationException::withMessages([
@@ -1547,7 +1191,7 @@ class PengajuanIzinController extends Controller
         $masterCutiRec = MasterCuti::find($kode_cuti);
         if ($masterCutiRec && $masterCutiRec->jml_hari && (int) $masterCutiRec->jml_hari > 0) {
             $jatah_cuti = (int) $masterCutiRec->jml_hari;
-            $cuti_diambil = $this->getCutiTakenDays($nik, date('Y'), $kode_cuti, $kode_izin);
+            $cuti_diambil = $this->izin->cutiTakenDays(Auth::guard('karyawan')->user(), date('Y'), $kode_cuti, $kode_izin);
             $sisa_cuti = $jatah_cuti - $cuti_diambil;
 
             if ($jml_hari > $sisa_cuti) {
@@ -1563,7 +1207,7 @@ class PengajuanIzinController extends Controller
                 'tgl_izin_sampai' => $selectedDates->last(),
                 'status' => 'c',
                 'kode_cuti' => $kode_cuti,
-                'keterangan' => $this->appendCutiDatesMeta($keterangan, $selectedDates),
+                'keterangan' => CutiDatesMeta::append($keterangan, $selectedDates),
             ]);
 
             return redirect('/presensi/izin')->with('success', 'Data Pengajuan Cuti Berhasil Diupdate.');
@@ -1601,7 +1245,7 @@ class PengajuanIzinController extends Controller
             ]);
         }
 
-        $holidayDates = $this->getHariLiburDatesByScope(
+        $holidayDates = HariLibur::tanggalBerlaku(
             $karyawan->kode_cabang ?? null,
             $karyawan->kode_dept ?? null,
             $selectedDates->first(),
@@ -1629,7 +1273,7 @@ class PengajuanIzinController extends Controller
             ->whereIn('status', ['h', 'i', 's', 'c', 'r'])
             ->exists();
 
-        $existingIzinOverlap = $this->hasIzinDateConflict($nik, $finalSelectedDates, $kode_izin);
+        $existingIzinOverlap = $this->izin->hasDateConflict($nik, $finalSelectedDates, $kode_izin);
 
         if ($existingPresensi || $existingIzinOverlap) {
             throw ValidationException::withMessages([
@@ -1643,7 +1287,7 @@ class PengajuanIzinController extends Controller
                 'tgl_izin_sampai' => $finalSelectedDates->last(),
                 'status' => 'r',
                 'kode_cuti' => null,
-                'keterangan' => $this->appendCutiDatesMeta($keterangan, $finalSelectedDates),
+                'keterangan' => CutiDatesMeta::append($keterangan, $finalSelectedDates),
             ]);
 
             return redirect('/presensi/izin')->with('success', 'Data Pengajuan Roster Berhasil Diupdate.');

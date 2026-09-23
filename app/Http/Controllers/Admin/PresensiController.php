@@ -16,7 +16,9 @@ use App\Models\Presensi;
 use App\Models\RekapBulanan;
 use App\Models\SalaryIncrease;
 use App\Models\Setjamkerja;
+use App\Services\IzinService;
 use App\Services\JadwalKerjaService;
+use App\Support\CutiDatesMeta;
 use App\Support\PeriodeKerja;
 use DateInterval;
 use DatePeriod;
@@ -31,140 +33,12 @@ use Illuminate\Support\Facades\Storage;
 
 class PresensiController extends Controller
 {
-    public function __construct(private JadwalKerjaService $jadwalKerja) {}
+    public function __construct(
+        private JadwalKerjaService $jadwalKerja,
+        private IzinService $izin,
+    ) {}
 
     private const IZIN_TERLAMBAT_DEDUCTION_MINUTES = 10;
-
-    private function isMultiDateIzinStatus(?string $status): bool
-    {
-        return in_array($status, ['c', 'r'], true);
-    }
-
-    private function parseCutiDatesMeta(?string $keterangan): array
-    {
-        if (empty($keterangan)) {
-            return [];
-        }
-
-        $metaContent = null;
-        if (preg_match('/\[CUTI_DATES:([^\]]*)\]?/i', $keterangan, $matches)) {
-            $metaContent = $matches[1] ?? '';
-        }
-
-        // Fallback untuk format lama/kurang rapi: ambil tanggal ISO dari keterangan.
-        if ($metaContent === null) {
-            preg_match_all('/\d{4}-\d{2}-\d{2}/', $keterangan, $allDateMatches);
-            $metaContent = implode(',', $allDateMatches[0] ?? []);
-        }
-
-        return collect(explode(',', (string) $metaContent))
-            ->map(function ($date) {
-                return trim($date);
-            })
-            ->filter(function ($date) {
-                return preg_match('/^\d{4}-\d{2}-\d{2}$/', $date);
-            })
-            ->unique()
-            ->sort()
-            ->values()
-            ->all();
-    }
-
-    private function buildCompactDateSegmentsText(array $isoDates): string
-    {
-        $dates = collect($isoDates)
-            ->filter(function ($date) {
-                return preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $date);
-            })
-            ->unique()
-            ->sort()
-            ->values()
-            ->all();
-
-        if (empty($dates)) {
-            return '';
-        }
-
-        $segments = [];
-        $segmentStart = $dates[0];
-        $segmentEnd = $dates[0];
-
-        for ($i = 1; $i < count($dates); $i++) {
-            $current = $dates[$i];
-            $nextExpected = date('Y-m-d', strtotime($segmentEnd.' +1 day'));
-
-            if ($current === $nextExpected) {
-                $segmentEnd = $current;
-
-                continue;
-            }
-
-            $segments[] = [$segmentStart, $segmentEnd];
-            $segmentStart = $current;
-            $segmentEnd = $current;
-        }
-        $segments[] = [$segmentStart, $segmentEnd];
-
-        $format = function ($date) {
-            return date('d-m-Y', strtotime($date));
-        };
-
-        return collect($segments)->map(function ($segment) use ($format) {
-            [$start, $end] = $segment;
-            if ($start === $end) {
-                return $format($start);
-            }
-
-            return $format($start).' s/d '.$format($end);
-        })->implode(', ');
-    }
-
-    private function stripCutiDatesMeta(?string $keterangan): string
-    {
-        if (empty($keterangan)) {
-            return '';
-        }
-
-        $clean = preg_replace('/\s*\[CUTI_DATES:[^\]]*\]?\s*/i', ' ', $keterangan);
-        $clean = preg_replace('/\s*\|\s*$/', '', (string) $clean);
-
-        return trim(preg_replace('/\s{2,}/', ' ', (string) $clean));
-    }
-
-    private function getDatesFromRange($fromDate, $toDate): array
-    {
-        if (empty($fromDate)) {
-            return [];
-        }
-
-        $result = [];
-        try {
-            $start = new DateTime($fromDate);
-            $end = new DateTime($toDate ?: $fromDate);
-            if ($end < $start) {
-                $end = new DateTime($fromDate);
-            }
-
-            $period = new DatePeriod($start, new DateInterval('P1D'), (clone $end)->modify('+1 day'));
-            foreach ($period as $date) {
-                $result[] = $date->format('Y-m-d');
-            }
-        } catch (\Exception $e) {
-            return [];
-        }
-
-        return $result;
-    }
-
-    private function getRequestedCutiDates(Izin $izin): array
-    {
-        $metaDates = $this->parseCutiDatesMeta($izin->keterangan);
-        if (! empty($metaDates)) {
-            return $metaDates;
-        }
-
-        return $this->getDatesFromRange($izin->tgl_izin_dari, $izin->tgl_izin_sampai);
-    }
 
     public function monitoring()
     {
@@ -494,7 +368,7 @@ class PresensiController extends Controller
             }
         }
 
-        $hariLiburNasional = $this->getHariLiburData($tgl_awal, $tgl_akhir, $karyawan->kode_cabang, $karyawan->kode_dept);
+        $hariLiburNasional = HariLibur::tanggalBerlaku($karyawan->kode_cabang, $karyawan->kode_dept, $tgl_awal, $tgl_akhir);
 
         $presensiByDate = $presensiRaw->keyBy(fn ($p) => date('Y-m-d', strtotime($p->tgl_presensi)));
         $presensiRows = collect();
@@ -711,7 +585,7 @@ class PresensiController extends Controller
         foreach ($karyawans as $kar) {
             $scopeKey = ($kar->kode_cabang ?? '').'|'.($kar->kode_dept ?? '');
             if (! array_key_exists($scopeKey, $hariLiburScopeCache)) {
-                $hariLiburScopeCache[$scopeKey] = $this->getHariLiburData($tgl_awal, $tgl_akhir, $kar->kode_cabang, $kar->kode_dept);
+                $hariLiburScopeCache[$scopeKey] = HariLibur::tanggalBerlaku($kar->kode_cabang, $kar->kode_dept, $tgl_awal, $tgl_akhir);
             }
             $hariLiburByNik[$kar->nik] = $hariLiburScopeCache[$scopeKey] ?? [];
         }
@@ -949,20 +823,20 @@ class PresensiController extends Controller
             ->appends($request->all());
 
         foreach ($izinsakit as $izin) {
-            $effectiveDates = $this->isMultiDateIzinStatus($izin->status)
-                ? $this->getRequestedCutiDates($izin)
-                : $this->getDatesFromRange($izin->tgl_izin_dari, $izin->tgl_izin_sampai);
+            $effectiveDates = Izin::isMultiDateStatus($izin->status)
+                ? $izin->tanggalDiajukan()
+                : CutiDatesMeta::datesFromRange($izin->tgl_izin_dari, $izin->tgl_izin_sampai);
 
             $izin->total_hari_view = ! empty($effectiveDates)
                 ? count($effectiveDates)
                 : 1;
 
-            $izin->keterangan_view = $this->stripCutiDatesMeta($izin->keterangan);
+            $izin->keterangan_view = CutiDatesMeta::strip($izin->keterangan);
             $izin->requested_dates_view = [];
             $izin->requested_dates_text = '';
             $izin->requested_dates_compact = '';
 
-            if ($this->isMultiDateIzinStatus($izin->status) && ! empty($effectiveDates)) {
+            if (Izin::isMultiDateStatus($izin->status) && ! empty($effectiveDates)) {
                 $izin->requested_dates_view = collect($effectiveDates)
                     ->map(function ($date) {
                         return date('d-m-Y', strtotime($date));
@@ -971,7 +845,7 @@ class PresensiController extends Controller
                     ->all();
 
                 $izin->requested_dates_text = implode(', ', $izin->requested_dates_view);
-                $izin->requested_dates_compact = $this->buildCompactDateSegmentsText($effectiveDates);
+                $izin->requested_dates_compact = CutiDatesMeta::compactText($effectiveDates);
             }
         }
 
@@ -1027,12 +901,12 @@ class PresensiController extends Controller
                     ->unique()
                     ->values()
                     ->all();
-            } elseif ($this->isMultiDateIzinStatus($izin->status)) {
+            } elseif (Izin::isMultiDateStatus($izin->status)) {
                 // Default ke tanggal yang diajukan agar approval tidak perlu pilih satu per satu.
-                $selectedCutiDates = $this->getRequestedCutiDates($izin);
+                $selectedCutiDates = $izin->tanggalDiajukan();
             }
 
-            if ($status_approved == 1 && $this->isMultiDateIzinStatus($izin->status) && empty($selectedCutiDates)) {
+            if ($status_approved == 1 && Izin::isMultiDateStatus($izin->status) && empty($selectedCutiDates)) {
                 DB::rollBack();
 
                 return Redirect::back()->with('warning', 'Harap pilih minimal satu tanggal untuk pengajuan ini.');
@@ -1061,7 +935,7 @@ class PresensiController extends Controller
 
                     // Filter Tanggal Cuti (Partial Approval)
                     // Jika ini Cuti, hanya proses tanggal yang dipilih di kalender
-                    if ($this->isMultiDateIzinStatus($izin->status) && ! empty($selectedCutiDates)) {
+                    if (Izin::isMultiDateStatus($izin->status) && ! empty($selectedCutiDates)) {
                         if (! in_array($tgl, $selectedCutiDates)) {
                             continue; // Skip tanggal yang tidak dipilih
                         }
@@ -1156,9 +1030,9 @@ class PresensiController extends Controller
                 }
 
                 // Update Data Izin
-                if ($this->isMultiDateIzinStatus($izin->status) && ! empty($selectedCutiDates)) {
+                if (Izin::isMultiDateStatus($izin->status) && ! empty($selectedCutiDates)) {
                     $approvedDaysCount = count($selectedCutiDates);
-                    $requestedCutiDates = $this->getRequestedCutiDates($izin);
+                    $requestedCutiDates = $izin->tanggalDiajukan();
                     $originalDaysCount = count($requestedCutiDates);
 
                     if ($approvedDaysCount < $originalDaysCount) {
@@ -1248,23 +1122,6 @@ class PresensiController extends Controller
         }
     }
 
-    // Helper function to get approved cuti dates
-    private function getApprovedCutiDates($nik, $dateFrom, $dateTo)
-    {
-        $presensiRecords = Presensi::where('nik', $nik)
-            ->where('status', 'c')
-            ->whereBetween('tgl_presensi', [$dateFrom, $dateTo])
-            ->orderBy('tgl_presensi')
-            ->pluck('tgl_presensi')
-            ->map(function ($date) {
-                // Ensure date is string Y-m-d
-                return date('Y-m-d', strtotime($date));
-            })
-            ->toArray();
-
-        return $presensiRecords;
-    }
-
     public function detailijinsakit($id)
     {
         try {
@@ -1285,8 +1142,8 @@ class PresensiController extends Controller
             $sampai = \Carbon\Carbon::parse($izin->tgl_izin_sampai ?? $izin->tgl_izin_dari);
 
             $requestedDates = [];
-            if ($this->isMultiDateIzinStatus($izin->status)) {
-                $requestedDates = $this->getRequestedCutiDates($izin);
+            if (Izin::isMultiDateStatus($izin->status)) {
+                $requestedDates = $izin->tanggalDiajukan();
             } else {
                 $period = new DatePeriod(
                     $dari,
@@ -1298,7 +1155,7 @@ class PresensiController extends Controller
                 }
             }
 
-            $jumlahHari = $this->isMultiDateIzinStatus($izin->status) && ! empty($requestedDates)
+            $jumlahHari = Izin::isMultiDateStatus($izin->status) && ! empty($requestedDates)
                 ? count($requestedDates)
                 : (abs($sampai->diffInDays($dari)) + 1);
 
@@ -1352,8 +1209,8 @@ class PresensiController extends Controller
 
             // Ambil approved dates jika statusnya Cuti
             $approved_dates = [];
-            if ($this->isMultiDateIzinStatus($izin->status)) {
-                $approved_dates = $this->getApprovedCutiDates($izin->nik, $izin->tgl_izin_dari, $izin->tgl_izin_sampai);
+            if (Izin::isMultiDateStatus($izin->status)) {
+                $approved_dates = $this->izin->approvedCutiDates($izin->nik, $izin->tgl_izin_dari, $izin->tgl_izin_sampai, $izin->status);
                 if (! empty($requestedDates)) {
                     $approved_dates = array_values(array_intersect($requestedDates, $approved_dates));
                 }
@@ -1371,16 +1228,16 @@ class PresensiController extends Controller
                 'tgl_sampai' => $sampai->format('d M Y'),
                 'tgl_dari_std' => $dari->format('Y-m-d'), // Digunakan untuk inisialisasi JS Datepicker
                 'tgl_sampai_std' => $sampai->format('Y-m-d'),
-                'keterangan' => $this->stripCutiDatesMeta($izin->keterangan),
+                'keterangan' => CutiDatesMeta::strip($izin->keterangan),
                 'status_badge' => $status_badge,
                 'sid_display' => $sid_display,
                 'lampiran_link' => $lampiran_link,
-                'is_cuti' => $this->isMultiDateIzinStatus($izin->status),
+                'is_cuti' => Izin::isMultiDateStatus($izin->status),
                 'status' => $izin->status,
                 'status_approved' => (int) $izin->status_approved,
                 'catatan_ditolak' => $izin->catatan_ditolak,
                 'approved_dates' => $approved_dates,
-                'requested_dates' => $this->isMultiDateIzinStatus($izin->status) ? $requestedDates : [],
+                'requested_dates' => Izin::isMultiDateStatus($izin->status) ? $requestedDates : [],
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $this->failMessage('Gagal memproses data.', $e)], 500);
@@ -1468,63 +1325,6 @@ class PresensiController extends Controller
     }
 
     // --- Helper Functions ---
-
-    private function getHariLiburData($tgl_awal, $tgl_akhir, $kode_cabang = null, $kode_dept = null)
-    {
-        $hariLiburQuery = HariLibur::whereBetween('tanggal_libur', [$tgl_awal, $tgl_akhir]);
-
-        $hariLiburQuery->where(function ($query) use ($kode_cabang, $kode_dept) {
-            // A. Global
-            $query->where(function ($q) {
-                $q->where(function ($c) {
-                    $c->whereNull('kode_cabang')->orWhere('kode_cabang', '')->orWhere('kode_cabang', 'Semua Cabang');
-                })->where(function ($d) {
-                    $d->whereNull('kode_dept')->orWhere('kode_dept', '')->orWhere('kode_dept', 'Semua Departemen');
-                });
-            });
-
-            // B. Filter Cabang
-            if (! empty($kode_cabang)) {
-                $query->orWhere(function ($q) use ($kode_cabang) {
-                    $q->where(function ($c) use ($kode_cabang) {
-                        $c->where('kode_cabang', $kode_cabang)
-                            ->orWhereRaw("concat(',', kode_cabang, ',') like ?", ["%,{$kode_cabang},%"]);
-                    })->where(function ($d) {
-                        $d->whereNull('kode_dept')->orWhere('kode_dept', '')->orWhere('kode_dept', 'Semua Departemen');
-                    });
-                });
-            }
-
-            // C. Filter Dept
-            if (! empty($kode_dept)) {
-                $query->orWhere(function ($q) use ($kode_dept) {
-                    $q->where(function ($d) use ($kode_dept) {
-                        $d->where('kode_dept', $kode_dept)
-                            ->orWhereRaw("concat(',', kode_dept, ',') like ?", ["%,{$kode_dept},%"]);
-                    })->where(function ($c) {
-                        $c->whereNull('kode_cabang')->orWhere('kode_cabang', '')->orWhere('kode_cabang', 'Semua Cabang');
-                    });
-                });
-            }
-
-            // D. Spesifik Keduanya
-            if (! empty($kode_cabang) && ! empty($kode_dept)) {
-                $query->orWhere(function ($q) use ($kode_cabang, $kode_dept) {
-                    $q->where(function ($c) use ($kode_cabang) {
-                        $c->where('kode_cabang', $kode_cabang)
-                            ->orWhereRaw("concat(',', kode_cabang, ',') like ?", ["%,{$kode_cabang},%"]);
-                    })->where(function ($d) use ($kode_dept) {
-                        $d->where('kode_dept', $kode_dept)
-                            ->orWhereRaw("concat(',', kode_dept, ',') like ?", ["%,{$kode_dept},%"]);
-                    });
-                });
-            }
-        });
-
-        return $hariLiburQuery->get()->map(function ($item) {
-            return date('Y-m-d', strtotime($item->tanggal_libur));
-        })->toArray();
-    }
 
     private function setEmptyPresensi($item)
     {
