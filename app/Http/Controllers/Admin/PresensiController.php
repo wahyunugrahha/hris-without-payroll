@@ -92,6 +92,7 @@ class PresensiController extends Controller
                 'presensi_filtered.lokasi_in',
                 'presensi_filtered.lokasi_out',
                 'presensi_filtered.status',
+                'presensi_filtered.kejanggalan',
                 'presensi_filtered.id',
                 'presensi_filtered.tgl_presensi',
                 'jam_kerja.jam_masuk',

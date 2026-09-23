@@ -253,13 +253,15 @@ class PresensiController extends Controller
                 ], 429);
             }
 
-            return $this->processPresensi($nik, $tgl_presensi, $jam, $lokasi, $image_base64, $jamkerja, $absenType, $dinasLuarAktif ? true : false);
+            $kejanggalan = $this->presensi->kejanggalanLokasi($nik, $lokasi, $request->akurasi);
+
+            return $this->processPresensi($nik, $tgl_presensi, $jam, $lokasi, $image_base64, $jamkerja, $absenType, $dinasLuarAktif ? true : false, $kejanggalan);
         } finally {
             $lock->release();
         }
     }
 
-    private function processPresensi($nik, $tgl_presensi, $jam, $lokasi, $imageBase64, $jamkerja, $absenType, $isDinasLuar)
+    private function processPresensi($nik, $tgl_presensi, $jam, $lokasi, $imageBase64, $jamkerja, $absenType, $isDinasLuar, array $kejanggalan = [])
     {
         $folderPath = 'uploads/absensi/';
         $status_presensi = 'h';
@@ -298,6 +300,7 @@ class PresensiController extends Controller
                     'lokasi_out' => null,
                     'kode_jam_kerja' => $jamkerja->kode_jam_kerja,
                     'status' => $status_presensi,
+                    'kejanggalan' => $kejanggalan ? 'Masuk: '.implode(', ', $kejanggalan) : null,
                 ];
 
                 if ($presensiHariIni && $presensiHariIni->status === 'x') {
@@ -331,6 +334,10 @@ class PresensiController extends Controller
 
                 $fileName = $nik.'_'.$tgl_presensi.'_out.png';
                 $data = ['jam_out' => $jam, 'foto_out' => $fileName, 'lokasi_out' => $lokasi];
+                if ($kejanggalan) {
+                    $data['kejanggalan'] = trim($presensiHariIni->kejanggalan.'
+Pulang: '.implode(', ', $kejanggalan));
+                }
                 Presensi::where('id', $presensiHariIni->id)->update($data);
                 Storage::disk('public')->put($folderPath.$fileName, $imageBase64);
                 DB::commit();

@@ -107,6 +107,11 @@
             <span class="badge {{ $status_color }} text-white" style="font-size: 11px; padding: 4px 8px;">
                 {{ $status_label }}
             </span>
+            @if ($d->kejanggalan)
+                <div><span class="badge bg-red-lt mt-1" style="font-size: 10px; cursor: help;" title="{{ $d->kejanggalan }}">
+                    Lokasi janggal
+                </span></div>
+            @endif
         </td>
 
         {{-- FOTO --}}

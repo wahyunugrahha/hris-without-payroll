@@ -24,6 +24,7 @@ class Presensi extends Model
         'lokasi_in',
         'lokasi_out',
         'status',
+        'kejanggalan',
     ];
 
     protected $casts = [

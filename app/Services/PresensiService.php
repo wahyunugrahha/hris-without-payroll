@@ -23,6 +23,9 @@ class PresensiService
 
     private const RADIUS_BUMI_METER = 6371000;
 
+    /** Akurasi GPS lebih buruk dari ini ditandai janggal (meter). */
+    public const BATAS_AKURASI_METER = 100;
+
     public function __construct(private JadwalKerjaService $jadwalKerja) {}
 
     /**
@@ -116,6 +119,42 @@ class PresensiService
         $a = sin($dLat / 2) ** 2 + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon / 2) ** 2;
 
         return self::RADIUS_BUMI_METER * 2 * atan2(sqrt($a), sqrt(1 - $a));
+    }
+
+    /**
+     * Indikasi fake GPS / lokasi janggal. Tidak menolak presensi, hanya jadi catatan untuk HR.
+     *
+     * @return string[] alasan (kosong = wajar)
+     */
+    public function kejanggalanLokasi(string $nik, string $lokasi, mixed $akurasi): array
+    {
+        $alasan = [];
+
+        if (! is_numeric($akurasi)) {
+            $alasan[] = 'akurasi GPS tidak terkirim';
+        } elseif ((float) $akurasi <= 0) {
+            $alasan[] = 'akurasi GPS 0 m (tidak wajar)';
+        } elseif ((float) $akurasi > self::BATAS_AKURASI_METER) {
+            $alasan[] = 'akurasi GPS rendah (±'.round((float) $akurasi).' m)';
+        }
+
+        // GPS asli memberi 6+ digit desimal; koordinat pendek biasanya diketik manual di aplikasi fake GPS.
+        foreach (explode(',', $lokasi) as $angka) {
+            if (strlen(substr(strrchr(trim($angka), '.') ?: '', 1)) <= 4) {
+                $alasan[] = 'koordinat terlalu bulat';
+                break;
+            }
+        }
+
+        // Pembacaan GPS asli selalu bergeser; titik yang persis sama berulang = lokasi dipalsukan.
+        $kembar = Presensi::where('nik', $nik)
+            ->where(fn ($q) => $q->where('lokasi_in', $lokasi)->orWhere('lokasi_out', $lokasi))
+            ->exists();
+        if ($kembar) {
+            $alasan[] = 'koordinat persis sama dengan presensi sebelumnya';
+        }
+
+        return $alasan;
     }
 
     /**

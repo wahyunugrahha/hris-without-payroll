@@ -167,6 +167,7 @@
 
             <div class="presensi-card">
                 <input type="hidden" id="lokasi">
+                <input type="hidden" id="akurasi">
                 <div class="webcam-capture"></div>
 
                 <button id="switch-camera" class="btn btn-success">
@@ -311,6 +312,7 @@
             var lat = position.coords.latitude;
             var lon = position.coords.longitude;
             lokasi.value = lat + "," + lon;
+            document.getElementById('akurasi').value = position.coords.accuracy;
 
             if (!map) {
                 map = L.map('map').setView([lat, lon], 18);
@@ -431,7 +433,8 @@
                         _token: "{{ csrf_token() }}",
                         image: image,
                         lokasi: lokasi_val,
-                        absen_type: status_absen
+                        absen_type: status_absen,
+                        akurasi: $("#akurasi").val()
                     },
                     cache: false,
                     success: function(respond) {
