@@ -1012,6 +1012,12 @@ class PresensiController extends Controller
                 return Redirect::back()->with('warning', 'Data tidak ditemukan.');
             }
 
+            if ($this->outsideAdminCabang($izin->karyawan)) {
+                DB::rollBack();
+
+                return Redirect::back()->with('warning', 'Anda tidak memiliki akses ke data cabang lain.');
+            }
+
             $statusColumnExists = Schema::hasColumn('izin', 'status_decided_at');
             $previousStatus = (int) $izin->status_approved;
             $newStatus = (int) $status_approved;
@@ -1082,11 +1088,11 @@ class PresensiController extends Controller
                             ->first();
 
                         if (! $presensi || empty($presensi->jam_in) || $presensi->jam_in == '00:00:00') {
-                            throw new \Exception('Karyawan belum memiliki data absen masuk untuk diproses pulang cepat.');
+                            throw new \App\Exceptions\BusinessException('Karyawan belum memiliki data absen masuk untuk diproses pulang cepat.');
                         }
 
                         if (! empty($presensi->jam_out) && $presensi->jam_out != '00:00:00') {
-                            throw new \Exception('Karyawan sudah absen pulang pada tanggal tersebut.');
+                            throw new \App\Exceptions\BusinessException('Karyawan sudah absen pulang pada tanggal tersebut.');
                         }
 
                         $jamPulangJadwal = $jamKerja ? $jamKerja->jam_pulang : '17:00:00';
@@ -1246,28 +1252,8 @@ class PresensiController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return Redirect::back()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
+            return Redirect::back()->with('error', $this->failMessage('Gagal memproses data.', $e));
         }
-    }
-
-    public function approveizinsakitDashboard($kode_izin)
-    {
-        $request = Request::create('/presensi/approveizinsakit', 'POST', [
-            'status_approved' => 1,
-            'id_izinsakit_from' => $kode_izin,
-        ]);
-
-        return $this->approveizinsakit($request);
-    }
-
-    public function batalkanizinsakitDashboard($kode_izin)
-    {
-        $request = Request::create('/presensi/approveizinsakit', 'POST', [
-            'status_approved' => 2,
-            'id_izinsakit_from' => $kode_izin,
-        ]);
-
-        return $this->approveizinsakit($request);
     }
 
     // Helper function to get approved cuti dates
@@ -1297,6 +1283,10 @@ class PresensiController extends Controller
 
             if (! $izin) {
                 return response()->json(['error' => 'Data tidak ditemukan'], 404);
+            }
+
+            if ($this->outsideAdminCabang($izin->karyawan)) {
+                return response()->json(['error' => 'Anda tidak memiliki akses ke data cabang lain.'], 403);
             }
 
             $dari = \Carbon\Carbon::parse($izin->tgl_izin_dari);
@@ -1401,7 +1391,7 @@ class PresensiController extends Controller
                 'requested_dates' => $this->isMultiDateIzinStatus($izin->status) ? $requestedDates : [],
             ]);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => $this->failMessage('Gagal memproses data.', $e)], 500);
         }
     }
 
@@ -1418,6 +1408,12 @@ class PresensiController extends Controller
                 DB::rollBack();
 
                 return Redirect::back()->with('warning', 'Data tidak ditemukan.');
+            }
+
+            if ($this->outsideAdminCabang($izin->karyawan)) {
+                DB::rollBack();
+
+                return Redirect::back()->with('warning', 'Anda tidak memiliki akses ke data cabang lain.');
             }
             $wasApproved = ((int) $izin->status_approved === 1);
             $izin->status_approved = 0;
@@ -1650,6 +1646,10 @@ class PresensiController extends Controller
             return response()->json(['status' => false, 'message' => 'Data presensi tidak ditemukan.']);
         }
 
+        if ($this->outsideAdminCabang($presensi->karyawan)) {
+            return response()->json(['status' => false, 'message' => 'Anda tidak memiliki akses ke data cabang lain.'], 403);
+        }
+
         try {
             // Hapus file foto_in jika ada
             if ($presensi->foto_in && $presensi->foto_in !== '-') {
@@ -1676,7 +1676,7 @@ class PresensiController extends Controller
                 'message' => 'Presensi berhasil dianulir. Karyawan dapat melakukan absen masuk ulang.',
             ]);
         } catch (\Exception $e) {
-            return response()->json(['status' => false, 'message' => 'Terjadi kesalahan: '.$e->getMessage()]);
+            return response()->json(['status' => false, 'message' => $this->failMessage('Gagal memproses data.', $e)]);
         }
     }
 }

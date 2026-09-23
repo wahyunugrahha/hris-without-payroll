@@ -2,8 +2,6 @@
 
 use App\Http\Controllers\Karyawan\KenaikanGajiController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redirect;
 
 use App\Http\Controllers\Auth\KaryawanAuthController;
 use App\Http\Controllers\Karyawan\DashboardController;
@@ -117,38 +115,9 @@ Route::middleware(['auth:karyawan'])->group(function () {
         ->middleware('permission:izin-delete-karyawan,karyawan')
         ->name('karyawan.izin.destroy');
 
-    // Route Edit Izin (Menggunakan Closure yang sudah di-import DB dan Redirect)
-    Route::get('/pengajuanizin/{kode_izin}/edit', function ($kode_izin) {
-        $izin = DB::table('izin')->where('kode_izin', $kode_izin)->first();
-
-        if (!$izin) {
-            return Redirect::back()->with('error', 'Data Izin tidak ditemukan.');
-        }
-
-        // Cek status approved sebelum diarahkan ke controller
-        if ($izin->status_approved != 0) {
-            return Redirect::back()->with('error', 'Pengajuan ini sudah diverifikasi dan tidak bisa diubah.');
-        }
-
-        $controller = app(PengajuanIzinController::class);
-
-        switch ($izin->status) {
-            case 'i':
-                return $controller->editizinabsen($kode_izin);
-            case 't':
-                return $controller->editizinterlambat($kode_izin);
-            case 'p':
-                return $controller->editizinpulangcepat($kode_izin);
-            case 's':
-                return $controller->editizinsakit($kode_izin);
-            case 'c':
-                return $controller->editizincuti($kode_izin);
-            case 'r':
-                return $controller->editizinroster($kode_izin);
-            default:
-                return Redirect::back()->with('error', 'Jenis pengajuan tidak dikenali.');
-        }
-    })->middleware('permission:izin-edit-karyawan,karyawan')->name('pengajuanizin.edit');
+    Route::get('/pengajuanizin/{kode_izin}/edit', [PengajuanIzinController::class, 'edit'])
+        ->middleware('permission:izin-edit-karyawan,karyawan')
+        ->name('pengajuanizin.edit');
 
     Route::put('/pengajuanizin/{kode_izin}/updateizinabsen', [PengajuanIzinController::class, 'updateizinabsen'])->name('pengajuanizin.updateizinabsen');
     Route::put('/pengajuanizin/{kode_izin}/updateizinsakit', [PengajuanIzinController::class, 'updateizinsakit'])->name('pengajuanizin.updateizinsakit');
@@ -205,8 +174,10 @@ Route::middleware(['auth:karyawan'])->group(function () {
         ->middleware('permission:kpi-approve-karyawan,karyawan')
         ->name('kpi.atasan.detail');
     Route::post('/kpi/{kpi_daily_id}/approve', [KPIController::class, 'approveKPI'])
+        ->middleware('permission:kpi-approve-karyawan,karyawan')
         ->name('kpi.atasan.approve');
     Route::post('/kpi/{kpi_daily_id}/reject', [KPIController::class, 'rejectKPI'])
+        ->middleware('permission:kpi-approve-karyawan,karyawan')
         ->name('kpi.atasan.reject');
 
     // Dinas Luar

@@ -151,33 +151,29 @@ class UserController extends Controller
     // Edit current authenticated user (account settings)
     public function editSelf()
     {
-        $user = auth()->user();
-        $departemen = Departemen::orderBy('kode_dept')->get();
-        $cabang = Cabang::orderBy('nama_cabang')->get();
+        $user = auth('user')->user()->load('departemen', 'cabang');
 
-        return view('admin.users.account', compact('user', 'departemen', 'cabang'));
+        return view('admin.users.account', compact('user'));
     }
 
-    // Update current authenticated user's account
+    // Update current authenticated user's account.
+    // Departemen & cabang sengaja tidak bisa diubah sendiri: keduanya menentukan scope akses admin.
     public function updateSelf(Request $request)
     {
-        $user = auth()->user();
+        $user = auth('user')->user();
 
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
-            'kode_dept' => 'required',
-            'kode_cabang' => 'nullable|string|max:8',
-            'password' => 'nullable|string|min:6',
+            'password' => 'nullable|string|min:8|confirmed',
+            'current_password' => 'required_with:password|current_password:user',
         ]);
 
         $user->name = $request->name;
         $user->email = $request->email;
-        $user->kode_dept = $request->kode_dept;
-        $user->kode_cabang = $request->kode_cabang;
 
         if ($request->filled('password')) {
-            $user->password = bcrypt($request->password);
+            $user->password = Hash::make($request->password);
         }
 
         $user->save();

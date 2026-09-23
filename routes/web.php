@@ -1,12 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\KaryawanAuthController;
-use App\Http\Controllers\Admin\DashboardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
-Route::get('/dashboard-tv', [DashboardController::class, 'dashboardtv'])->name('dashboardtv');
-Route::get('/overview', [DashboardController::class, 'dashboardoverview'])->name('overview');
 
 Route::get('/ttd', function (Request $request) {
 	return response($request->get('text', ''), 200)

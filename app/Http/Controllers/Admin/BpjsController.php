@@ -100,7 +100,7 @@ class BpjsController extends Controller
 
         if ($request->hasFile('foto_bpjs_kesehatan')) {
             $fileKesehatan = $request->file('foto_bpjs_kesehatan');
-            $namaFotoKesehatan = $karyawan->nik . '_bpjs_kes_' . time() . '.' . $fileKesehatan->getClientOriginalExtension();
+            $namaFotoKesehatan = $karyawan->nik . '_bpjs_kes_' . time() . '.' . $fileKesehatan->extension();
 
             if (!empty($karyawan->foto_bpjs_kesehatan) && Storage::disk('public')->exists('uploads/karyawan/bpjs/' . $karyawan->foto_bpjs_kesehatan)) {
                 Storage::disk('public')->delete('uploads/karyawan/bpjs/' . $karyawan->foto_bpjs_kesehatan);
@@ -112,7 +112,7 @@ class BpjsController extends Controller
 
         if ($request->hasFile('foto_bpjs_ketenagakerjaan')) {
             $fileKetenagakerjaan = $request->file('foto_bpjs_ketenagakerjaan');
-            $namaFotoKetenagakerjaan = $karyawan->nik . '_bpjs_ket_' . time() . '.' . $fileKetenagakerjaan->getClientOriginalExtension();
+            $namaFotoKetenagakerjaan = $karyawan->nik . '_bpjs_ket_' . time() . '.' . $fileKetenagakerjaan->extension();
 
             if (!empty($karyawan->foto_bpjs_ketenagakerjaan) && Storage::disk('public')->exists('uploads/karyawan/bpjs/' . $karyawan->foto_bpjs_ketenagakerjaan)) {
                 Storage::disk('public')->delete('uploads/karyawan/bpjs/' . $karyawan->foto_bpjs_ketenagakerjaan);

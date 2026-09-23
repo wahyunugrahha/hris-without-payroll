@@ -260,11 +260,13 @@
                     $listHtml .= '<div style="width: 32px; height: 32px; background: #fef3c7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px; flex-shrink: 0;">';
                     $listHtml .= '<ion-icon name="person" style="color: #d97706; font-size: 16px;"></ion-icon>';
                     $listHtml .= '</div>';
-                    $listHtml .= '<span style="font-weight: 600;">' . $n . '</span>';
+                    $listHtml .= '<span style="font-weight: 600;">' . e($n) . '</span>';
                     $listHtml .= '</div>';
                 }
                 $listHtml .= '</div></div>';
             @endphp
+            // Disisipkan sebagai string JSON, bukan langsung ke template literal (cegah XSS / injeksi ${...}).
+            const listHtml = @json($listHtml);
 
             Swal.fire({
                 title: '<span style="color: #d84315; font-weight: 800; font-size: 20px;">Akses Terkunci!</span>',
@@ -276,7 +278,7 @@
                         <p style="font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 0; padding: 0 10px;">
                             Harap pastikan semua bawahan Anda telah mengirimkan KPI mereka hari ini sebelum Anda dapat memproses laporan Anda sendiri.
                         </p>
-                        {!! $listHtml !!}
+                        ${listHtml}
                         <p style="font-size: 12px; color: #94a3b8; margin-top: 20px; font-weight: 500;">
                            Sistem mewajibkan alur pelaporan berjenjang.
                         </p>

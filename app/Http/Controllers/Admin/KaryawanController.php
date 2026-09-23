@@ -135,13 +135,13 @@ class KaryawanController extends Controller
             $foto_bpjs_ket = null;
 
             if ($request->hasFile('foto')) {
-                $foto = $nik . '_' . time() . '.' . $request->file('foto')->getClientOriginalExtension();
+                $foto = $nik . '_' . time() . '.' . $request->file('foto')->extension();
             }
             if ($request->hasFile('foto_bpjs_kesehatan')) {
-                $foto_bpjs_kes = $nik . '_bpjs_kes_' . time() . '.' . $request->file('foto_bpjs_kesehatan')->getClientOriginalExtension();
+                $foto_bpjs_kes = $nik . '_bpjs_kes_' . time() . '.' . $request->file('foto_bpjs_kesehatan')->extension();
             }
             if ($request->hasFile('foto_bpjs_ketenagakerjaan')) {
-                $foto_bpjs_ket = $nik . '_bpjs_ket_' . time() . '.' . $request->file('foto_bpjs_ketenagakerjaan')->getClientOriginalExtension();
+                $foto_bpjs_ket = $nik . '_bpjs_ket_' . time() . '.' . $request->file('foto_bpjs_ketenagakerjaan')->extension();
             }
 
             // Persiapan Data
@@ -156,7 +156,8 @@ class KaryawanController extends Controller
             $data['foto'] = $foto;
             $data['foto_bpjs_kesehatan'] = $foto_bpjs_kes;
             $data['foto_bpjs_ketenagakerjaan'] = $foto_bpjs_ket;
-            $data['password'] = Hash::make('123456'); // Default password
+            $data['password'] = Hash::make('123456'); // Default password, wajib diganti saat login pertama
+            $data['must_change_password'] = true;
             $data['status_aktif'] = 'Aktif';
             $data['is_whitelist'] = $request->boolean('is_whitelist') ? 1 : 0;
 
@@ -185,7 +186,7 @@ class KaryawanController extends Controller
             DB::rollBack();
             Log::error("Error Store Karyawan: " . $e->getMessage());
             // Added withInput() agar user tidak perlu mengetik ulang
-            return Redirect::back()->with(['warning' => 'Gagal disimpan: ' . $e->getMessage()])->withInput();
+            return Redirect::back()->with(['warning' => $this->failMessage('Gagal disimpan.', $e)])->withInput();
         }
     }
 
@@ -265,7 +266,7 @@ class KaryawanController extends Controller
 
             // Security Check
             if (!empty($forcedCabang) && $karyawan->kode_cabang !== $forcedCabang) {
-                throw new \Exception("Anda tidak berhak mengedit data cabang lain.");
+                throw new \App\Exceptions\BusinessException("Anda tidak berhak mengedit data cabang lain.");
             }
 
             $oldFoto = $karyawan->foto;
@@ -285,6 +286,7 @@ class KaryawanController extends Controller
 
             if ($request->filled('password')) {
                 $payload['password'] = Hash::make($request->password);
+                $payload['must_change_password'] = true; // password diketahui admin, karyawan wajib menggantinya
             }
 
             $payload['is_whitelist'] = $request->boolean('is_whitelist') ? 1 : 0;
@@ -294,7 +296,7 @@ class KaryawanController extends Controller
 
             if ($request->hasFile('foto')) {
                 // Case 1: Upload Foto Baru -> Nama = NIK Baru + Ext Baru
-                $extension = $request->file('foto')->getClientOriginalExtension();
+                $extension = $request->file('foto')->extension();
                 $newFotoName = $newNik . '.' . $extension;
             } elseif ($oldNik != $newNik && !empty($oldFoto)) {
                 // Case 2: Ganti NIK saja -> Nama = NIK Baru + Ext Lama
@@ -307,7 +309,7 @@ class KaryawanController extends Controller
             // Logic Nama BPJS Kesehatan
             $newBpjsKesName = $oldBpjsKes;
             if ($request->hasFile('foto_bpjs_kesehatan')) {
-                $newBpjsKesName = $newNik . "_bpjs_kes_" . time() . "." . $request->file('foto_bpjs_kesehatan')->getClientOriginalExtension();
+                $newBpjsKesName = $newNik . "_bpjs_kes_" . time() . "." . $request->file('foto_bpjs_kesehatan')->extension();
             } elseif ($oldNik != $newNik && !empty($oldBpjsKes)) {
                 $extension = pathinfo($oldBpjsKes, PATHINFO_EXTENSION) ?: 'jpg';
                 $newBpjsKesName = $newNik . "_bpjs_kes_" . time() . "." . $extension;
@@ -317,7 +319,7 @@ class KaryawanController extends Controller
             // Logic Nama BPJS Ketenagakerjaan
             $newBpjsKetName = $oldBpjsKet;
             if ($request->hasFile('foto_bpjs_ketenagakerjaan')) {
-                $newBpjsKetName = $newNik . "_bpjs_ket_" . time() . "." . $request->file('foto_bpjs_ketenagakerjaan')->getClientOriginalExtension();
+                $newBpjsKetName = $newNik . "_bpjs_ket_" . time() . "." . $request->file('foto_bpjs_ketenagakerjaan')->extension();
             } elseif ($oldNik != $newNik && !empty($oldBpjsKet)) {
                 $extension = pathinfo($oldBpjsKet, PATHINFO_EXTENSION) ?: 'jpg';
                 $newBpjsKetName = $newNik . "_bpjs_ket_" . time() . "." . $extension;
@@ -395,10 +397,10 @@ class KaryawanController extends Controller
             if ($e->getCode() == '23503') { // Postgres Foreign Key Violation
                 return Redirect::back()->with(['warning' => 'Gagal Update NIK: Data terkunci relasi data lain.'])->withInput();
             }
-            return Redirect::back()->with(['warning' => 'Database Error: ' . $e->getMessage()])->withInput();
+            return Redirect::back()->with(['warning' => $this->failMessage('Gagal memproses data.', $e)])->withInput();
         } catch (\Exception $e) {
             DB::rollBack();
-            return Redirect::back()->with(['warning' => 'Error: ' . $e->getMessage()])->withInput();
+            return Redirect::back()->with(['warning' => $this->failMessage('Gagal memproses data.', $e)])->withInput();
         }
     }
 
@@ -406,6 +408,11 @@ class KaryawanController extends Controller
     {
         try {
             $karyawan = Karyawan::with(['departemen', 'cabang'])->where('nik', $nik)->firstOrFail();
+
+            if ($this->outsideAdminCabang($karyawan)) {
+                return Redirect::route('karyawan.index')->with(['warning' => 'Anda tidak memiliki akses ke data cabang lain.']);
+            }
+
             return view('admin.karyawan.show', compact('karyawan'));
         } catch (\Exception $e) {
             return Redirect::route('karyawan.index')->with(['warning' => 'Data karyawan tidak ditemukan.']);
@@ -510,7 +517,7 @@ class KaryawanController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("Error Import Karyawan: " . $e->getMessage());
-            return Redirect::back()->with(['warning' => 'Gagal import: ' . $e->getMessage()]);
+            return Redirect::back()->with(['warning' => $this->failMessage('Gagal import.', $e)]);
         }
     }
 
@@ -617,7 +624,7 @@ class KaryawanController extends Controller
 
             return Redirect::back()->with(['success' => 'Histori & Status Berhasil Diupdate']);
         } catch (\Exception $e) {
-            return Redirect::back()->with(['warning' => 'Gagal: ' . $e->getMessage()]);
+            return Redirect::back()->with(['warning' => $this->failMessage('Gagal.', $e)]);
         }
     }
 }

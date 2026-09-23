@@ -181,7 +181,7 @@ class CabangController extends Controller
 
             return Redirect::back()->with('success', 'Data Cabang Berhasil Diupdate');
         } catch (\Exception $e) {
-            return Redirect::back()->with('warning', 'Data Cabang Gagal Diupdate: ' . $e->getMessage())->withInput();
+            return Redirect::back()->with('warning', $this->failMessage('Data Cabang Gagal Diupdate.', $e))->withInput();
         }
     }
 
@@ -204,7 +204,7 @@ class CabangController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $this->failMessage('Gagal memproses data.', $e)
             ], 500);
         }
     }
@@ -223,7 +223,7 @@ class CabangController extends Controller
             return back()->with('success', 'Data Cabang Berhasil Dihapus');
 
         } catch (\Exception $e) {
-            return back()->with('warning', 'Data Cabang Gagal Dihapus. Terjadi Kesalahan: ' . $e->getMessage());
+            return back()->with('warning', $this->failMessage('Data Cabang Gagal Dihapus.', $e));
         }
     }
 }

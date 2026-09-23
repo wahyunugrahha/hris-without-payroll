@@ -169,7 +169,7 @@ class SuratPeringatanController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menambahkan Surat Peringatan: ' . $e->getMessage());
+            return back()->with('error', $this->failMessage('Gagal menambahkan Surat Peringatan.', $e));
         }
     }
 

@@ -111,7 +111,7 @@ class KonfigurasiController extends Controller
                 return Redirect::back()->with(['warning' => 'Tidak Ada Perubahan Data']);
             }
         } catch (\Exception $e) {
-            return Redirect::back()->with(['warning' => 'Data Jam Kerja Gagal Diupdate. Terjadi Kesalahan: ' . $e->getMessage()]);
+            return Redirect::back()->with(['warning' => $this->failMessage('Data Jam Kerja Gagal Diupdate.', $e)]);
         }
     }
 
@@ -131,7 +131,7 @@ class KonfigurasiController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $this->failMessage('Gagal memproses data.', $e)
             ], 500);
         }
     }
@@ -147,7 +147,7 @@ class KonfigurasiController extends Controller
             $jamkerja->delete();
             return Redirect::back()->with(['success' => 'Data Jam Kerja Berhasil Dihapus']);
         } catch (\Exception $e) {
-            return Redirect::back()->with(['warning' => 'Data Jam Kerja Gagal Dihapus. Terjadi Kesalahan: ' . $e->getMessage()]);
+            return Redirect::back()->with(['warning' => $this->failMessage('Data Jam Kerja Gagal Dihapus.', $e)]);
         }
     }
     
@@ -335,7 +335,7 @@ class KonfigurasiController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $this->failMessage('Gagal memproses data.', $e)
             ], 500);
         }
     }
@@ -358,7 +358,7 @@ class KonfigurasiController extends Controller
             $header->delete();
             return Redirect::back()->with(['success' => 'Data Konfigurasi Jam Kerja Berhasil Dihapus']);
         } catch (\Exception $e) {
-            return Redirect::back()->with(['warning' => 'Data Gagal Dihapus. Terjadi Kesalahan: ' . $e->getMessage()]);
+            return Redirect::back()->with(['warning' => $this->failMessage('Data Gagal Dihapus.', $e)]);
         }
     }
 
@@ -433,7 +433,7 @@ class KonfigurasiController extends Controller
 
             return redirect('/karyawan')->with(['success' => 'Jam Kerja Berhasil Di Seting']);
         } catch (\Exception $e) {
-            return redirect('/karyawan')->with(['warning' => 'Jam Kerja Gagal Di Seting: ' . $e->getMessage()]);
+            return redirect('/karyawan')->with(['warning' => $this->failMessage('Jam Kerja Gagal Di Seting.', $e)]);
         }
     }
 
@@ -565,7 +565,7 @@ class KonfigurasiController extends Controller
                 'message' => "Berhasil mengatur jam kerja untuk {$updated} departemen untuk semua hari yang dipilih"
             ]);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
+            return response()->json(['message' => $this->failMessage('Gagal memproses data.', $e)], 500);
         }
     }
 }

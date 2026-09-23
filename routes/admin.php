@@ -27,6 +27,9 @@ use App\Http\Controllers\Admin\PresensiController;
 Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(function () {
 
     Route::get('/panel/dashboardadmin', [DashboardController::class, 'dashboardadmin'])->name('dashboard.admin');
+    // Menampilkan token registrasi & data karyawan: wajib login admin (TV kantor login sekali dengan akun khusus).
+    Route::get('/dashboard-tv', [DashboardController::class, 'dashboardtv'])->name('dashboardtv');
+    Route::get('/overview', [DashboardController::class, 'dashboardoverview'])->name('overview');
     Route::get('/proseslogoutadmin', [AdminAuthController::class, 'logout'])->name('proseslogoutadmin');
 
     // Account settings
@@ -208,7 +211,9 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
             ->middleware('permission:pengajuan-izin-view-admin,user')
             ->name('presensi.izinsakit');
         // Detail Izin Sakit
-        Route::get('/detailijinsakit/{id}', [PresensiController::class, 'detailijinsakit'])->name('presensi.detailijinsakit');
+        Route::get('/detailijinsakit/{id}', [PresensiController::class, 'detailijinsakit'])
+            ->middleware('permission:pengajuan-izin-view-admin,user')
+            ->name('presensi.detailijinsakit');
         // Approval via Form (POST)
         Route::post('/approveizinsakit', [PresensiController::class, 'approveizinsakit'])
             ->middleware('permission:pengajuan-izin-approve-admin,user')
@@ -216,12 +221,6 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
         Route::post('/{id}/batalkanizinsakit', [PresensiController::class, 'batalkanizinsakit'])
             ->middleware('permission:pengajuan-izin-approve-admin,user')
             ->name('presensi.batalkanizinsakit');
-    });
-
-    // Approval Izin Sakit (Via Dashboard)
-    Route::prefix('izin')->middleware('permission:pengajuan-izin-approve-admin,user')->group(function () {
-        Route::get('/{kode_izin}/approve-dashboard', [PresensiController::class, 'approveizinsakitDashboard'])->name('admin.izin.approve.dashboard');
-        Route::get('/{kode_izin}/reject-dashboard', [PresensiController::class, 'batalkanizinsakitDashboard'])->name('admin.izin.reject.dashboard');
     });
 
     // Dinas Luar
@@ -238,10 +237,6 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
         Route::post('/{id}/cancel', [DinasLuarController::class, 'cancel'])
             ->middleware('permission:dinas-luar-approve-admin,user')
             ->name('dinasluars.cancel');
-        
-        // Approval Dinas Luar (Via Dashboard)
-        Route::get('/{id}/approve', [DinasLuarController::class, 'approveDashboard'])->middleware('permission:dinas-luar-approve-admin,user')->name('admin.dinas-luar.approve');
-        Route::get('/{id}/reject', [DinasLuarController::class, 'rejectDashboard'])->middleware('permission:dinas-luar-approve-admin,user')->name('admin.dinas-luar.reject');
         
         // Cetak Dinas Luar
         Route::get('/{id}/cetak', [DinasLuarController::class, 'cetak'])
@@ -278,14 +273,6 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
             Route::post('/update-jam', 'updateJam')
                 ->middleware('permission:lembur-approve-admin,user')
                 ->name('admin.lembur.update-jam');
-    
-            // Approval via Dashboard (GET Link)
-            Route::get('/{kode_lembur}/approve-dashboard', 'approveDashboard')
-                ->middleware('permission:lembur-approve-admin,user')
-                ->name('admin.lembur.approve.dashboard');
-            Route::get('/{kode_lembur}/reject-dashboard', 'rejectDashboard')
-                ->middleware('permission:lembur-approve-admin,user')
-                ->name('admin.lembur.reject.dashboard');
         });
 
     // Surat Peringatan
@@ -305,9 +292,6 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
         Route::get('/{id}/cetak', [SuratPeringatanController::class, 'cetak'])
             ->middleware('permission:surat-peringatan-view-admin,user')
             ->name('suratperingatan.cetak');
-        Route::delete('/{id}/delete', [SuratPeringatanController::class, 'destroy'])
-            ->middleware('permission:surat-peringatan-manage-admin,user')
-            ->name('suratperingatan.destroy');
     });
 
     // Kenaikan Gaji
@@ -464,7 +448,7 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
             Route::get('/jamkerjadept/{kode_jk_dept}/relations', 'checkRelationsJamKerjaDept')
                 ->middleware('permission:jam-kerja-dept-view-admin,user')
                 ->name('konfigurasi.jamkerjadept.relations');
-            Route::get('/jamkerjadept/{kode_jk_dept}/delete', 'deletejamkerjadept')
+            Route::delete('/jamkerjadept/{kode_jk_dept}/delete', 'deletejamkerjadept')
                 ->middleware('permission:jam-kerja-dept-delete-admin,user')
                 ->name('konfigurasi.deletejamkerjadept');
 

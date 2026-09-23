@@ -126,7 +126,7 @@ class LemburController extends Controller
             return Redirect::back()->with('success', 'Lembur berhasil disetujui.');
 
         } catch (\Exception $e) {
-            return Redirect::back()->with('error', 'Gagal approve: ' . $e->getMessage());
+            return Redirect::back()->with('error', $this->failMessage('Gagal approve.', $e));
         }
     }
 
@@ -152,7 +152,7 @@ class LemburController extends Controller
             return Redirect::back()->with('success', 'Lembur berhasil ditolak.');
 
         } catch (\Exception $e) {
-            return Redirect::back()->with('error', 'Gagal reject: ' . $e->getMessage());
+            return Redirect::back()->with('error', $this->failMessage('Gagal reject.', $e));
         }
     }
 
@@ -169,7 +169,7 @@ class LemburController extends Controller
             return Redirect::back()->with('success', 'Approval dibatalkan.');
 
         } catch (\Exception $e) {
-            return Redirect::back()->with('error', 'Gagal batal: ' . $e->getMessage());
+            return Redirect::back()->with('error', $this->failMessage('Gagal batal.', $e));
         }
     }
 
@@ -230,47 +230,9 @@ class LemburController extends Controller
 
             return Redirect::back()->with('success', 'Jam lembur berhasil diperbarui.');
         } catch (\Exception $e) {
-            return Redirect::back()->with('error', 'Gagal memperbarui jam lembur: ' . $e->getMessage());
+            return Redirect::back()->with('error', $this->failMessage('Gagal memperbarui jam lembur.', $e));
         }
     }
-
-    // === METHOD DASHBOARD SHORTCUTS ===
-
-    public function approveDashboard($kode_lembur)
-    {
-        try {
-            // Mencari berdasarkan kode_lembur dengan scope keamanan
-            $lembur = $this->getScopedQuery()->where('kode_lembur', $kode_lembur)->first();
-
-            if (!$lembur) {
-                return Redirect::back()->with('error', 'Data lembur tidak ditemukan atau akses ditolak.');
-            }
-
-            $lembur->update(['status_approved' => 1]);
-            return Redirect::back()->with('success', 'Lembur berhasil disetujui.');
-
-        } catch (\Exception $e) {
-            return Redirect::back()->with('error', 'Gagal approve lembur: ' . $e->getMessage());
-        }
-    }
-
-    public function rejectDashboard($kode_lembur)
-    {
-        try {
-            $lembur = $this->getScopedQuery()->where('kode_lembur', $kode_lembur)->first();
-
-            if (!$lembur) {
-                return Redirect::back()->with('error', 'Data lembur tidak ditemukan atau akses ditolak.');
-            }
-
-            $lembur->update(['status_approved' => 2]);
-            return Redirect::back()->with('success', 'Lembur berhasil ditolak.');
-
-        } catch (\Exception $e) {
-            return Redirect::back()->with('error', 'Gagal reject lembur: ' . $e->getMessage());
-        }
-    }
-
 
     public function rekap(Request $request)
     {

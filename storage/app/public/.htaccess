@@ -1,0 +1,5 @@
+# Folder upload publik: jangan pernah mengeksekusi skrip (pertahanan jika file .php lolos upload).
+<FilesMatch "\.(php[0-9]?|phtml|phar|pht|phps|cgi|pl|py|sh)$">
+    Require all denied
+</FilesMatch>
+Options -ExecCGI -Indexes

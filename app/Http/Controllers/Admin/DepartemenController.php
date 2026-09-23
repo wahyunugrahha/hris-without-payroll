@@ -102,7 +102,7 @@ class DepartemenController extends Controller
 
             return Redirect::back()->with('success', 'Data Departemen Berhasil Diupdate');
         } catch (\Exception $e) {
-            return Redirect::back()->with('warning', 'Data Departemen Gagal Diupdate: ' . $e->getMessage())->withInput();
+            return Redirect::back()->with('warning', $this->failMessage('Data Departemen Gagal Diupdate.', $e))->withInput();
         }
     }
 
@@ -124,7 +124,7 @@ class DepartemenController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $this->failMessage('Gagal memproses data.', $e)
             ], 500);
         }
     }
@@ -137,7 +137,7 @@ class DepartemenController extends Controller
 
             return Redirect::back()->with('success', 'Data Departemen Berhasil Dihapus');
         } catch (\Exception $e) {
-            return Redirect::back()->with('warning', 'Terjadi kesalahan: ' . $e->getMessage());
+            return Redirect::back()->with('warning', $this->failMessage('Gagal memproses data.', $e));
         }
     }
 }

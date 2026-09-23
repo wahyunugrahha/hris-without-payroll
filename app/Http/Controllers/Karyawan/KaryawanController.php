@@ -38,7 +38,7 @@ class KaryawanController extends Controller
             'status_pernikahan' => 'required|string|max:255',
             'pendidikan_terakhir' => 'required|string|max:255',
             'no_rekening' => 'nullable|string|max:255',
-            'password' => 'nullable|string|min:6',
+            'password' => 'nullable|string|min:8|not_in:12345678,123456789',
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:3072'
         ]);
 
@@ -61,11 +61,13 @@ class KaryawanController extends Controller
             'no_rekening' => $request->no_rekening,
         ];
 
-        if (!empty($request->password))
+        if (!empty($request->password)) {
             $data['password'] = Hash::make($request->password);
+            $data['must_change_password'] = false;
+        }
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
-            $foto_baru = $nik . "_" . time() . "." . $file->getClientOriginalExtension();
+            $foto_baru = $nik . "_" . time() . "." . $file->extension();
             $data['foto'] = $foto_baru;
             if ($karyawan->foto && Storage::disk('public')->exists('uploads/karyawan/' . $karyawan->foto))
                 Storage::disk('public')->delete('uploads/karyawan/' . $karyawan->foto);
@@ -169,7 +171,7 @@ class KaryawanController extends Controller
         // Upload Foto BPJS Kesehatan
         if ($request->hasFile('foto_bpjs_kesehatan')) {
             $fileBpjs = $request->file('foto_bpjs_kesehatan');
-            $foto_bpjs_baru = $nik . "_bpjs_kes_" . time() . "." . $fileBpjs->getClientOriginalExtension();
+            $foto_bpjs_baru = $nik . "_bpjs_kes_" . time() . "." . $fileBpjs->extension();
             $data['foto_bpjs_kesehatan'] = $foto_bpjs_baru;
             
             // Hapus foto lama jika ada

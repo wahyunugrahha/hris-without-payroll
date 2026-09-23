@@ -88,7 +88,7 @@ class JabatanController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $this->failMessage('Gagal memproses data.', $e)
             ], 500);
         }
     }
@@ -101,7 +101,7 @@ class JabatanController extends Controller
             
             return back()->with('success', 'Jabatan berhasil dihapus');
         } catch (\Exception $e) {
-            return back()->with('warning', 'Data Jabatan Gagal Dihapus. Terjadi Kesalahan: ' . $e->getMessage());
+            return back()->with('warning', $this->failMessage('Data Jabatan Gagal Dihapus.', $e));
         }
     }
 }

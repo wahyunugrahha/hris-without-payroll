@@ -479,7 +479,7 @@ class PengajuanIzinController extends Controller
                 'catatan_ditolak' => $izin->catatan_ditolak ?? null,
             ]);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => $this->failMessage('Gagal memproses data.', $e)], 500);
         }
     }
 
@@ -625,6 +625,12 @@ class PengajuanIzinController extends Controller
 
     public function storeizinabsen(Request $request)
     {
+        $request->validate([
+            'dari' => 'required|date',
+            'sampai' => 'required|date|after_or_equal:dari',
+            'keterangan' => 'required|string',
+        ]);
+
         $nik = Auth::guard('karyawan')->user()->nik;
         $tgl_izin_dari = $request->dari;
         $tgl_izin_sampai = $request->sampai;
@@ -656,7 +662,7 @@ class PengajuanIzinController extends Controller
             Izin::create($data);
             return redirect('/presensi/izin')->with('success', 'Data Izin Berhasil Disimpan. Kode Izin: ' . $kode_izin);
         } catch (\Exception $e) {
-            return redirect('/presensi/izin')->with('error', 'Data Gagal Disimpan. Error: ' . $e->getMessage());
+            return redirect('/presensi/izin')->with('error', $this->failMessage('Data Gagal Disimpan.', $e));
         }
     }
 
@@ -667,7 +673,7 @@ class PengajuanIzinController extends Controller
             'dari' => 'required|date',
             'sampai' => 'required|date',
             'keterangan' => 'required|string',
-            'sid' => 'nullable|image|max:3072', // 3MB = 3072KB
+            'sid' => 'nullable|image|mimes:jpg,jpeg,png|max:3072', // 3MB = 3072KB
         ], [
             'sid.max' => 'Ukuran file tidak boleh lebih dari 3MB.',
             'sid.image' => 'File harus berupa gambar.',
@@ -706,11 +712,7 @@ class PengajuanIzinController extends Controller
             if ($simpan && $request->hasFile('sid')) {
                 $kode_izin_yang_baru_disimpan = $kode_izin;
 
-                $sid_file_extension = $request->file('sid')->getClientOriginalExtension();
-                $sid_file_name = $kode_izin_yang_baru_disimpan . "." . $sid_file_extension;
-
-                $folderPath = "uploads/sid";
-                $request->file('sid')->storeAs($folderPath, $sid_file_name, 'public');
+                $sid_file_name = $this->storeSuratSakit($request->file('sid'), $kode_izin_yang_baru_disimpan);
 
                 if (Schema::hasColumn('izin', 'doc_sid')) {
                     Izin::where('kode_izin', $kode_izin_yang_baru_disimpan)->update(['doc_sid' => $sid_file_name]);
@@ -719,7 +721,7 @@ class PengajuanIzinController extends Controller
 
             return redirect('/presensi/izin')->with('success', 'Data Izin Sakit Berhasil Disimpan. Kode Izin: ' . $kode_izin);
         } catch (\Exception $e) {
-            return redirect('/presensi/izin')->with('error', 'Data Izin Sakit Gagal Disimpan. Error: ' . $e->getMessage());
+            return redirect('/presensi/izin')->with('error', $this->failMessage('Data Izin Sakit Gagal Disimpan.', $e));
         }
     }
 
@@ -767,7 +769,7 @@ class PengajuanIzinController extends Controller
             Izin::create($data);
             return redirect('/presensi/izin')->with('success', 'Pengajuan Izin Terlambat Berhasil Disimpan. Kode Izin: ' . $kode_izin);
         } catch (\Exception $e) {
-            return redirect('/presensi/izin')->with('error', 'Data Gagal Disimpan. Error: ' . $e->getMessage());
+            return redirect('/presensi/izin')->with('error', $this->failMessage('Data Gagal Disimpan.', $e));
         }
     }
 
@@ -837,7 +839,7 @@ class PengajuanIzinController extends Controller
             Izin::create($data);
             return redirect('/presensi/izin')->with('success', 'Pengajuan Pulang Cepat Berhasil Disimpan. Kode Izin: ' . $kode_izin);
         } catch (\Exception $e) {
-            return redirect('/presensi/izin')->with('error', 'Data Gagal Disimpan. Error: ' . $e->getMessage());
+            return redirect('/presensi/izin')->with('error', $this->failMessage('Data Gagal Disimpan.', $e));
         }
     }
 
@@ -959,7 +961,7 @@ class PengajuanIzinController extends Controller
         } catch (ValidationException $e) {
             return Redirect::back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            return redirect('/presensi/izin')->with('error', 'Data Gagal Disimpan. Error: ' . $e->getMessage());
+            return redirect('/presensi/izin')->with('error', $this->failMessage('Data Gagal Disimpan.', $e));
         }
     }
 
@@ -1050,7 +1052,7 @@ class PengajuanIzinController extends Controller
         } catch (ValidationException $e) {
             return Redirect::back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            return redirect('/presensi/izin')->with('error', 'Data Gagal Disimpan. Error: ' . $e->getMessage());
+            return redirect('/presensi/izin')->with('error', $this->failMessage('Data Gagal Disimpan.', $e));
         }
     }
 
@@ -1153,9 +1155,40 @@ class PengajuanIzinController extends Controller
         return response()->json(array_values($blacklistDates));
     }
 
+    /**
+     * Izin milik karyawan yang login dan masih pending. Semua edit/update wajib lewat sini
+     * agar karyawan tidak bisa mengubah pengajuan orang lain atau yang sudah diverifikasi.
+     */
+    private function findOwnPendingIzin(string $kode_izin, ?string $status = null): ?Izin
+    {
+        return Izin::where('kode_izin', $kode_izin)
+            ->where('nik', Auth::guard('karyawan')->user()->nik)
+            ->where('status_approved', 0)
+            ->when($status, fn ($q) => $q->where('status', $status))
+            ->first();
+    }
+
+    private function izinTidakValid()
+    {
+        return Redirect::back()->with('error', 'Pengajuan tidak ditemukan atau sudah diverifikasi sehingga tidak bisa diubah.');
+    }
+
+    /**
+     * Simpan surat dokter dengan ekstensi hasil deteksi isi file (bukan dari nama file klien).
+     */
+    private function storeSuratSakit($file, string $kode_izin): string
+    {
+        $fileName = $kode_izin . '.' . $file->extension();
+        $file->storeAs('uploads/sid', $fileName, 'public');
+
+        return $fileName;
+    }
+
     public function edit($kode_izin)
     {
-        $dataizin = Izin::where('kode_izin', $kode_izin)->first();
+        $dataizin = Izin::where('kode_izin', $kode_izin)
+            ->where('nik', Auth::guard('karyawan')->user()->nik)
+            ->first();
 
         if (!$dataizin) {
             return Redirect::back()->with('error', 'Data Izin tidak ditemukan.');
@@ -1184,8 +1217,8 @@ class PengajuanIzinController extends Controller
 
     public function editizinabsen($kode_izin)
     {
-        $dataizin = Izin::where('kode_izin', $kode_izin)->first();
-        if (!$dataizin || $dataizin->status != 'i') {
+        $dataizin = $this->findOwnPendingIzin($kode_izin, 'i');
+        if (!$dataizin) {
             return Redirect::back()->with('error', 'Data Izin Absen tidak valid.');
         }
         return view('karyawan.pengajuanizin.editizinabsen', compact('dataizin'));
@@ -1193,8 +1226,8 @@ class PengajuanIzinController extends Controller
 
     public function editizinterlambat($kode_izin)
     {
-        $dataizin = Izin::where('kode_izin', $kode_izin)->first();
-        if (!$dataizin || $dataizin->status != 't') {
+        $dataizin = $this->findOwnPendingIzin($kode_izin, 't');
+        if (!$dataizin) {
             return Redirect::back()->with('error', 'Data Izin Terlambat tidak valid.');
         }
 
@@ -1207,6 +1240,16 @@ class PengajuanIzinController extends Controller
 
     public function updateizinabsen($kode_izin, Request $request)
     {
+        if (!$this->findOwnPendingIzin($kode_izin, 'i')) {
+            return $this->izinTidakValid();
+        }
+
+        $request->validate([
+            'dari' => 'required|date',
+            'sampai' => 'required|date|after_or_equal:dari',
+            'keterangan' => 'required|string',
+        ]);
+
         $tgl_izin_dari = $request->dari;
         $tgl_izin_sampai = $request->sampai;
         $keterangan = $request->keterangan;
@@ -1221,12 +1264,16 @@ class PengajuanIzinController extends Controller
             Izin::where('kode_izin', $kode_izin)->update($data_update);
             return redirect('/presensi/izin')->with('success', 'Data Izin Absen Berhasil Diupdate.');
         } catch (\Exception $e) {
-            return redirect('/presensi/izin')->with('error', 'Data Izin Absen Gagal Diupdate. Error: ' . $e->getMessage());
+            return redirect('/presensi/izin')->with('error', $this->failMessage('Data Izin Absen Gagal Diupdate.', $e));
         }
     }
 
     public function updateizinterlambat($kode_izin, Request $request)
     {
+        if (!$this->findOwnPendingIzin($kode_izin, 't')) {
+            return $this->izinTidakValid();
+        }
+
         // Ensure terlambat izin remains a single-day request and use server date
         $tgl_izin_dari = date('Y-m-d');
         // If client sent a 'dari' we ignore it to enforce same-day rule; keep sampai equal to dari
@@ -1243,14 +1290,14 @@ class PengajuanIzinController extends Controller
             Izin::where('kode_izin', $kode_izin)->update($data_update);
             return redirect('/pengajuanizin/index')->with('success', 'Data Izin Terlambat Berhasil Diupdate.');
         } catch (\Exception $e) {
-            return redirect('/pengajuanizin/index')->with('error', 'Data Izin Terlambat Gagal Diupdate. Error: ' . $e->getMessage());
+            return redirect('/pengajuanizin/index')->with('error', $this->failMessage('Data Izin Terlambat Gagal Diupdate.', $e));
         }
     }
 
     public function editizinpulangcepat($kode_izin)
     {
-        $dataizin = Izin::where('kode_izin', $kode_izin)->first();
-        if (!$dataizin || $dataizin->status != 'p') {
+        $dataizin = $this->findOwnPendingIzin($kode_izin, 'p');
+        if (!$dataizin) {
             return Redirect::back()->with('error', 'Data Izin Pulang Cepat tidak valid.');
         }
 
@@ -1263,6 +1310,10 @@ class PengajuanIzinController extends Controller
 
     public function updateizinpulangcepat($kode_izin, Request $request)
     {
+        if (!$this->findOwnPendingIzin($kode_izin, 'p')) {
+            return $this->izinTidakValid();
+        }
+
         $keterangan = $request->keterangan;
 
         $data_update = [
@@ -1275,14 +1326,14 @@ class PengajuanIzinController extends Controller
             Izin::where('kode_izin', $kode_izin)->update($data_update);
             return redirect('/pengajuanizin/index')->with('success', 'Data Izin Pulang Cepat Berhasil Diupdate.');
         } catch (\Exception $e) {
-            return redirect('/pengajuanizin/index')->with('error', 'Data Izin Pulang Cepat Gagal Diupdate. Error: ' . $e->getMessage());
+            return redirect('/pengajuanizin/index')->with('error', $this->failMessage('Data Izin Pulang Cepat Gagal Diupdate.', $e));
         }
     }
 
     public function editizinsakit($kode_izin)
     {
-        $dataizin = Izin::where('kode_izin', $kode_izin)->first();
-        if (!$dataizin || $dataizin->status != 's') {
+        $dataizin = $this->findOwnPendingIzin($kode_izin, 's');
+        if (!$dataizin) {
             return Redirect::back()->with('error', 'Data Izin Sakit tidak valid.');
         }
 
@@ -1295,10 +1346,25 @@ class PengajuanIzinController extends Controller
 
     public function updateizinsakit($kode_izin, Request $request)
     {
+        $izin = $this->findOwnPendingIzin($kode_izin, 's');
+        if (!$izin) {
+            return $this->izinTidakValid();
+        }
+
+        $request->validate([
+            'dari' => 'required|date',
+            'sampai' => 'required|date|after_or_equal:dari',
+            'keterangan' => 'required|string',
+            'sid' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:3072',
+        ], [
+            'sid.max' => 'Ukuran file tidak boleh lebih dari 3MB.',
+            'sid.mimes' => 'File harus berupa gambar (jpg/png) atau PDF.',
+        ]);
+
         $tgl_izin_dari = $request->dari;
         $tgl_izin_sampai = $request->sampai;
         $keterangan = $request->keterangan;
-        $old_doc_sid = Izin::where('kode_izin', $kode_izin)->value('doc_sid');
+        $old_doc_sid = $izin->doc_sid;
 
         $data_update = [
             'tgl_izin_dari' => $tgl_izin_dari,
@@ -1314,10 +1380,7 @@ class PengajuanIzinController extends Controller
                     Storage::disk('public')->delete($folderPath . '/' . $old_doc_sid);
                 }
 
-                $sid_file_extension = $request->file('sid')->getClientOriginalExtension();
-                $sid_file_name = $kode_izin . "." . $sid_file_extension;
-
-                $request->file('sid')->storeAs($folderPath, $sid_file_name, 'public');
+                $sid_file_name = $this->storeSuratSakit($request->file('sid'), $kode_izin);
 
                 // Update doc_sid only when the column exists
                 if (Schema::hasColumn('izin', 'doc_sid')) {
@@ -1328,7 +1391,7 @@ class PengajuanIzinController extends Controller
             Izin::where('kode_izin', $kode_izin)->update($data_update);
             return redirect('/presensi/izin')->with('success', 'Data Izin Sakit Berhasil Diupdate.');
         } catch (\Exception $e) {
-            return redirect('/presensi/izin')->with('error', 'Data Izin Sakit Gagal Diupdate. Error: ' . $e->getMessage());
+            return redirect('/presensi/izin')->with('error', $this->failMessage('Data Izin Sakit Gagal Diupdate.', $e));
         }
     }
 
@@ -1337,11 +1400,9 @@ class PengajuanIzinController extends Controller
         $nik = Auth::guard('karyawan')->user()->nik;
         $tahun_aktif = date('Y');
 
-        $dataizin = Izin::with('masterCuti')
-            ->where('kode_izin', $kode_izin)
-            ->first();
+        $dataizin = $this->findOwnPendingIzin($kode_izin, 'c')?->load('masterCuti');
 
-        if (!$dataizin || $dataizin->status != 'c') {
+        if (!$dataizin) {
             return Redirect::back()->with('error', 'Data Izin Cuti tidak valid.');
         }
 
@@ -1376,9 +1437,9 @@ class PengajuanIzinController extends Controller
 
     public function editizinroster($kode_izin)
     {
-        $dataizin = Izin::where('kode_izin', $kode_izin)->first();
+        $dataizin = $this->findOwnPendingIzin($kode_izin, 'r');
 
-        if (!$dataizin || $dataizin->status != 'r') {
+        if (!$dataizin) {
             return Redirect::back()->with('error', 'Data Pengajuan Roster tidak valid.');
         }
 
@@ -1404,6 +1465,10 @@ class PengajuanIzinController extends Controller
 
     public function updateizincuti($kode_izin, Request $request)
     {
+        if (!$this->findOwnPendingIzin($kode_izin, 'c')) {
+            return $this->izinTidakValid();
+        }
+
         $karyawan = Auth::guard('karyawan')->user();
         $nik = $karyawan->nik;
         $kode_cuti = $request->kode_cuti;
@@ -1492,12 +1557,16 @@ class PengajuanIzinController extends Controller
         } catch (ValidationException $e) {
             return Redirect::back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            return redirect('/presensi/izin')->with('error', 'Data Pengajuan Cuti Gagal Diupdate. Error: ' . $e->getMessage());
+            return redirect('/presensi/izin')->with('error', $this->failMessage('Data Pengajuan Cuti Gagal Diupdate.', $e));
         }
     }
 
     public function updateizinroster($kode_izin, Request $request)
     {
+        if (!$this->findOwnPendingIzin($kode_izin, 'r')) {
+            return $this->izinTidakValid();
+        }
+
         $karyawan = Auth::guard('karyawan')->user();
         $nik = $karyawan->nik;
         $keterangan = trim((string) $request->keterangan);
@@ -1568,7 +1637,7 @@ class PengajuanIzinController extends Controller
         } catch (ValidationException $e) {
             return Redirect::back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            return redirect('/presensi/izin')->with('error', 'Data Pengajuan Roster Gagal Diupdate. Error: ' . $e->getMessage());
+            return redirect('/presensi/izin')->with('error', $this->failMessage('Data Pengajuan Roster Gagal Diupdate.', $e));
         }
     }
 
@@ -1599,7 +1668,7 @@ class PengajuanIzinController extends Controller
 
             return redirect('/presensi/izin')->with('success', 'Data pengajuan berhasil dihapus.');
         } catch (\Exception $e) {
-            return redirect('/presensi/izin')->with('error', 'Gagal menghapus data pengajuan. Error: ' . $e->getMessage());
+            return redirect('/presensi/izin')->with('error', $this->failMessage('Gagal menghapus data pengajuan.', $e));
         }
     }
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Karyawan;
 use App\Models\RegistrationToken;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
@@ -127,9 +128,9 @@ class KaryawanAuthController extends Controller
             session()->forget('registration_token');
             return redirect()->route('registrasi.pretoken')->with('warning', 'Token registrasi tidak valid atau sudah kadaluwarsa.');
         }
-        $request->validate([
+        $validated = $request->validate([
             // Identitas
-            'nik' => 'required|string|max:50|unique:karyawan,nik',
+            'nik' => 'required|alpha_num|max:50|unique:karyawan,nik',
             'nama_lengkap' => 'required|string|max:255',
             'tempat_lahir' => 'required|string|max:255',
             'tanggal_lahir' => 'required|date',
@@ -154,11 +155,15 @@ class KaryawanAuthController extends Controller
             'no_rekening' => 'nullable|string|max:255',
             'no_bpjs_kesehatan' => 'nullable|string|max:255',
             'foto_bpjs_kesehatan' => 'nullable|image|mimes:jpg,jpeg,png|max:3072',
+
+            // Akun
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $data = $request->except(['foto', 'password', 'foto_bpjs_kesehatan', 'foto_bpjs_ketenagakerjaan']);
-        $data['password'] = Hash::make('123456');
-        
+        // Hanya field tervalidasi yang disimpan, agar field sensitif lain di $fillable tidak bisa diisi dari form.
+        $data = Arr::except($validated, ['foto', 'foto_bpjs_kesehatan']);
+        $data['password'] = Hash::make($validated['password']);
+
         // Auto-filled data
         $data['status_aktif'] = Karyawan::STATUS_MENUNGGU_APPROVAL;
         $data['is_whitelist'] = false;
@@ -170,7 +175,7 @@ class KaryawanAuthController extends Controller
         // Upload Foto Profile
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
-            $foto_baru = $request->nik . "_" . time() . "." . $file->getClientOriginalExtension();
+            $foto_baru = $request->nik . "_" . time() . "." . $file->extension();
             $file->storeAs('uploads/karyawan/', $foto_baru, 'public');
             $data['foto'] = $foto_baru;
         }
@@ -178,17 +183,9 @@ class KaryawanAuthController extends Controller
         // Upload Foto BPJS Kesehatan
         if ($request->hasFile('foto_bpjs_kesehatan')) {
             $fileBpjs = $request->file('foto_bpjs_kesehatan');
-            $foto_bpjs_baru = $request->nik . "_bpjs_kes_" . time() . "." . $fileBpjs->getClientOriginalExtension();
+            $foto_bpjs_baru = $request->nik . "_bpjs_kes_" . time() . "." . $fileBpjs->extension();
             $fileBpjs->storeAs('uploads/karyawan/bpjs/', $foto_bpjs_baru, 'public');
             $data['foto_bpjs_kesehatan'] = $foto_bpjs_baru;
-        }
-
-        // Upload Foto BPJS Ketenagakerjaan
-        if ($request->hasFile('foto_bpjs_ketenagakerjaan')) {
-            $fileBpjsKet = $request->file('foto_bpjs_ketenagakerjaan');
-            $foto_bpjs_ket_baru = $request->nik . "_bpjs_ket_" . time() . "." . $fileBpjsKet->getClientOriginalExtension();
-            $fileBpjsKet->storeAs('uploads/karyawan/bpjs/', $foto_bpjs_ket_baru, 'public');
-            $data['foto_bpjs_ketenagakerjaan'] = $foto_bpjs_ket_baru;
         }
 
         Karyawan::create($data);

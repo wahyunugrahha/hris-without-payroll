@@ -20,7 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware(['web', 'auth:user'])
                 ->group(base_path('routes/admin.php'));
 
-            Route::middleware(['web', 'auth:karyawan'])
+            Route::middleware(['web', 'auth:karyawan', 'password_changed'])
                 ->group(base_path('routes/karyawan.php'));
         },
     )
@@ -30,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
         'role' => RoleMiddleware::class,
         'role_or_permission' => RoleOrPermissionMiddleware::class,
         'wajib_presensi' => \App\Http\Middleware\CheckWajibPresensi::class,
+        'password_changed' => \App\Http\Middleware\EnsurePasswordChanged::class,
     ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

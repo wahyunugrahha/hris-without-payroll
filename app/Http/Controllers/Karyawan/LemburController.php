@@ -88,7 +88,7 @@ class LemburController extends Controller
             return redirect()->route('lembur.absenMasuk', $lembur->id)
                 ->with('success', 'Pengajuan berhasil. Silakan absen masuk.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal: ' . $e->getMessage());
+            return redirect()->back()->with('error', $this->failMessage('Gagal.', $e));
         }
     }
 
@@ -208,7 +208,7 @@ class LemburController extends Controller
         } catch (\Exception $e) {
             DB::rollBack(); // Batalkan DB
             $this->deleteFile($fileName); // Hapus file yang terlanjur terupload
-            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', $this->failMessage('Gagal memproses data.', $e));
         }
     }
 
@@ -398,7 +398,7 @@ class LemburController extends Controller
         } catch (\Exception $e) {
             DB::rollBack(); // Batalkan DB
             $this->deleteFile($fileName); // Hapus file yang terlanjur terupload
-            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', $this->failMessage('Gagal memproses data.', $e));
         }
     }
 

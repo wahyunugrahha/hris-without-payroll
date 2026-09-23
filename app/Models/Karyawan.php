@@ -45,6 +45,7 @@ class Karyawan extends Authenticatable
         'nama_lengkap',
         'nama_panggilan',
         'password',
+        'must_change_password',
         'remember_token',
         'jabatan_id',
         'kode_dept',
@@ -94,6 +95,7 @@ class Karyawan extends Authenticatable
     ];
 
     protected $casts = [
+        'must_change_password' => 'boolean',
         'tmt' => 'date',
         'tanggal_awal_kontrak' => 'date',
         'tanggal_lahir' => 'date',

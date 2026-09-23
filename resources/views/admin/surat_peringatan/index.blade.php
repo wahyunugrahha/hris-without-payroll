@@ -354,7 +354,7 @@
                                                     method="POST" id="form-pemutihan-{{ $it->id }}">
                                                     @csrf
                                                     <button type="button" class="btn btn-outline-success btn-sm"
-                                                        onclick="confirmPemutihan({{ $it->id }}, '{{ $it->karyawan?->nama_lengkap }}')">
+                                                        onclick="confirmPemutihan({{ $it->id }}, {{ json_encode($it->karyawan?->nama_lengkap ?? '') }})">
                                                         Putihkan
                                                     </button>
                                                 </form>
@@ -728,7 +728,8 @@
         function confirmPemutihan(id, nama) {
             Swal.fire({
                 title: 'Konfirmasi Pemutihan',
-                html: `Yakin ingin memutihkan SP untuk <strong>${nama}</strong>?`,
+                html: 'Yakin ingin memutihkan SP untuk <strong></strong>?',
+                didOpen: (popup) => { popup.querySelector('strong').textContent = nama; },
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#094b87',

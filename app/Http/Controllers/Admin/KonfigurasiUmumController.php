@@ -40,7 +40,7 @@ class KonfigurasiUmumController extends Controller
             
             return Redirect::back()->with(['success' => 'Konfigurasi berhasil disimpan.']);
         } catch (\Exception $e) {
-            return Redirect::back()->with(['warning' => 'Konfigurasi gagal disimpan: ' . $e->getMessage()]);
+            return Redirect::back()->with(['warning' => $this->failMessage('Konfigurasi gagal disimpan.', $e)]);
         }
     }
 }

@@ -244,7 +244,7 @@ class KPIController extends Controller
 
         $kpiDaily = $this->setApproverNames($kpiDaily);
 
-        if ($kpiDaily->karyawan->kode_cabang != $user->kode_cabang || $kpiDaily->karyawan->kode_dept != $user->kode_dept) {
+        if ($this->checkRoleAksesKPI($kpiDaily->karyawan) !== 'atasan') {
             return redirect()->route('kpi.atasan.index')->with('error', 'Anda tidak memiliki akses ke data ini.');
         }
 
@@ -286,8 +286,9 @@ class KPIController extends Controller
     {
         $user = Auth::guard('karyawan')->user();
         $kpiDaily = KPIDaily::findOrFail($kpi_daily_id);
-        
-        if ($kpiDaily->karyawan->kode_cabang != $user->kode_cabang) {
+
+        // Hanya atasan langsung (bukan diri sendiri / rekan setingkat) yang boleh approve.
+        if ($this->checkRoleAksesKPI($kpiDaily->karyawan) !== 'atasan') {
             return back()->with('error', 'Akses ditolak.');
         }
 
@@ -359,7 +360,7 @@ class KPIController extends Controller
 
         } catch (\Throwable $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan sistem saat memproses persetujuan: ' . $e->getMessage())->withInput();
+            return back()->with('error', $this->failMessage('Terjadi kesalahan sistem saat memproses persetujuan.', $e))->withInput();
         }
     }
 
@@ -369,7 +370,15 @@ class KPIController extends Controller
             'alasan_reject' => 'required|string',
         ]);
 
-        $kpiDaily = KPIDaily::findOrFail($kpi_daily_id); 
+        $kpiDaily = KPIDaily::findOrFail($kpi_daily_id);
+
+        if ($this->checkRoleAksesKPI($kpiDaily->karyawan) !== 'atasan') {
+            return back()->with('error', 'Akses ditolak.');
+        }
+
+        if ($kpiDaily->status != 'submitted') {
+            return back()->with('error', 'Status KPI sudah berubah, tidak dapat dikembalikan.');
+        }
 
         $kpiDaily->update([
             'status'        => 'rejected',
@@ -415,7 +424,7 @@ class KPIController extends Controller
 
             $kpiDaily = $action == 'store' 
                 ? KPIDaily::firstOrCreate(['nik' => $user->nik, 'tanggal' => $tanggal], ['status' => 'draft'])
-                : KPIDaily::findOrFail($kpi_daily_id);
+                : KPIDaily::where('nik', $user->nik)->findOrFail($kpi_daily_id);
             
             if (!$user->is_whitelist) {
                 $sedangCuti = Izin::where('nik', $user->nik)
@@ -488,7 +497,7 @@ class KPIController extends Controller
 
         } catch (\Throwable $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage())->withInput();
+            return back()->with('error', $this->failMessage('Terjadi kesalahan sistem.', $e))->withInput();
         }
     }
 

@@ -120,7 +120,7 @@ class KPIController extends Controller
                 ->with('success', 'Data KPI Master berhasil ditambahkan untuk ' . $createdCount . ' cabang');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menambah data: ' . $e->getMessage())->withInput();
+            return back()->with('error', $this->failMessage('Gagal menambah data.', $e))->withInput();
         }
     }
 
@@ -148,7 +148,7 @@ class KPIController extends Controller
                 'kpi', 'departemen', 'cabang', 'jabatan', 'selectedCabangs'
             ));
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal memuat data: ' . $e->getMessage());
+            return back()->with('error', $this->failMessage('Gagal memuat data.', $e));
         }
     }
 
@@ -224,7 +224,7 @@ class KPIController extends Controller
                 ->with('success', 'Data KPI Master berhasil diperbarui. Cabang aktif: ' . count($newCabangs));
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal update data: ' . $e->getMessage())->withInput();
+            return back()->with('error', $this->failMessage('Gagal update data.', $e))->withInput();
         }
     }
 
@@ -241,7 +241,7 @@ class KPIController extends Controller
             return redirect()->route('kpi.master.index')
                 ->with('success', 'Data KPI Master beserta Indikator Detail dan Cabang terkait berhasil dihapus');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+            return back()->with('error', $this->failMessage('Gagal menghapus data.', $e));
         }
     }
 
@@ -377,7 +377,7 @@ class KPIController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', "Terjadi kesalahan: " . $e->getMessage());
+            return back()->with('error', $this->failMessage('Gagal memproses data.', $e));
         }
     }
 
@@ -537,7 +537,7 @@ class KPIController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal update: ' . $e->getMessage());
+            return back()->with('error', $this->failMessage('Gagal update.', $e));
         }
     }
 
@@ -582,7 +582,7 @@ class KPIController extends Controller
 
                 } catch (\Exception $e) {
                     DB::rollBack();
-                    return back()->with('error', 'Gagal menyetujui KPI: ' . $e->getMessage());
+                    return back()->with('error', $this->failMessage('Gagal menyetujui KPI.', $e));
                 }
             }
         }
@@ -622,7 +622,7 @@ class KPIController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menolak KPI: ' . $e->getMessage());
+            return back()->with('error', $this->failMessage('Gagal menolak KPI.', $e));
         }
     }
 
@@ -1141,7 +1141,7 @@ class KPIController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal membuat laporan: ' . $e->getMessage());
+            return back()->with('error', $this->failMessage('Gagal membuat laporan.', $e));
         }
 
         $data = compact('bulan', 'tahun', 'namabulan', 'rekap', 'tglAwal', 'tglAkhir');
@@ -1225,7 +1225,7 @@ class KPIController extends Controller
             
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan saat Bulk Approve: ' . $e->getMessage());
+            return back()->with('error', $this->failMessage('Terjadi kesalahan saat Bulk Approve.', $e));
         }
     }
 

@@ -134,7 +134,7 @@ class HariLiburController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal Simpan: ' . $e->getMessage())->withInput();
+            return back()->with('error', $this->failMessage('Gagal Simpan.', $e))->withInput();
         }
     }
 
@@ -198,7 +198,7 @@ class HariLiburController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal update: ' . $e->getMessage());
+            return back()->with('error', $this->failMessage('Gagal update.', $e));
         }
     }
 
@@ -220,7 +220,7 @@ class HariLiburController extends Controller
             return redirect()->route('harilibur.index')->with('success', "Data Libur:$namaLibur, Berhasil Dihapus");
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', $this->failMessage('Gagal memproses data.', $e));
         }
     }
 }

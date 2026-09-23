@@ -154,25 +154,6 @@ class DinasLuarController extends Controller
         return redirect()->back()->with('success', $message);
     }
 
-    public function quickAction($id, $action)
-    {
-        $dinasLuar = $this->getScopedQuery()->find($id);
-
-        if (!$dinasLuar) {
-            return redirect()->back()->with('error', 'Data tidak ditemukan.');
-        }
-
-        $status = ($action === 'approve') ? 'acc' : (($action === 'reject') ? 'tolak' : 'menunggu');
-
-        $dinasLuar->update([
-            'status_acc' => $status,
-            'approved_by' => ($status === 'menunggu') ? null : Auth::guard('user')->id(),
-            'approved_at' => ($status === 'menunggu') ? null : now(),
-        ]);
-
-        return redirect()->back()->with('success', "Data berhasil di-{$action}.");
-    }
-
     public function approveOrReject(Request $request)
     {
         return $this->processAction($request);
@@ -210,15 +191,5 @@ class DinasLuarController extends Controller
         }
 
         return view('admin.dinasluars.cetak', compact('dinasLuar'));
-    }
-
-    // Shortcut methods...
-    public function approveDashboard($id)
-    {
-        return $this->quickAction($id, 'approve');
-    }
-    public function rejectDashboard($id)
-    {
-        return $this->quickAction($id, 'reject');
     }
 }
