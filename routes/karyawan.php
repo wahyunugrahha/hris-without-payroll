@@ -11,7 +11,8 @@ use App\Http\Controllers\Karyawan\Izin\IzinSakitController;
 use App\Http\Controllers\Karyawan\Izin\IzinTerlambatController;
 use App\Http\Controllers\Karyawan\KaryawanController;
 use App\Http\Controllers\Karyawan\KenaikanGajiController;
-use App\Http\Controllers\Karyawan\KPIController;
+use App\Http\Controllers\Karyawan\Kpi\KpiBawahanController;
+use App\Http\Controllers\Karyawan\Kpi\KpiSayaController;
 use App\Http\Controllers\Karyawan\LemburController;
 use App\Http\Controllers\Karyawan\PengajuanIzinController;
 use App\Http\Controllers\Karyawan\PresensiController;
@@ -158,30 +159,30 @@ Route::middleware(['auth:karyawan'])->group(function () {
         });
 
     // User KPI
-    Route::get('/kpi/indexkpi', [KPIController::class, 'indexKPI'])
+    Route::get('/kpi/indexkpi', [KpiSayaController::class, 'indexKPI'])
         ->middleware('permission:kpi-input-karyawan,karyawan')
         ->name('kpi.user.index');
-    Route::get('/kpi/createkpi', [KPIController::class, 'createKPI'])
+    Route::get('/kpi/createkpi', [KpiSayaController::class, 'createKPI'])
         ->middleware('permission:kpi-input-karyawan,karyawan')
         ->name('kpi.user.create');
-    Route::post('/kpi/storekpi', [KPIController::class, 'storeKPI'])
+    Route::post('/kpi/storekpi', [KpiSayaController::class, 'storeKPI'])
         ->name('kpi.user.store');
-    Route::get('/kpi/{kpi_daily_id}/editkpi', [KPIController::class, 'editKPI'])
+    Route::get('/kpi/{kpi_daily_id}/editkpi', [KpiSayaController::class, 'editKPI'])
         ->name('kpi.user.edit');
-    Route::put('/kpi/{kpi_daily_id}/updatekpi', [KPIController::class, 'updateKPI'])
+    Route::put('/kpi/{kpi_daily_id}/updatekpi', [KpiSayaController::class, 'updateKPI'])
         ->name('kpi.user.update');
 
     // Atasan KPI
-    Route::get('/kpi/atasankpi', [KPIController::class, 'atasanIndex'])
+    Route::get('/kpi/atasankpi', [KpiBawahanController::class, 'atasanIndex'])
         ->middleware('permission:kpi-approve-karyawan,karyawan')
         ->name('kpi.atasan.index');
-    Route::get('/kpi/{kpi_daily_id}/detailatasankpi', [KPIController::class, 'atasanDetailKPI'])
+    Route::get('/kpi/{kpi_daily_id}/detailatasankpi', [KpiBawahanController::class, 'atasanDetailKPI'])
         ->middleware('permission:kpi-approve-karyawan,karyawan')
         ->name('kpi.atasan.detail');
-    Route::post('/kpi/{kpi_daily_id}/approve', [KPIController::class, 'approveKPI'])
+    Route::post('/kpi/{kpi_daily_id}/approve', [KpiBawahanController::class, 'approveKPI'])
         ->middleware('permission:kpi-approve-karyawan,karyawan')
         ->name('kpi.atasan.approve');
-    Route::post('/kpi/{kpi_daily_id}/reject', [KPIController::class, 'rejectKPI'])
+    Route::post('/kpi/{kpi_daily_id}/reject', [KpiBawahanController::class, 'rejectKPI'])
         ->middleware('permission:kpi-approve-karyawan,karyawan')
         ->name('kpi.atasan.reject');
 

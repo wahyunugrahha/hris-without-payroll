@@ -64,25 +64,8 @@ class VerifikasiKpiController extends Controller
             'kpiDailyExtra',
         ])->findOrFail($kpi_daily_id);
 
-        $jabatanId = $kpiDaily->karyawan->jabatan_id;
-        $kpiMaster = KPIMaster::with(['kpiMasterDetail' => function ($query) {
-            $query->orderBy('id', 'asc');
-        }])
-            ->where('jabatan_id', $jabatanId)
-            ->where('kode_dept', $kpiDaily->karyawan->kode_dept)
-            ->where('kode_cabang', $kpiDaily->karyawan->kode_cabang)
-            ->first();
-
-        if (! $kpiMaster) {
-            $kpiMaster = KPIMaster::with(['kpiMasterDetail' => function ($query) {
-                $query->orderBy('id', 'asc');
-            }])
-                ->whereHas('jabatan', function ($query) {
-                    $query->where('nama_jabatan', 'ilike', '%staff%');
-                })
-                ->where('kode_dept', $kpiDaily->karyawan->kode_dept)
-                ->first();
-        }
+        // Master yang sama dengan yang dipakai karyawan saat mengisi KPI.
+        $kpiMaster = KPIMaster::untukKaryawan($kpiDaily->karyawan)?->load(['kpiMasterDetail' => fn ($q) => $q->orderBy('id')]);
 
         $indikatorsAtasan = $kpiMaster ? KPIMasterAtasan::where('kode_master', $kpiMaster->kode_master)->get() : collect();
         $penilaianAtasan = KPIAtasanDaily::with(['details'])

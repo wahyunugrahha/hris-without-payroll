@@ -34,4 +34,38 @@ class KPIMaster extends Model
     {
         return $this->belongsTo(Cabang::class, 'kode_cabang', 'kode_cabang');
     }
+
+    /**
+     * Master KPI aktif yang berlaku untuk karyawan, dari yang paling spesifik:
+     * jabatan+dept+cabang, jabatan+dept, jabatan saja; jika tidak ada, master jabatan "Staff"
+     * dengan urutan cakupan yang sama.
+     */
+    public static function untukKaryawan(Karyawan $karyawan): ?self
+    {
+        $cakupan = [
+            [$karyawan->kode_dept, $karyawan->kode_cabang],
+            [$karyawan->kode_dept, null],
+            [null, null],
+        ];
+
+        foreach ([false, true] as $fallbackStaff) {
+            foreach ($cakupan as [$kodeDept, $kodeCabang]) {
+                $master = self::where('is_active', true)
+                    ->where('kode_dept', $kodeDept)
+                    ->where('kode_cabang', $kodeCabang)
+                    ->when(
+                        $fallbackStaff,
+                        fn ($q) => $q->whereHas('jabatan', fn ($j) => $j->where('nama_jabatan', 'ilike', '%staff%')),
+                        fn ($q) => $q->where('jabatan_id', $karyawan->jabatan_id)
+                    )
+                    ->first();
+
+                if ($master) {
+                    return $master;
+                }
+            }
+        }
+
+        return null;
+    }
 }
