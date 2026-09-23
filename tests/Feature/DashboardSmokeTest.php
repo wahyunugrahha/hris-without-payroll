@@ -53,7 +53,7 @@ class DashboardSmokeTest extends TestCase
 
         Permission::create(['name' => 'dashboard-view-admin', 'guard_name' => 'user']);
         Role::create(['name' => 'admin cabang', 'guard_name' => 'user']);
-        $this->admin = User::create(['name' => 'HRD', 'email' => 'hrd@test.id', 'password' => Hash::make('rahasia123')]);
+        $this->admin = User::create(['name' => 'HRD', 'email' => 'hrd@test.id', 'password' => Hash::make($this->passwordUji())]);
         $this->admin->givePermissionTo('dashboard-view-admin');
     }
 
@@ -64,7 +64,7 @@ class DashboardSmokeTest extends TestCase
 
     public function test_dashboard_admin_cabang_dengan_filter(): void
     {
-        $admin = User::create(['name' => 'Admin Cabang', 'email' => 'ac@test.id', 'password' => Hash::make('rahasia123'), 'kode_cabang' => 'CBG1']);
+        $admin = User::create(['name' => 'Admin Cabang', 'email' => 'ac@test.id', 'password' => Hash::make($this->passwordUji()), 'kode_cabang' => 'CBG1']);
         $admin->assignRole('admin cabang')->givePermissionTo('dashboard-view-admin');
 
         $this->actingAs($admin, 'user')->get('/panel/dashboardadmin?q=karyawan&dept=OPS')->assertOk();

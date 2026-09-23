@@ -33,7 +33,7 @@ class IzinApprovalTest extends TestCase
         foreach (['dashboard-view-admin', 'pengajuan-izin-approve-admin'] as $permission) {
             Permission::create(['name' => $permission, 'guard_name' => 'user']);
         }
-        $admin = User::create(['name' => 'HRD', 'email' => 'hrd@test.id', 'password' => Hash::make('rahasia123')]);
+        $admin = User::create(['name' => 'HRD', 'email' => 'hrd@test.id', 'password' => Hash::make($this->passwordUji())]);
         $admin->givePermissionTo(['dashboard-view-admin', 'pengajuan-izin-approve-admin']);
         $this->actingAs($admin, 'user');
     }

@@ -44,7 +44,7 @@ class CabangScopeTest extends TestCase
     {
         $user = User::create([
             'name' => $role, 'email' => str_replace(' ', '', $role).'@test.id',
-            'password' => Hash::make('rahasia123'), 'kode_cabang' => $cabang,
+            'password' => Hash::make($this->passwordUji()), 'kode_cabang' => $cabang,
         ]);
 
         return $user->assignRole($role);
@@ -79,7 +79,7 @@ class CabangScopeTest extends TestCase
 
         $this->actingAs($superAdmin, 'user')
             ->post('/users/store', [
-                'name' => 'Baru', 'email' => 'baru@test.id', 'password' => 'rahasia123',
+                'name' => 'Baru', 'email' => 'baru@test.id', 'password' => $this->passwordUji(),
                 'kode_dept' => 'OPS', 'jabatan_id' => $jabatan->id, 'kode_cabang' => '',
             ])
             ->assertSessionHasErrors('kode_cabang');

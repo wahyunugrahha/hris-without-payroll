@@ -51,7 +51,7 @@ class VerifikasiKpiTest extends TestCase
     {
         $user = User::create([
             'name' => $role, 'email' => str_replace(' ', '', $role).'@test.id',
-            'password' => Hash::make('rahasia123'), 'kode_cabang' => $cabang,
+            'password' => Hash::make($this->passwordUji()), 'kode_cabang' => $cabang,
         ]);
 
         return $user->assignRole($role)->givePermissionTo(['dashboard-view-admin', 'kpi-view-admin', 'kpi-edit-admin']);

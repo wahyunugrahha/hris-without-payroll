@@ -10,6 +10,7 @@ use App\Models\KPIDaily;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -28,7 +29,7 @@ class SecurityAuditTest extends TestCase
             'nama_lengkap' => 'Karyawan '.$nik,
             'nama_panggilan' => $nik,
             'no_hp' => '0800000000',
-            'password' => Hash::make('rahasia123'),
+            'password' => Hash::make($this->passwordUji()),
             'status_aktif' => Karyawan::STATUS_AKTIF,
         ], $attrs));
     }
@@ -110,7 +111,7 @@ class SecurityAuditTest extends TestCase
 
         $admin = User::create([
             'name' => 'Admin Cabang', 'email' => 'admin@cabang.test',
-            'password' => Hash::make('rahasia123'), 'kode_cabang' => 'CBG1',
+            'password' => Hash::make($this->passwordUji()), 'kode_cabang' => 'CBG1',
         ]);
         $admin->assignRole('admin cabang');
         $admin->givePermissionTo('dashboard-view-admin');
@@ -127,24 +128,24 @@ class SecurityAuditTest extends TestCase
     public function test_ganti_password_admin_wajib_password_lama(): void
     {
         Permission::create(['name' => 'dashboard-view-admin', 'guard_name' => 'user']);
-        $admin = User::create(['name' => 'Admin', 'email' => 'a@a.test', 'password' => Hash::make('rahasia123')]);
+        $admin = User::create(['name' => 'Admin', 'email' => 'a@a.test', 'password' => Hash::make($this->passwordUji())]);
         $admin->givePermissionTo('dashboard-view-admin');
 
         $this->actingAs($admin, 'user')
             ->put('/panel/account', [
                 'name' => 'Admin', 'email' => 'a@a.test',
-                'password' => 'passwordbaru1', 'password_confirmation' => 'passwordbaru1',
+                'password' => $baru = Str::random(12), 'password_confirmation' => $baru,
             ])
             ->assertSessionHasErrors('current_password');
 
-        $this->assertTrue(Hash::check('rahasia123', $admin->fresh()->password));
+        $this->assertTrue(Hash::check($this->passwordUji(), $admin->fresh()->password));
     }
 
     public function test_set_jam_kerja_karyawan_butuh_permission_edit_karyawan(): void
     {
         $this->karyawan('1001');
         Permission::create(['name' => 'dashboard-view-admin', 'guard_name' => 'user']);
-        $owner = User::create(['name' => 'Owner', 'email' => 'owner@test.id', 'password' => Hash::make('rahasia123')]);
+        $owner = User::create(['name' => 'Owner', 'email' => 'owner@test.id', 'password' => Hash::make($this->passwordUji())]);
         $owner->givePermissionTo('dashboard-view-admin');
 
         $this->actingAs($owner, 'user')->get('/konfigurasi/1001/setjamkerja')->assertForbidden();
