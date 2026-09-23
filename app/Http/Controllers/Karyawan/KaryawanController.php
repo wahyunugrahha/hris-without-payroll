@@ -3,20 +3,20 @@
 namespace App\Http\Controllers\Karyawan;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\BpjsRequest;
 use App\Models\Karyawan;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
 
 class KaryawanController extends Controller
 {
-    // --- Profile & Izin ---    
+    // --- Profile & Izin ---
     public function profile()
     {
         $nik = auth('karyawan')->user()->nik;
         $karyawan = Karyawan::findOrFail($nik);
+
         return view('karyawan.profile.index', compact('karyawan'));
     }
 
@@ -24,6 +24,7 @@ class KaryawanController extends Controller
     {
         $nik = auth('karyawan')->user()->nik;
         $karyawan = Karyawan::findOrFail($nik);
+
         return view('karyawan.profile.edit_profile', compact('karyawan'));
     }
 
@@ -39,7 +40,7 @@ class KaryawanController extends Controller
             'pendidikan_terakhir' => 'required|string|max:255',
             'no_rekening' => 'nullable|string|max:255',
             'password' => 'nullable|string|min:8|not_in:12345678,123456789',
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:3072'
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:3072',
         ]);
 
         $nik = auth('karyawan')->user()->nik;
@@ -49,7 +50,7 @@ class KaryawanController extends Controller
         if ($karyawan->status_aktif == Karyawan::STATUS_DIBERHENTIKAN) {
             return redirect()->back()->with('error', 'Data tidak dapat diubah karena status Anda sudah diberhentikan.');
         }
-        
+
         $data = [
             'no_hp' => $request->no_hp,
             'email' => $request->email,
@@ -61,19 +62,21 @@ class KaryawanController extends Controller
             'no_rekening' => $request->no_rekening,
         ];
 
-        if (!empty($request->password)) {
+        if (! empty($request->password)) {
             $data['password'] = Hash::make($request->password);
             $data['must_change_password'] = false;
         }
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
-            $foto_baru = $nik . "_" . time() . "." . $file->extension();
+            $foto_baru = $nik.'_'.time().'.'.$file->extension();
             $data['foto'] = $foto_baru;
-            if ($karyawan->foto && Storage::disk('public')->exists('uploads/karyawan/' . $karyawan->foto))
-                Storage::disk('public')->delete('uploads/karyawan/' . $karyawan->foto);
+            if ($karyawan->foto && Storage::disk('public')->exists('uploads/karyawan/'.$karyawan->foto)) {
+                Storage::disk('public')->delete('uploads/karyawan/'.$karyawan->foto);
+            }
             $file->storeAs('uploads/karyawan/', $foto_baru, 'public');
         }
         $karyawan->update($data);
+
         return redirect()->back()->with('success', 'Profil berhasil diperbarui!');
     }
 
@@ -81,6 +84,7 @@ class KaryawanController extends Controller
     {
         $nik = auth('karyawan')->user()->nik;
         $karyawan = Karyawan::findOrFail($nik);
+
         return view('karyawan.profile.profile_darurat', compact('karyawan'));
     }
 
@@ -171,12 +175,12 @@ class KaryawanController extends Controller
         // Upload Foto BPJS Kesehatan
         if ($request->hasFile('foto_bpjs_kesehatan')) {
             $fileBpjs = $request->file('foto_bpjs_kesehatan');
-            $foto_bpjs_baru = $nik . "_bpjs_kes_" . time() . "." . $fileBpjs->extension();
+            $foto_bpjs_baru = $nik.'_bpjs_kes_'.time().'.'.$fileBpjs->extension();
             $data['foto_bpjs_kesehatan'] = $foto_bpjs_baru;
-            
+
             // Hapus foto lama jika ada
-            if ($karyawan->foto_bpjs_kesehatan && Storage::disk('public')->exists('uploads/karyawan/bpjs/' . $karyawan->foto_bpjs_kesehatan)) {
-                Storage::disk('public')->delete('uploads/karyawan/bpjs/' . $karyawan->foto_bpjs_kesehatan);
+            if ($karyawan->foto_bpjs_kesehatan && Storage::disk('public')->exists('uploads/karyawan/bpjs/'.$karyawan->foto_bpjs_kesehatan)) {
+                Storage::disk('public')->delete('uploads/karyawan/bpjs/'.$karyawan->foto_bpjs_kesehatan);
             }
             $fileBpjs->storeAs('uploads/karyawan/bpjs/', $foto_bpjs_baru, 'public');
         }

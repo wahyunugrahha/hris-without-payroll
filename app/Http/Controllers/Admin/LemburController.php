@@ -3,15 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cabang;
+use App\Models\Departemen;
+use App\Models\Jabatan;
+use App\Models\Lembur;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
-use App\Models\Lembur;
-use App\Models\Departemen;
-use App\Models\Cabang;
-use App\Models\Jabatan;
 
 class LemburController extends Controller
 {
@@ -19,7 +18,7 @@ class LemburController extends Controller
      * Helper privat untuk membatasi query database.
      * Jika user yang login adalah Admin Cabang, query otomatis difilter hanya menampilkan
      * data karyawan dari cabang yang sama dengan user tersebut.
-     * 
+     *
      * FIX BUG: Jika cabang dihapus, user masih punya kode_cabang lama tapi tidak ada karyawan terkait.
      * Solusi: Filter berdasarkan kode_cabang di tabel karyawan, bukan hanya whereHas.
      */
@@ -29,9 +28,9 @@ class LemburController extends Controller
         $query = Lembur::query();
 
         // Jika user memiliki role admin cabang atau memiliki kode_cabang
-        if ($user && ($user->hasRole('admin cabang') || !empty($user->kode_cabang))) {
+        if ($user && ($user->hasRole('admin cabang') || ! empty($user->kode_cabang))) {
             $kodeCabang = $user->kode_cabang;
-            
+
             // Filter berdasarkan cabang karyawan (bukan hanya whereHas yang mungkin gagal jika relasi tidak valid)
             $query->whereHas('karyawan', function ($q) use ($kodeCabang) {
                 $q->where('kode_cabang', $kodeCabang);
@@ -65,42 +64,42 @@ class LemburController extends Controller
             if (strpos($tanggal, '-') !== false && strlen($tanggal) == 10) {
                 $parts = explode('-', $tanggal);
                 if (count($parts) == 3 && strlen($parts[2]) == 4) {
-                    $tanggal = $parts[2] . '-' . $parts[1] . '-' . $parts[0];
+                    $tanggal = $parts[2].'-'.$parts[1].'-'.$parts[0];
                 }
             }
             $query->whereDate('tanggal_lembur', $tanggal);
         }
         if ($request->filled('kode_dept')) {
-            $query->whereHas('karyawan', fn($q) => $q->where('kode_dept', $request->kode_dept));
+            $query->whereHas('karyawan', fn ($q) => $q->where('kode_dept', $request->kode_dept));
         }
 
         // Filter Jabatan (single)
         if ($request->filled('jabatan_id')) {
-            $query->whereHas('karyawan', fn($q) => $q->where('jabatan_id', $request->jabatan_id));
+            $query->whereHas('karyawan', fn ($q) => $q->where('jabatan_id', $request->jabatan_id));
         }
 
         // Filter Cabang - hanya untuk Super Admin yang ingin filter cabang spesifik
         // Admin Cabang sudah ter-filter otomatis di getScopedQuery()
-        if (!$hasRoleAdminCabang && $request->filled('kode_cabang')) {
-            $query->whereHas('karyawan', fn($q) => $q->where('kode_cabang', $request->kode_cabang));
+        if (! $hasRoleAdminCabang && $request->filled('kode_cabang')) {
+            $query->whereHas('karyawan', fn ($q) => $q->where('kode_cabang', $request->kode_cabang));
         }
 
         // Pencarian data berdasarkan NIK atau Nama (Case Insensitive untuk kompatibilitas PostgreSQL)
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->whereRaw('LOWER(nik) like ?', ['%' . strtolower($search) . '%'])
+                $q->whereRaw('LOWER(nik) like ?', ['%'.strtolower($search).'%'])
                     ->orWhereHas('karyawan', function ($subq) use ($search) {
-                        $subq->whereRaw('LOWER(nama_lengkap) like ?', ['%' . strtolower($search) . '%']);
+                        $subq->whereRaw('LOWER(nama_lengkap) like ?', ['%'.strtolower($search).'%']);
                     });
             });
         }
 
         $lemburs = $query->orderBy('status_approved')->orderByDesc('tanggal_lembur')->paginate(25)->withQueryString();
         $departemen = Departemen::orderBy('nama_dept')->get();
-        
+
         // Tentukan cabang yang ditampilkan di dropdown
-        $forcedKodeCabang = $hasRoleAdminCabang && !empty($loggedInUser->kode_cabang) ? $loggedInUser->kode_cabang : null;
+        $forcedKodeCabang = $hasRoleAdminCabang && ! empty($loggedInUser->kode_cabang) ? $loggedInUser->kode_cabang : null;
         $cabang = $hasRoleAdminCabang && $forcedKodeCabang
             ? Cabang::where('kode_cabang', $forcedKodeCabang)->get()
             : Cabang::orderBy('nama_cabang')->get();
@@ -118,11 +117,12 @@ class LemburController extends Controller
             // Menggunakan getScopedQuery()->find() untuk mencegah user meng-approve data cabang lain (IDOR Protection)
             $lembur = $this->getScopedQuery()->find($request->id);
 
-            if (!$lembur) {
+            if (! $lembur) {
                 return Redirect::back()->with('error', 'Data lembur tidak ditemukan atau akses ditolak.');
             }
 
             $lembur->update(['status_approved' => 1]); // Status 1 = Disetujui
+
             return Redirect::back()->with('success', 'Lembur berhasil disetujui.');
 
         } catch (\Exception $e) {
@@ -141,14 +141,15 @@ class LemburController extends Controller
             // Validasi kepemilikan data sebelum reject
             $lembur = $this->getScopedQuery()->find($request->id);
 
-            if (!$lembur) {
+            if (! $lembur) {
                 return Redirect::back()->with('error', 'Data tidak ditemukan atau akses ditolak.');
             }
 
             $lembur->update([
                 'status_approved' => 2, // Status 2 = Ditolak
-                'keterangan' => $request->catatan
+                'keterangan' => $request->catatan,
             ]);
+
             return Redirect::back()->with('success', 'Lembur berhasil ditolak.');
 
         } catch (\Exception $e) {
@@ -161,11 +162,12 @@ class LemburController extends Controller
         try {
             $lembur = $this->getScopedQuery()->find($request->id);
 
-            if (!$lembur) {
+            if (! $lembur) {
                 return Redirect::back()->with('error', 'Data tidak ditemukan atau akses ditolak.');
             }
 
             $lembur->update(['status_approved' => 0]); // Status 0 = Pending
+
             return Redirect::back()->with('success', 'Approval dibatalkan.');
 
         } catch (\Exception $e) {
@@ -189,7 +191,7 @@ class LemburController extends Controller
         try {
             $lembur = $this->getScopedQuery()->find($request->id);
 
-            if (!$lembur) {
+            if (! $lembur) {
                 return Redirect::back()->with('error', 'Data lembur tidak ditemukan atau akses ditolak.');
             }
 
@@ -198,8 +200,8 @@ class LemburController extends Controller
             }
 
             $tanggal = Carbon::parse($lembur->tanggal_lembur)->format('Y-m-d');
-            $waktuMulai = Carbon::parse($tanggal . ' ' . $request->jam_mulai);
-            $waktuSelesai = Carbon::parse($tanggal . ' ' . $request->jam_selesai);
+            $waktuMulai = Carbon::parse($tanggal.' '.$request->jam_mulai);
+            $waktuSelesai = Carbon::parse($tanggal.' '.$request->jam_selesai);
 
             if ($waktuSelesai->lt($waktuMulai)) {
                 $waktuSelesai->addDay();
@@ -218,7 +220,7 @@ class LemburController extends Controller
             ];
 
             if ($isChanged) {
-                if (!empty($lembur->jam_selesai) && $oldJamSelesai !== $request->jam_selesai && empty($lembur->jam_selesai_awal)) {
+                if (! empty($lembur->jam_selesai) && $oldJamSelesai !== $request->jam_selesai && empty($lembur->jam_selesai_awal)) {
                     $updateData['jam_selesai_awal'] = $lembur->jam_selesai;
                 }
 
@@ -236,18 +238,18 @@ class LemburController extends Controller
 
     public function rekap(Request $request)
     {
-        $namabulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-        
+        $namabulan = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
         $list_periode = [];
         for ($i = 1; $i <= 12; $i++) {
             $bulan_lalu = $i == 1 ? 12 : $i - 1;
             $nama_bln_lalu = $namabulan[$bulan_lalu];
-            $nama_bln_ini  = $namabulan[$i];
-            
+            $nama_bln_ini = $namabulan[$i];
+
             $list_periode[$i] = "26 $nama_bln_lalu - 25 $nama_bln_ini";
         }
 
-        $hariIni = \Carbon\Carbon::now();
+        $hariIni = Carbon::now();
         if ($hariIni->day >= 26) {
             $hariIni->addMonth();
         }
@@ -259,7 +261,7 @@ class LemburController extends Controller
         $loggedInUser = Auth::guard('user')->user();
         $hasRoleAdminCabang = $loggedInUser && $loggedInUser->roles->pluck('name')->contains('admin cabang');
 
-        $forcedKodeCabang = $hasRoleAdminCabang && !empty($loggedInUser->kode_cabang) ? $loggedInUser->kode_cabang : null;
+        $forcedKodeCabang = $hasRoleAdminCabang && ! empty($loggedInUser->kode_cabang) ? $loggedInUser->kode_cabang : null;
         $cabang = $hasRoleAdminCabang
             ? Cabang::where('kode_cabang', $forcedKodeCabang)->get()
             : Cabang::orderBy('nama_cabang')->get();
@@ -278,14 +280,14 @@ class LemburController extends Controller
         $hasRoleAdminCabang = $loggedInUser && $loggedInUser->roles->pluck('name')->contains('admin cabang');
 
         // Penentuan kode cabang: Jika admin cabang, dipaksa kode sendiri. Jika super admin, ambil dari request.
-        $filterCabang = $hasRoleAdminCabang && !empty($loggedInUser->kode_cabang)
+        $filterCabang = $hasRoleAdminCabang && ! empty($loggedInUser->kode_cabang)
             ? $loggedInUser->kode_cabang
             : $request->kode_cabang;
 
         // Hitung periode: Tanggal 26 bulan sebelumnya sampai tanggal 25 bulan yang dipilih
         $bulan = $request->bulan;
         $tahun = $request->tahun;
-        
+
         // Tanggal mulai: Tanggal 26 bulan sebelumnya
         if ($bulan == 1) {
             $bulanSebelum = 12;
@@ -294,7 +296,7 @@ class LemburController extends Controller
             $bulanSebelum = $bulan - 1;
             $tahunSebelum = $tahun;
         }
-        
+
         $tanggalMulai = sprintf('%04d-%02d-26', $tahunSebelum, $bulanSebelum);
         $tanggalSelesai = sprintf('%04d-%02d-25', $tahun, $bulan);
 
@@ -304,31 +306,32 @@ class LemburController extends Controller
             ->where('status_approved', 1);
 
         if ($filterCabang) {
-            $query->whereHas('karyawan', fn($q) => $q->where('kode_cabang', $filterCabang));
+            $query->whereHas('karyawan', fn ($q) => $q->where('kode_cabang', $filterCabang));
         }
         if ($request->kode_dept) {
-            $query->whereHas('karyawan', fn($q) => $q->where('kode_dept', $request->kode_dept));
+            $query->whereHas('karyawan', fn ($q) => $q->where('kode_dept', $request->kode_dept));
         }
 
         $lembur = $query->get()->groupBy('nik');
         $cabang = $filterCabang ? Cabang::where('kode_cabang', $filterCabang)->first() : null;
 
         if ($request->has('exportexcel')) {
-            $filename = 'Rekap_Lembur_' . $request->bulan . '_' . $request->tahun . '.xls';
+            $filename = 'Rekap_Lembur_'.$request->bulan.'_'.$request->tahun.'.xls';
+
             return response()->view('admin.lembur.cetakrekapexcel', [
                 'lembur' => $lembur,
                 'bulan' => $request->bulan,
                 'tahun' => $request->tahun,
-                'cabang' => $cabang
+                'cabang' => $cabang,
             ])->header('Content-Type', 'application/vnd.ms-excel')
-                ->header('Content-Disposition', 'attachment; filename=' . $filename);
+                ->header('Content-Disposition', 'attachment; filename='.$filename);
         }
 
         return view('admin.lembur.cetakrekap', [
             'lembur' => $lembur,
             'bulan' => $request->bulan,
             'tahun' => $request->tahun,
-            'cabang' => $cabang
+            'cabang' => $cabang,
         ]);
     }
 }

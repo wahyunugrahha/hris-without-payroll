@@ -1,28 +1,26 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\Auth\AdminAuthController;
+use App\Http\Controllers\Admin\BpjsController;
 use App\Http\Controllers\Admin\CabangController;
+use App\Http\Controllers\Admin\CabangLokasiController;
 use App\Http\Controllers\Admin\CutiController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DepartemenController;
+use App\Http\Controllers\Admin\DinasLuarController;
 use App\Http\Controllers\Admin\HariLiburController;
+use App\Http\Controllers\Admin\JabatanController;
+use App\Http\Controllers\Admin\KaryawanController;
+use App\Http\Controllers\Admin\KenaikanGajiController;
 use App\Http\Controllers\Admin\KonfigurasiController;
 use App\Http\Controllers\Admin\KonfigurasiUmumController;
-use App\Http\Controllers\Admin\CabangLokasiController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\PengumumanController;
-use App\Http\Controllers\Admin\SuratPeringatanController;
-use App\Http\Controllers\Admin\KaryawanController;
-
-use App\Http\Controllers\Admin\DinasLuarController;
-use App\Http\Controllers\Admin\BpjsController;
-use App\Http\Controllers\Admin\JabatanController;
-use App\Http\Controllers\Admin\KenaikanGajiController;
 use App\Http\Controllers\Admin\KPIController;
 use App\Http\Controllers\Admin\LemburController;
+use App\Http\Controllers\Admin\PengumumanController;
 use App\Http\Controllers\Admin\PresensiController;
+use App\Http\Controllers\Admin\SuratPeringatanController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Auth\AdminAuthController;
+use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(function () {
 
@@ -185,7 +183,7 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
             ->middleware('permission:presensi-monitoring-view-admin,user')
             ->name('presensi.monitoring');
         Route::match(['get', 'post'], '/getpresensi', [PresensiController::class, 'getpresensi'])->name('presensi.getpresensi');
-        
+
         // Batal Presensi
         Route::post('/monitoring/{id}/batal', [PresensiController::class, 'batalpresensi'])
             ->middleware('permission:presensi-monitoring-view-admin,user')
@@ -237,7 +235,7 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
         Route::post('/{id}/cancel', [DinasLuarController::class, 'cancel'])
             ->middleware('permission:dinas-luar-approve-admin,user')
             ->name('dinasluars.cancel');
-        
+
         // Cetak Dinas Luar
         Route::get('/{id}/cetak', [DinasLuarController::class, 'cetak'])
             ->middleware('permission:dinas-luar-view-admin,user')
@@ -263,13 +261,13 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
                 ->name('admin.lembur.approval');
             Route::post('/approve', 'approve')
                 ->middleware('permission:lembur-approve-admin,user')
-                ->name('admin.lembur.approve'); 
+                ->name('admin.lembur.approve');
             Route::post('/reject', 'reject')
                 ->middleware('permission:lembur-approve-admin,user')
-                ->name('admin.lembur.reject');   
+                ->name('admin.lembur.reject');
             Route::post('/cancel', 'cancel')
                 ->middleware('permission:lembur-approve-admin,user')
-                ->name('admin.lembur.cancel');   
+                ->name('admin.lembur.cancel');
             Route::post('/update-jam', 'updateJam')
                 ->middleware('permission:lembur-approve-admin,user')
                 ->name('admin.lembur.update-jam');

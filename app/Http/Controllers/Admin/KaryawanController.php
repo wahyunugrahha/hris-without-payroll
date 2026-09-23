@@ -2,30 +2,32 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Database\QueryException;
-use Illuminate\Validation\Rule;
-use Maatwebsite\Excel\Facades\Excel;
-
-use App\Models\Karyawan;
-use App\Models\Departemen;
-use App\Models\Cabang;
-use App\Models\Jabatan;
+use App\Exceptions\BusinessException;
 use App\Exports\KaryawanExport;
 use App\Exports\KaryawanTemplateExport;
+use App\Http\Controllers\Controller;
 use App\Imports\KaryawanImport;
+use App\Models\Cabang;
+use App\Models\Departemen;
+use App\Models\Jabatan;
+use App\Models\Karyawan;
+use Carbon\Carbon;
+use Illuminate\Database\QueryException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
 
 class KaryawanController extends Controller
 {
     // Regex Patterns
     private $nama_regex = 'regex:/^[\pL\s\.\,\-]+$/u';
+
     private $angka_regex = 'regex:/^[0-9]+$/';
 
     /**
@@ -37,6 +39,7 @@ class KaryawanController extends Controller
         if ($user && $user->roles->pluck('name')->contains('admin cabang')) {
             return $user->kode_cabang;
         }
+
         return null;
     }
 
@@ -57,16 +60,16 @@ class KaryawanController extends Controller
 
         // Menggunakan Eloquent pure agar lebih bersih dan aman dari collision nama kolom
         $query = Karyawan::with(['jabatanRel', 'departemen', 'cabang'])
-            ->orderByRaw("CASE WHEN status_aktif = '" . Karyawan::STATUS_MENUNGGU_APPROVAL . "' THEN 0 ELSE 1 END ASC")
+            ->orderByRaw("CASE WHEN status_aktif = '".Karyawan::STATUS_MENUNGGU_APPROVAL."' THEN 0 ELSE 1 END ASC")
             ->orderBy('nama_lengkap', 'asc');
 
         $query->filterStatus($statusFilter);
 
         // Filter Nama
         if ($request->filled('nama_karyawan')) {
-            $query->where(function($q) use ($request) {
-                $q->where('nama_lengkap', 'ilike', '%' . $request->nama_karyawan . '%')
-                  ->orWhere('nik', 'ilike', '%' . $request->nama_karyawan . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('nama_lengkap', 'ilike', '%'.$request->nama_karyawan.'%')
+                    ->orWhere('nik', 'ilike', '%'.$request->nama_karyawan.'%');
             });
         }
 
@@ -81,7 +84,7 @@ class KaryawanController extends Controller
         }
 
         // Filter Cabang (Security Logic)
-        if (!empty($forcedKodeCabang)) {
+        if (! empty($forcedKodeCabang)) {
             $query->where('kode_cabang', $forcedKodeCabang);
         } elseif ($request->filled('kode_cabang')) {
             $query->where('kode_cabang', $request->kode_cabang);
@@ -91,11 +94,11 @@ class KaryawanController extends Controller
 
         // Data Pendukung View
         $departemen = Departemen::orderBy('nama_dept')->get();
-        $jabatans = Jabatan::whereHas('role', function($q) {
+        $jabatans = Jabatan::whereHas('role', function ($q) {
             $q->where('guard_name', 'karyawan');
         })->orderBy('nama_jabatan', 'asc')->get();
 
-        $cabang = !empty($forcedKodeCabang)
+        $cabang = ! empty($forcedKodeCabang)
             ? Cabang::where('kode_cabang', $forcedKodeCabang)->get()
             : Cabang::orderBy('nama_cabang', 'asc')->get();
 
@@ -135,13 +138,13 @@ class KaryawanController extends Controller
             $foto_bpjs_ket = null;
 
             if ($request->hasFile('foto')) {
-                $foto = $nik . '_' . time() . '.' . $request->file('foto')->extension();
+                $foto = $nik.'_'.time().'.'.$request->file('foto')->extension();
             }
             if ($request->hasFile('foto_bpjs_kesehatan')) {
-                $foto_bpjs_kes = $nik . '_bpjs_kes_' . time() . '.' . $request->file('foto_bpjs_kesehatan')->extension();
+                $foto_bpjs_kes = $nik.'_bpjs_kes_'.time().'.'.$request->file('foto_bpjs_kesehatan')->extension();
             }
             if ($request->hasFile('foto_bpjs_ketenagakerjaan')) {
-                $foto_bpjs_ket = $nik . '_bpjs_ket_' . time() . '.' . $request->file('foto_bpjs_ketenagakerjaan')->extension();
+                $foto_bpjs_ket = $nik.'_bpjs_ket_'.time().'.'.$request->file('foto_bpjs_ketenagakerjaan')->extension();
             }
 
             // Persiapan Data
@@ -149,7 +152,7 @@ class KaryawanController extends Controller
             $jabatan = Jabatan::with('role')->find($request->jabatan_id);
 
             // SECURITY: Paksa kode cabang jika user adalah admin cabang (mencegah inspect element)
-            if (!empty($forcedCabang)) {
+            if (! empty($forcedCabang)) {
                 $data['kode_cabang'] = $forcedCabang;
             }
 
@@ -180,11 +183,13 @@ class KaryawanController extends Controller
             }
 
             DB::commit();
+
             return Redirect::back()->with(['success' => 'Data Karyawan Berhasil Disimpan']);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Error Store Karyawan: " . $e->getMessage());
+            Log::error('Error Store Karyawan: '.$e->getMessage());
+
             // Added withInput() agar user tidak perlu mengetik ulang
             return Redirect::back()->with(['warning' => $this->failMessage('Gagal disimpan.', $e)])->withInput();
         }
@@ -202,16 +207,16 @@ class KaryawanController extends Controller
             }
 
             // Security Check: Akses cabang
-            if (!empty($forcedCabang) && $karyawan->kode_cabang !== $forcedCabang) {
+            if (! empty($forcedCabang) && $karyawan->kode_cabang !== $forcedCabang) {
                 return Redirect::route('karyawan.index')->with(['warning' => 'Akses Ditolak: Karyawan berbeda cabang.']);
             }
 
             $departemen = Departemen::orderBy('nama_dept')->get();
-            $jabatans = Jabatan::whereHas('role', function($q) {
+            $jabatans = Jabatan::whereHas('role', function ($q) {
                 $q->where('guard_name', 'karyawan');
             })->orderBy('nama_jabatan')->get();
 
-            $cabang = !empty($forcedCabang)
+            $cabang = ! empty($forcedCabang)
                 ? Cabang::where('kode_cabang', $forcedCabang)->get()
                 : Cabang::orderBy('nama_cabang')->get();
 
@@ -228,7 +233,7 @@ class KaryawanController extends Controller
 
         // Asumsi Primary Key adalah 'nik' (string). Jika PK 'id', sesuaikan parameter unique ke-3
         $request->validate([
-            'nik' => ['required', 'string', 'max:20', 'unique:karyawan,nik,' . $nik . ',nik', $this->angka_regex],
+            'nik' => ['required', 'string', 'max:20', 'unique:karyawan,nik,'.$nik.',nik', $this->angka_regex],
             'nama_lengkap' => ['required', 'string', 'max:255', $this->nama_regex],
             'nama_panggilan' => ['required', 'string', 'max:255'],
             'jabatan_id' => 'required|exists:jabatan,id',
@@ -247,7 +252,7 @@ class KaryawanController extends Controller
             'tanggal_keluar' => [
                 'nullable',
                 'date',
-                Rule::requiredIf(fn() => in_array($request->status_aktif, $tanggalKeluarRequiredStatuses, true)),
+                Rule::requiredIf(fn () => in_array($request->status_aktif, $tanggalKeluarRequiredStatuses, true)),
             ],
         ], [
             'nik.unique' => 'NIK Baru sudah terdaftar pada karyawan lain.',
@@ -265,8 +270,8 @@ class KaryawanController extends Controller
             $forcedCabang = $this->getForcedCabang();
 
             // Security Check
-            if (!empty($forcedCabang) && $karyawan->kode_cabang !== $forcedCabang) {
-                throw new \App\Exceptions\BusinessException("Anda tidak berhak mengedit data cabang lain.");
+            if (! empty($forcedCabang) && $karyawan->kode_cabang !== $forcedCabang) {
+                throw new BusinessException('Anda tidak berhak mengedit data cabang lain.');
             }
 
             $oldFoto = $karyawan->foto;
@@ -280,7 +285,7 @@ class KaryawanController extends Controller
             $jabatan = Jabatan::with('role')->find($request->jabatan_id);
 
             // SECURITY: Paksa kode cabang lagi saat update
-            if (!empty($forcedCabang)) {
+            if (! empty($forcedCabang)) {
                 $payload['kode_cabang'] = $forcedCabang;
             }
 
@@ -297,11 +302,11 @@ class KaryawanController extends Controller
             if ($request->hasFile('foto')) {
                 // Case 1: Upload Foto Baru -> Nama = NIK Baru + Ext Baru
                 $extension = $request->file('foto')->extension();
-                $newFotoName = $newNik . '.' . $extension;
-            } elseif ($oldNik != $newNik && !empty($oldFoto)) {
+                $newFotoName = $newNik.'.'.$extension;
+            } elseif ($oldNik != $newNik && ! empty($oldFoto)) {
                 // Case 2: Ganti NIK saja -> Nama = NIK Baru + Ext Lama
                 $extension = pathinfo($oldFoto, PATHINFO_EXTENSION) ?: 'jpg';
-                $newFotoName = $newNik . '.' . $extension;
+                $newFotoName = $newNik.'.'.$extension;
             }
 
             $payload['foto'] = $newFotoName;
@@ -309,20 +314,20 @@ class KaryawanController extends Controller
             // Logic Nama BPJS Kesehatan
             $newBpjsKesName = $oldBpjsKes;
             if ($request->hasFile('foto_bpjs_kesehatan')) {
-                $newBpjsKesName = $newNik . "_bpjs_kes_" . time() . "." . $request->file('foto_bpjs_kesehatan')->extension();
-            } elseif ($oldNik != $newNik && !empty($oldBpjsKes)) {
+                $newBpjsKesName = $newNik.'_bpjs_kes_'.time().'.'.$request->file('foto_bpjs_kesehatan')->extension();
+            } elseif ($oldNik != $newNik && ! empty($oldBpjsKes)) {
                 $extension = pathinfo($oldBpjsKes, PATHINFO_EXTENSION) ?: 'jpg';
-                $newBpjsKesName = $newNik . "_bpjs_kes_" . time() . "." . $extension;
+                $newBpjsKesName = $newNik.'_bpjs_kes_'.time().'.'.$extension;
             }
             $payload['foto_bpjs_kesehatan'] = $newBpjsKesName;
 
             // Logic Nama BPJS Ketenagakerjaan
             $newBpjsKetName = $oldBpjsKet;
             if ($request->hasFile('foto_bpjs_ketenagakerjaan')) {
-                $newBpjsKetName = $newNik . "_bpjs_ket_" . time() . "." . $request->file('foto_bpjs_ketenagakerjaan')->extension();
-            } elseif ($oldNik != $newNik && !empty($oldBpjsKet)) {
+                $newBpjsKetName = $newNik.'_bpjs_ket_'.time().'.'.$request->file('foto_bpjs_ketenagakerjaan')->extension();
+            } elseif ($oldNik != $newNik && ! empty($oldBpjsKet)) {
                 $extension = pathinfo($oldBpjsKet, PATHINFO_EXTENSION) ?: 'jpg';
-                $newBpjsKetName = $newNik . "_bpjs_ket_" . time() . "." . $extension;
+                $newBpjsKetName = $newNik.'_bpjs_ket_'.time().'.'.$extension;
             }
             $payload['foto_bpjs_ketenagakerjaan'] = $newBpjsKetName;
 
@@ -330,11 +335,11 @@ class KaryawanController extends Controller
             $newKontrak = $request->tanggal_habis_kontrak;
             if (
                 $karyawan->status_aktif === Karyawan::STATUS_NONAKTIF &&
-                !empty($newKontrak) &&
-                \Carbon\Carbon::parse($newKontrak)->isFuture() &&
+                ! empty($newKontrak) &&
+                Carbon::parse($newKontrak)->isFuture() &&
                 (
                     empty($karyawan->tanggal_habis_kontrak) ||
-                    \Carbon\Carbon::parse($newKontrak)->gt(\Carbon\Carbon::parse($karyawan->tanggal_habis_kontrak))
+                    Carbon::parse($newKontrak)->gt(Carbon::parse($karyawan->tanggal_habis_kontrak))
                 )
             ) {
                 $payload['status_aktif'] = Karyawan::STATUS_AKTIF;
@@ -356,40 +361,41 @@ class KaryawanController extends Controller
             // 2. Operasi File Profile
             if ($request->hasFile('foto')) {
                 $request->file('foto')->storeAs('uploads/karyawan/', $newFotoName, 'public');
-                if ($oldFoto && $oldFoto != $newFotoName && Storage::disk('public')->exists('uploads/karyawan/' . $oldFoto)) {
-                    Storage::disk('public')->delete('uploads/karyawan/' . $oldFoto);
+                if ($oldFoto && $oldFoto != $newFotoName && Storage::disk('public')->exists('uploads/karyawan/'.$oldFoto)) {
+                    Storage::disk('public')->delete('uploads/karyawan/'.$oldFoto);
                 }
-            } elseif ($oldNik != $newNik && !empty($oldFoto)) {
-                if (Storage::disk('public')->exists('uploads/karyawan/' . $oldFoto)) {
-                    Storage::disk('public')->move('uploads/karyawan/' . $oldFoto, 'uploads/karyawan/' . $newFotoName);
+            } elseif ($oldNik != $newNik && ! empty($oldFoto)) {
+                if (Storage::disk('public')->exists('uploads/karyawan/'.$oldFoto)) {
+                    Storage::disk('public')->move('uploads/karyawan/'.$oldFoto, 'uploads/karyawan/'.$newFotoName);
                 }
             }
 
             // 3. Operasi File BPJS Kesehatan
             if ($request->hasFile('foto_bpjs_kesehatan')) {
                 $request->file('foto_bpjs_kesehatan')->storeAs('uploads/karyawan/bpjs/', $newBpjsKesName, 'public');
-                if ($oldBpjsKes && $oldBpjsKes != $newBpjsKesName && Storage::disk('public')->exists('uploads/karyawan/bpjs/' . $oldBpjsKes)) {
-                    Storage::disk('public')->delete('uploads/karyawan/bpjs/' . $oldBpjsKes);
+                if ($oldBpjsKes && $oldBpjsKes != $newBpjsKesName && Storage::disk('public')->exists('uploads/karyawan/bpjs/'.$oldBpjsKes)) {
+                    Storage::disk('public')->delete('uploads/karyawan/bpjs/'.$oldBpjsKes);
                 }
-            } elseif ($oldNik != $newNik && !empty($oldBpjsKes)) {
-                if (Storage::disk('public')->exists('uploads/karyawan/bpjs/' . $oldBpjsKes)) {
-                    Storage::disk('public')->move('uploads/karyawan/bpjs/' . $oldBpjsKes, 'uploads/karyawan/bpjs/' . $newBpjsKesName);
+            } elseif ($oldNik != $newNik && ! empty($oldBpjsKes)) {
+                if (Storage::disk('public')->exists('uploads/karyawan/bpjs/'.$oldBpjsKes)) {
+                    Storage::disk('public')->move('uploads/karyawan/bpjs/'.$oldBpjsKes, 'uploads/karyawan/bpjs/'.$newBpjsKesName);
                 }
             }
 
             // 4. Operasi File BPJS Ketenagakerjaan
             if ($request->hasFile('foto_bpjs_ketenagakerjaan')) {
                 $request->file('foto_bpjs_ketenagakerjaan')->storeAs('uploads/karyawan/bpjs/', $newBpjsKetName, 'public');
-                if ($oldBpjsKet && $oldBpjsKet != $newBpjsKetName && Storage::disk('public')->exists('uploads/karyawan/bpjs/' . $oldBpjsKet)) {
-                    Storage::disk('public')->delete('uploads/karyawan/bpjs/' . $oldBpjsKet);
+                if ($oldBpjsKet && $oldBpjsKet != $newBpjsKetName && Storage::disk('public')->exists('uploads/karyawan/bpjs/'.$oldBpjsKet)) {
+                    Storage::disk('public')->delete('uploads/karyawan/bpjs/'.$oldBpjsKet);
                 }
-            } elseif ($oldNik != $newNik && !empty($oldBpjsKet)) {
-                if (Storage::disk('public')->exists('uploads/karyawan/bpjs/' . $oldBpjsKet)) {
-                    Storage::disk('public')->move('uploads/karyawan/bpjs/' . $oldBpjsKet, 'uploads/karyawan/bpjs/' . $newBpjsKetName);
+            } elseif ($oldNik != $newNik && ! empty($oldBpjsKet)) {
+                if (Storage::disk('public')->exists('uploads/karyawan/bpjs/'.$oldBpjsKet)) {
+                    Storage::disk('public')->move('uploads/karyawan/bpjs/'.$oldBpjsKet, 'uploads/karyawan/bpjs/'.$newBpjsKetName);
                 }
             }
 
             DB::commit();
+
             return Redirect::back()->with(['success' => 'Data Karyawan Berhasil Diupdate']);
 
         } catch (QueryException $e) {
@@ -397,9 +403,11 @@ class KaryawanController extends Controller
             if ($e->getCode() == '23503') { // Postgres Foreign Key Violation
                 return Redirect::back()->with(['warning' => 'Gagal Update NIK: Data terkunci relasi data lain.'])->withInput();
             }
+
             return Redirect::back()->with(['warning' => $this->failMessage('Gagal memproses data.', $e)])->withInput();
         } catch (\Exception $e) {
             DB::rollBack();
+
             return Redirect::back()->with(['warning' => $this->failMessage('Gagal memproses data.', $e)])->withInput();
         }
     }
@@ -427,7 +435,7 @@ class KaryawanController extends Controller
             $forcedCabang = $this->getForcedCabang();
 
             // Security Check
-            if (!empty($forcedCabang) && $karyawan->kode_cabang !== $forcedCabang) {
+            if (! empty($forcedCabang) && $karyawan->kode_cabang !== $forcedCabang) {
                 return Redirect::back()->with(['warning' => 'Akses Ditolak.']);
             }
 
@@ -437,11 +445,12 @@ class KaryawanController extends Controller
             $karyawan->delete();
 
             // 2. Delete File
-            if ($fotoPath && Storage::disk('public')->exists('uploads/karyawan/' . $fotoPath)) {
-                Storage::disk('public')->delete('uploads/karyawan/' . $fotoPath);
+            if ($fotoPath && Storage::disk('public')->exists('uploads/karyawan/'.$fotoPath)) {
+                Storage::disk('public')->delete('uploads/karyawan/'.$fotoPath);
             }
 
             DB::commit();
+
             return Redirect::route('karyawan.index')->with(['success' => 'Data Berhasil Dihapus']);
 
         } catch (QueryException $e) {
@@ -449,9 +458,11 @@ class KaryawanController extends Controller
             if ($e->getCode() == '23503') {
                 return Redirect::back()->with(['warning' => 'Tidak bisa dihapus: Karyawan memiliki riwayat data (Presensi/Izin/dll).']);
             }
+
             return Redirect::back()->with(['warning' => 'Gagal menghapus data (Database Error).']);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return Redirect::back()->with(['warning' => 'Terjadi kesalahan sistem.']);
         }
     }
@@ -467,17 +478,18 @@ class KaryawanController extends Controller
         ];
 
         // Security Override
-        if (!empty($forcedCabang)) {
+        if (! empty($forcedCabang)) {
             $filters['kode_cabang'] = $forcedCabang;
         }
 
-        $fileName = 'data-karyawan-' . date('Y-m-d-His') . '.xlsx';
+        $fileName = 'data-karyawan-'.date('Y-m-d-His').'.xlsx';
+
         return Excel::download(new KaryawanExport($filters), $fileName);
     }
 
     public function template()
     {
-        return Excel::download(new KaryawanTemplateExport(), 'template-import-karyawan.xlsx');
+        return Excel::download(new KaryawanTemplateExport, 'template-import-karyawan.xlsx');
     }
 
     public function import(Request $request)
@@ -491,7 +503,7 @@ class KaryawanController extends Controller
 
         DB::beginTransaction();
         try {
-            $import = new KaryawanImport();
+            $import = new KaryawanImport;
             Excel::import($import, $request->file('file'));
 
             $summary = $import->getSummary(); // Pastikan method ini ada di Import Class Anda
@@ -500,15 +512,16 @@ class KaryawanController extends Controller
 
             $message = "Import selesai. Berhasil: {$summary['success']}, Gagal/Skip: {$summary['skipped']}";
 
-            if (!empty($summary['errors'])) {
+            if (! empty($summary['errors'])) {
                 // Membatasi tampilan error agar tidak memenuhi session
                 $errorList = implode('<br>', array_map('e', array_slice($summary['errors'], 0, 10)));
                 if (count($summary['errors']) > 10) {
-                    $errorList .= '<br>... dan ' . (count($summary['errors']) - 10) . ' error lainnya.';
+                    $errorList .= '<br>... dan '.(count($summary['errors']) - 10).' error lainnya.';
                 }
+
                 return Redirect::back()->with([
                     'warning' => $message,
-                    'import_errors' => $errorList
+                    'import_errors' => $errorList,
                 ]);
             }
 
@@ -516,7 +529,8 @@ class KaryawanController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Error Import Karyawan: " . $e->getMessage());
+            Log::error('Error Import Karyawan: '.$e->getMessage());
+
             return Redirect::back()->with(['warning' => $this->failMessage('Gagal import.', $e)]);
         }
     }
@@ -529,7 +543,7 @@ class KaryawanController extends Controller
         $query = Karyawan::with(['jabatanRel', 'departemen', 'cabang'])
             ->turnover()
             ->orderBy('status_aktif', 'asc')
-            ->orderByRaw("CASE WHEN tanggal_keluar IS NULL THEN 1 ELSE 0 END ASC")
+            ->orderByRaw('CASE WHEN tanggal_keluar IS NULL THEN 1 ELSE 0 END ASC')
             ->orderBy('tanggal_keluar', 'desc')
             ->orderBy('tanggal_habis_kontrak', 'asc')
             ->orderBy('nama_lengkap', 'asc');
@@ -538,8 +552,8 @@ class KaryawanController extends Controller
 
         if ($request->filled('nama_karyawan')) {
             $query->where(function ($q) use ($request) {
-                $q->where('nama_lengkap', 'ilike', '%' . $request->nama_karyawan . '%')
-                    ->orWhere('nik', 'ilike', '%' . $request->nama_karyawan . '%');
+                $q->where('nama_lengkap', 'ilike', '%'.$request->nama_karyawan.'%')
+                    ->orWhere('nik', 'ilike', '%'.$request->nama_karyawan.'%');
             });
         }
 
@@ -547,7 +561,7 @@ class KaryawanController extends Controller
             $query->where('kode_dept', $request->kode_dept);
         }
 
-        if (!empty($forcedKodeCabang)) {
+        if (! empty($forcedKodeCabang)) {
             $query->where('kode_cabang', $forcedKodeCabang);
         } elseif ($request->filled('kode_cabang')) {
             $query->where('kode_cabang', $request->kode_cabang);
@@ -556,7 +570,7 @@ class KaryawanController extends Controller
         $karyawan = $query->paginate(50);
 
         $departemen = Departemen::orderBy('nama_dept')->get();
-        $cabang = !empty($forcedKodeCabang)
+        $cabang = ! empty($forcedKodeCabang)
             ? Cabang::where('kode_cabang', $forcedKodeCabang)->get()
             : Cabang::orderBy('nama_cabang', 'asc')->get();
 
@@ -579,7 +593,7 @@ class KaryawanController extends Controller
             'tanggal_keluar' => [
                 'nullable',
                 'date',
-                Rule::requiredIf(fn() => in_array($request->status_aktif, $tanggalKeluarRequiredStatuses, true)),
+                Rule::requiredIf(fn () => in_array($request->status_aktif, $tanggalKeluarRequiredStatuses, true)),
             ],
         ], [
             'tanggal_keluar.required' => 'Tanggal keluar wajib diisi jika status karyawan Nonaktif atau Diberhentikan.',
@@ -588,12 +602,12 @@ class KaryawanController extends Controller
         try {
             $karyawan = Karyawan::findOrFail($nik);
             $forcedCabang = $this->getForcedCabang();
-            
+
             if ($karyawan->status_aktif === Karyawan::STATUS_DIBERHENTIKAN) {
                 return Redirect::back()->with(['warning' => 'Data karyawan yang sudah Diberhentikan tidak dapat diubah lagi.']);
             }
 
-            if (!empty($forcedCabang) && $karyawan->kode_cabang !== $forcedCabang) {
+            if (! empty($forcedCabang) && $karyawan->kode_cabang !== $forcedCabang) {
                 return Redirect::back()->with(['warning' => 'Akses ditolak']);
             }
 
@@ -606,13 +620,13 @@ class KaryawanController extends Controller
 
             // Auto-reaktivasi: jika karyawan Nonaktif dan tanggal_habis_kontrak diperpanjang ke masa depan
             $newKontrak = $request->tanggal_habis_kontrak;
-            $oldStatusDb  = $karyawan->getOriginal('status_aktif');
+            $oldStatusDb = $karyawan->getOriginal('status_aktif');
             $oldKontrakDb = $karyawan->getOriginal('tanggal_habis_kontrak');
             if (
                 $oldStatusDb === Karyawan::STATUS_NONAKTIF &&
-                !empty($newKontrak) &&
-                \Carbon\Carbon::parse($newKontrak)->isFuture() &&
-                (empty($oldKontrakDb) || \Carbon\Carbon::parse($newKontrak)->gt(\Carbon\Carbon::parse($oldKontrakDb)))
+                ! empty($newKontrak) &&
+                Carbon::parse($newKontrak)->isFuture() &&
+                (empty($oldKontrakDb) || Carbon::parse($newKontrak)->gt(Carbon::parse($oldKontrakDb)))
             ) {
                 $karyawan->status_aktif = Karyawan::STATUS_AKTIF;
                 $karyawan->tanggal_keluar = null;

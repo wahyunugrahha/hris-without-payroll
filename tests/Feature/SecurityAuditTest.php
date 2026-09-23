@@ -25,7 +25,7 @@ class SecurityAuditTest extends TestCase
     {
         return Karyawan::create(array_merge([
             'nik' => $nik,
-            'nama_lengkap' => 'Karyawan ' . $nik,
+            'nama_lengkap' => 'Karyawan '.$nik,
             'nama_panggilan' => $nik,
             'no_hp' => '0800000000',
             'password' => Hash::make('rahasia123'),

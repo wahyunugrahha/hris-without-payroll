@@ -2,8 +2,6 @@
 
 use Illuminate\Support\Facades\Schedule;
 
-
-
 // 1. Auto Snapshot Untuk Leaderboard
 Schedule::command('leaderboard:snapshot')
     ->dailyAt('23:51')

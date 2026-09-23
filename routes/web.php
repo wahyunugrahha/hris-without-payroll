@@ -5,8 +5,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/ttd', function (Request $request) {
-	return response($request->get('text', ''), 200)
-		->header('Content-Type', 'text/plain; charset=utf-8');
+    return response($request->get('text', ''), 200)
+        ->header('Content-Type', 'text/plain; charset=utf-8');
 })->name('ttd.view');
 
 Route::get('/registrasi/token', [KaryawanAuthController::class, 'preregistrasi'])->name('registrasi.pretoken');

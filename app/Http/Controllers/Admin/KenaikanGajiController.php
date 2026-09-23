@@ -3,11 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\SalaryIncrease;
-use App\Models\Departemen;
 use App\Models\Cabang;
-use App\Models\Jabatan;
+use App\Models\SalaryIncrease;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class KenaikanGajiController extends Controller
@@ -21,6 +19,7 @@ class KenaikanGajiController extends Controller
         if ($user && $user->roles->pluck('name')->contains('admin cabang')) {
             return $user->kode_cabang;
         }
+
         return null;
     }
 
@@ -34,7 +33,7 @@ class KenaikanGajiController extends Controller
             ->orderBy('salary_increases.created_at', 'desc');
 
         // Security Filter: Jika admin cabang, batasi datanya
-        if (!empty($forcedKodeCabang)) {
+        if (! empty($forcedKodeCabang)) {
             $query->where('karyawan.kode_cabang', $forcedKodeCabang);
         }
 
@@ -54,8 +53,8 @@ class KenaikanGajiController extends Controller
         // Filter Nama atau NIK
         if ($request->filled('nama_karyawan')) {
             $query->where(function ($q) use ($request) {
-                $q->where('karyawan.nama_lengkap', 'ilike', '%' . $request->nama_karyawan . '%')
-                    ->orWhere('karyawan.nik', 'ilike', '%' . $request->nama_karyawan . '%');
+                $q->where('karyawan.nama_lengkap', 'ilike', '%'.$request->nama_karyawan.'%')
+                    ->orWhere('karyawan.nik', 'ilike', '%'.$request->nama_karyawan.'%');
             });
         }
 
@@ -71,7 +70,7 @@ class KenaikanGajiController extends Controller
 
         $pengajuan = SalaryIncrease::select('salary_increases.*')
             ->join('karyawan', 'salary_increases.nik', '=', 'karyawan.nik')
-            ->when(!empty($forcedKodeCabang), function ($q) use ($forcedKodeCabang) {
+            ->when(! empty($forcedKodeCabang), function ($q) use ($forcedKodeCabang) {
                 return $q->where('karyawan.kode_cabang', $forcedKodeCabang);
             })
             ->where('salary_increases.id', $id)
@@ -82,8 +81,10 @@ class KenaikanGajiController extends Controller
             $pengajuan->approved_at = now();
             $pengajuan->approved_by = Auth::guard('user')->user()->name;
             $pengajuan->save();
+
             return redirect()->back()->with(['success' => 'Pengajuan Kenaikan Gaji berhasil disetujui']);
         }
+
         return redirect()->back()->with(['error' => 'Data pengajuan tidak ditemukan atau Anda tidak memiliki akses']);
     }
 
@@ -93,7 +94,7 @@ class KenaikanGajiController extends Controller
 
         $pengajuan = SalaryIncrease::select('salary_increases.*')
             ->join('karyawan', 'salary_increases.nik', '=', 'karyawan.nik')
-            ->when(!empty($forcedKodeCabang), function ($q) use ($forcedKodeCabang) {
+            ->when(! empty($forcedKodeCabang), function ($q) use ($forcedKodeCabang) {
                 return $q->where('karyawan.kode_cabang', $forcedKodeCabang);
             })
             ->where('salary_increases.id', $id)
@@ -101,11 +102,13 @@ class KenaikanGajiController extends Controller
 
         if ($pengajuan) {
             $pengajuan->status = 'rejected';
-            $oldCatatan = $pengajuan->catatan ? "Karyawan: " . $pengajuan->catatan . " | " : "";
-            $pengajuan->catatan = $oldCatatan . "Ditolak: " . $request->catatan;
+            $oldCatatan = $pengajuan->catatan ? 'Karyawan: '.$pengajuan->catatan.' | ' : '';
+            $pengajuan->catatan = $oldCatatan.'Ditolak: '.$request->catatan;
             $pengajuan->save();
+
             return redirect()->back()->with(['success' => 'Pengajuan Kenaikan Gaji berhasil ditolak']);
         }
+
         return redirect()->back()->with(['error' => 'Data pengajuan tidak ditemukan atau Anda tidak memiliki akses']);
     }
 }

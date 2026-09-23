@@ -15,21 +15,21 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('kpi_atasan_daily_id');
             $table->unsignedBigInteger('kpi_master_atasan_id');
-            
-            $table->string('realisasi')->nullable(); 
+
+            $table->string('realisasi')->nullable();
             $table->decimal('score', 8, 2)->default(0);
             $table->boolean('is_checked')->default(false);
-            $table->text('catatan')->nullable(); 
-            $table->string('bukti_foto')->nullable(); 
-            
+            $table->text('catatan')->nullable();
+            $table->string('bukti_foto')->nullable();
+
             $table->timestamps();
-            
+
             // Foreign keys
             $table->foreign('kpi_atasan_daily_id', 'fk_atasan_daily_id')
-                  ->references('id')->on('kpi_atasan_daily')->onDelete('cascade');
-                  
+                ->references('id')->on('kpi_atasan_daily')->onDelete('cascade');
+
             $table->foreign('kpi_master_atasan_id', 'fk_master_atasan_daily_id')
-                  ->references('id')->on('kpi_master_atasan')->onDelete('cascade');
+                ->references('id')->on('kpi_master_atasan')->onDelete('cascade');
         });
     }
 

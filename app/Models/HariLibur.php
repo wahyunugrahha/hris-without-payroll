@@ -7,13 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class HariLibur extends Model
 {
     protected $table = 'hari_libur';
-    
+
     protected $fillable = [
         'tanggal_libur',
         'keterangan',
         'jenis_libur',
         'kode_cabang',
-        'kode_dept'
+        'kode_dept',
     ];
 
     protected $casts = [
@@ -24,7 +24,7 @@ class HariLibur extends Model
     public static function isHariLibur($tanggal, $kode_cabang = null, $kode_dept = null)
     {
         $query = self::where('tanggal_libur', $tanggal);
-        
+
         // Filter berdasarkan cabang
         if ($kode_cabang) {
             $query->where(function ($q) use ($kode_cabang) {
@@ -36,7 +36,7 @@ class HariLibur extends Model
         } else {
             $query->whereNull('kode_cabang');
         }
-        
+
         // Filter berdasarkan departemen
         if ($kode_dept) {
             $query->where(function ($q) use ($kode_dept) {
@@ -48,8 +48,7 @@ class HariLibur extends Model
         } else {
             $query->whereNull('kode_dept');
         }
-        
+
         return $query->exists();
     }
-
 }

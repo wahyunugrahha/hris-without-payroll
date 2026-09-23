@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exceptions\BusinessException;
 use App\Http\Controllers\Controller;
 use App\Models\Cabang;
 use App\Models\Departemen;
@@ -13,6 +14,8 @@ use App\Models\JamKerja;
 use App\Models\Karyawan;
 use App\Models\KonfigurasiJkDeptDetail;
 use App\Models\Presensi;
+use App\Models\RekapBulanan;
+use App\Models\SalaryIncrease;
 use App\Models\Setjamkerja;
 use DateInterval;
 use DatePeriod;
@@ -600,13 +603,13 @@ class PresensiController extends Controller
 
         $cabang = $karyawan->cabang;
 
-        $rekapBulanan = \App\Models\RekapBulanan::where('nik', $nik)
+        $rekapBulanan = RekapBulanan::where('nik', $nik)
             ->where('bulan', $bulan)
             ->where('tahun', $tahun)
             ->first();
         $bonusBulanan = $rekapBulanan ? $rekapBulanan->bonus_bulanan : 0;
 
-        $kenaikanGaji = \App\Models\SalaryIncrease::where('nik', $nik)
+        $kenaikanGaji = SalaryIncrease::where('nik', $nik)
             ->where('status', 'approved')
             ->orderBy('approved_at', 'desc')
             ->first();
@@ -770,12 +773,12 @@ class PresensiController extends Controller
         $end->modify('+1 day');
         $listDates = new DatePeriod($begin, new DateInterval('P1D'), $end);
 
-        $salaryIncreases = \App\Models\SalaryIncrease::whereIn('nik', $nikList)
+        $salaryIncreases = SalaryIncrease::whereIn('nik', $nikList)
             ->where('status', 'approved')
             ->get()
             ->groupBy('nik');
 
-        $rekapBulanan = \App\Models\RekapBulanan::whereIn('nik', $nikList)
+        $rekapBulanan = RekapBulanan::whereIn('nik', $nikList)
             ->where('bulan', $bulan)
             ->where('tahun', $tahun)
             ->get()
@@ -819,6 +822,7 @@ class PresensiController extends Controller
 
                 if ($karyawan->tmt && $dateStr < $karyawan->tmt->format('Y-m-d')) {
                     $rekapRow->$tglField = '#|00:00:00|00:00:00';
+
                     continue;
                 }
 
@@ -1088,11 +1092,11 @@ class PresensiController extends Controller
                             ->first();
 
                         if (! $presensi || empty($presensi->jam_in) || $presensi->jam_in == '00:00:00') {
-                            throw new \App\Exceptions\BusinessException('Karyawan belum memiliki data absen masuk untuk diproses pulang cepat.');
+                            throw new BusinessException('Karyawan belum memiliki data absen masuk untuk diproses pulang cepat.');
                         }
 
                         if (! empty($presensi->jam_out) && $presensi->jam_out != '00:00:00') {
-                            throw new \App\Exceptions\BusinessException('Karyawan sudah absen pulang pada tanggal tersebut.');
+                            throw new BusinessException('Karyawan sudah absen pulang pada tanggal tersebut.');
                         }
 
                         $jamPulangJadwal = $jamKerja ? $jamKerja->jam_pulang : '17:00:00';
@@ -1609,6 +1613,7 @@ class PresensiController extends Controller
 
         try {
             $deductionMinutes = (int) get_setting('toleransi_keterlambatan', 10);
+
             return Carbon::createFromFormat('H:i:s', $jamAcuan)
                 ->subMinutes($deductionMinutes)
                 ->format('H:i:s');

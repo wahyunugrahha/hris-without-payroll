@@ -13,16 +13,16 @@ class KPIDaily extends Model
         'tanggal',
         'status',
         'alasan_reject',
-        'approve_atasan', 
+        'approve_atasan',
         'approve_atasan_at',
         'approve_hr',
-        'approve_hr_at'
+        'approve_hr_at',
     ];
 
     protected $casts = [
-        'tanggal'     => 'date',
+        'tanggal' => 'date',
         'approve_atasan_at' => 'datetime',
-        'approve_hr_at'     => 'datetime',
+        'approve_hr_at' => 'datetime',
     ];
 
     public function kpiDailyDetail()

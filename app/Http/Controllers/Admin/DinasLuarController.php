@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cabang;
+use App\Models\DinasLuar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\DinasLuar;
-use App\Models\Jabatan;
-use App\Models\Cabang;
 
 class DinasLuarController extends Controller
 {
@@ -19,7 +18,7 @@ class DinasLuarController extends Controller
         $user = Auth::guard('user')->user();
         $query = DinasLuar::query();
 
-        if ($user && ($user->hasRole('admin cabang') || !empty($user->kode_cabang))) {
+        if ($user && ($user->hasRole('admin cabang') || ! empty($user->kode_cabang))) {
             $query->whereHas('karyawan', function ($q) use ($user) {
                 $q->where('kode_cabang', $user->kode_cabang);
             });
@@ -56,7 +55,7 @@ class DinasLuarController extends Controller
 
         // PERBAIKAN: Definisi variabel untuk View
         $hasRoleAdminCabang = $user->hasRole('admin cabang');
-        $isAdminCabang = !empty($user->kode_cabang); // Variabel ini sebelumnya hilang
+        $isAdminCabang = ! empty($user->kode_cabang); // Variabel ini sebelumnya hilang
 
         $query = $this->getScopedQuery()->with(['karyawan.cabang', 'approver']);
 
@@ -69,13 +68,13 @@ class DinasLuarController extends Controller
             if (strpos($dari, '-') !== false && strlen($dari) == 10) {
                 $parts = explode('-', $dari);
                 if (count($parts) == 3 && strlen($parts[2]) == 4) {
-                    $dari = $parts[2] . '-' . $parts[1] . '-' . $parts[0];
+                    $dari = $parts[2].'-'.$parts[1].'-'.$parts[0];
                 }
             }
             if (strpos($sampai, '-') !== false && strlen($sampai) == 10) {
                 $parts = explode('-', $sampai);
                 if (count($parts) == 3 && strlen($parts[2]) == 4) {
-                    $sampai = $parts[2] . '-' . $parts[1] . '-' . $parts[0];
+                    $sampai = $parts[2].'-'.$parts[1].'-'.$parts[0];
                 }
             }
 
@@ -93,7 +92,7 @@ class DinasLuarController extends Controller
         if ($request->filled('nama_lengkap')) {
             $query->whereHas('karyawan', function ($q) use ($request) {
                 // PERBAIKAN: Menggunakan ILIKE untuk PostgreSQL agar case-insensitive
-                $q->where('nama_lengkap', 'ILIKE', '%' . $request->nama_lengkap . '%');
+                $q->where('nama_lengkap', 'ILIKE', '%'.$request->nama_lengkap.'%');
             });
         }
 
@@ -126,12 +125,12 @@ class DinasLuarController extends Controller
             'id' => 'required|exists:dinas_luar,id',
             'status_acc' => 'required|in:acc,tolak,menunggu',
             'catatan_approval' => 'nullable|string|max:255',
-            'dana_disetujui' => 'nullable|numeric|min:0'
+            'dana_disetujui' => 'nullable|numeric|min:0',
         ]);
 
         $dinasLuar = $this->getScopedQuery()->find($request->id);
 
-        if (!$dinasLuar) {
+        if (! $dinasLuar) {
             return redirect()->back()->with('error', 'Data tidak ditemukan atau Anda tidak memiliki akses.');
         }
 
@@ -151,6 +150,7 @@ class DinasLuarController extends Controller
         $dinasLuar->update($updateData);
 
         $message = $isReset ? 'Status berhasil dikembalikan ke menunggu.' : 'Pengajuan berhasil diproses.';
+
         return redirect()->back()->with('success', $message);
     }
 
@@ -163,7 +163,7 @@ class DinasLuarController extends Controller
     {
         $dinasLuar = $this->getScopedQuery()->find($id);
 
-        if (!$dinasLuar) {
+        if (! $dinasLuar) {
             return redirect()->back()->with('error', 'Data tidak ditemukan atau akses ditolak.');
         }
 
@@ -186,7 +186,7 @@ class DinasLuarController extends Controller
             ->with(['karyawan.cabang', 'approver.jabatan'])
             ->find($id);
 
-        if (!$dinasLuar) {
+        if (! $dinasLuar) {
             return redirect()->back()->with('error', 'Data tidak ditemukan atau akses ditolak.');
         }
 

@@ -2,19 +2,19 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\Presensi;
-use App\Models\LeaderboardSnapshot;
 use App\Models\Cabang;
-use App\Models\Izin;
 use App\Models\DinasLuar;
 use App\Models\HariLibur;
+use App\Models\Izin;
+use App\Models\JamKerja;
 use App\Models\Karyawan;
 use App\Models\KonfigurasiJkDeptDetail;
+use App\Models\LeaderboardSnapshot;
+use App\Models\Presensi;
 use App\Models\Setjamkerja;
-use App\Models\JamKerja;
 use App\Models\SuratPeringatan;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
 
 class SnapshotLeaderboard extends Command
 {
@@ -44,8 +44,8 @@ class SnapshotLeaderboard extends Command
             $datesToProcess[] = $date->format('Y-m-d');
         }
 
-        $this->info("🚀 Memulai proses snapshot Presensi (Siklus Berjalan): " . $tglAwal->format('Y-m-d') . " s/d $hariini");
-        
+        $this->info('🚀 Memulai proses snapshot Presensi (Siklus Berjalan): '.$tglAwal->format('Y-m-d')." s/d $hariini");
+
         $cabangs = Cabang::all();
 
         // 0. PRE-FETCH DATA UNTUK MENJAGA HISTORICAL JADWAL
@@ -53,8 +53,9 @@ class SnapshotLeaderboard extends Command
             ->select('date', 'nik', 'jadwal_masuk', 'jadwal_pulang')
             ->get()
             ->groupBy(function ($item) {
-                $d = $item->date instanceof \Carbon\Carbon ? $item->date->format('Y-m-d') : $item->date;
-                return $d . '_' . $item->nik;
+                $d = $item->date instanceof Carbon ? $item->date->format('Y-m-d') : $item->date;
+
+                return $d.'_'.$item->nik;
             });
 
         // 1. HAPUS SEMUA DATA SNAPSHOT DI PERIODE INI SEKALIGUS
@@ -77,8 +78,8 @@ class SnapshotLeaderboard extends Command
         $allKonfigJkDept = KonfigurasiJkDeptDetail::join('konfigurasi_jk_dept', 'konfigurasi_jk_dept_detail.kode_jk_dept', '=', 'konfigurasi_jk_dept.kode_jk_dept')
             ->select('konfigurasi_jk_dept.kode_cabang', 'konfigurasi_jk_dept.kode_dept', 'konfigurasi_jk_dept_detail.hari', 'konfigurasi_jk_dept_detail.kode_jam_kerja')
             ->get()
-            ->groupBy(function($item) {
-                return $item->kode_cabang . '_' . $item->kode_dept . '_' . strtolower($item->hari);
+            ->groupBy(function ($item) {
+                return $item->kode_cabang.'_'.$item->kode_dept.'_'.strtolower($item->hari);
             });
 
         $allIzin = Izin::where('status', 't')
@@ -93,37 +94,37 @@ class SnapshotLeaderboard extends Command
             ->get();
 
         foreach ($datesToProcess as $processDate) {
-            $this->info(">> Memproses Tanggal: " . $processDate);
+            $this->info('>> Memproses Tanggal: '.$processDate);
 
             $listIzinHariIni = $allIzin->filter(function ($i) use ($processDate) {
                 $mulai = $i->tgl_izin_dari instanceof Carbon ? $i->tgl_izin_dari->format('Y-m-d') : substr($i->tgl_izin_dari, 0, 10);
                 $sampai = $i->tgl_izin_sampai instanceof Carbon ? $i->tgl_izin_sampai->format('Y-m-d') : substr($i->tgl_izin_sampai, 0, 10);
-                
+
                 return $mulai <= $processDate && $sampai >= $processDate;
             })->pluck('nik')->toArray();
 
             $dinasLuars = $allDinasLuar->filter(function ($d) use ($processDate) {
                 $mulai = $d->tgl_mulai instanceof Carbon ? $d->tgl_mulai->format('Y-m-d') : substr($d->tgl_mulai, 0, 10);
                 $selesai = $d->tgl_selesai instanceof Carbon ? $d->tgl_selesai->format('Y-m-d') : substr($d->tgl_selesai, 0, 10);
-                
+
                 return $mulai <= $processDate && $selesai >= $processDate;
             })->pluck('nik')->toArray();
 
             $namaHariInggris = date('D', strtotime($processDate));
             $namaHariIndonesia = [
                 'Sun' => 'Minggu', 'Mon' => 'Senin', 'Tue' => 'Selasa',
-                'Wed' => 'Rabu', 'Thu' => 'Kamis', 'Fri' => 'Jumat', 'Sat' => 'Sabtu'
+                'Wed' => 'Rabu', 'Thu' => 'Kamis', 'Fri' => 'Jumat', 'Sat' => 'Sabtu',
             ];
             $hariIniStr = $namaHariIndonesia[$namaHariInggris];
 
             // 3. AMBIL PRESENSI HARI INI UNTUK SEMUA KARYAWAN
             $presensiHarian = Presensi::select(
-                    'status',
-                    'jam_in',
-                    'jam_out',
-                    'nik',
-                    'kode_jam_kerja'
-                )
+                'status',
+                'jam_in',
+                'jam_out',
+                'nik',
+                'kode_jam_kerja'
+            )
                 ->where('tgl_presensi', $processDate)
                 ->get()
                 ->keyBy('nik');
@@ -148,8 +149,8 @@ class SnapshotLeaderboard extends Command
 
                     $jam_in = $presensi->jam_in ?? '00:00:00';
                     $jam_out = $presensi->jam_out ?? '00:00:00';
-                    $sortTime = (!empty($jam_in) && $jam_in != '00:00:00') ? $jam_in : '23:59:59';
-                    
+                    $sortTime = (! empty($jam_in) && $jam_in != '00:00:00') ? $jam_in : '23:59:59';
+
                     $jamMasukJadwal = null;
                     $jamPulangJadwal = null;
 
@@ -160,7 +161,7 @@ class SnapshotLeaderboard extends Command
                     } else {
                         $isDinasLuar = in_array($nik, $dinasLuars);
                         $isIzin = in_array($nik, $listIzinHariIni);
-                        
+
                         $isHariLiburNasional = false;
                         foreach ($allHariLibur as $hl) {
                             $tgl_libur_fmt = Carbon::parse($hl->tanggal_libur)->format('Y-m-d');
@@ -168,17 +169,17 @@ class SnapshotLeaderboard extends Command
                                 // check cabang & dept
                                 $kode_cabang = $hl->kode_cabang;
                                 $kode_dept = $hl->kode_dept;
-                                
+
                                 $c_match = true;
-                                if (!empty($kode_cabang) && $kode_cabang != 'Semua Cabang') {
+                                if (! empty($kode_cabang) && $kode_cabang != 'Semua Cabang') {
                                     $c_match = in_array($karyawan->kode_cabang, array_map('trim', explode(',', $kode_cabang)));
                                 }
-                                
+
                                 $d_match = true;
-                                if (!empty($kode_dept) && $kode_dept != 'Semua Departemen') {
+                                if (! empty($kode_dept) && $kode_dept != 'Semua Departemen') {
                                     $d_match = in_array($karyawan->kode_dept, array_map('trim', explode(',', $kode_dept)));
                                 }
-                                
+
                                 if ($c_match && $d_match) {
                                     $isHariLiburNasional = true;
                                     break;
@@ -187,7 +188,7 @@ class SnapshotLeaderboard extends Command
                         }
 
                         $hariNormal = strtolower($hariIniStr);
-                        $setJk = $allSetJamKerja->get($nik)?->first(function($val) use ($hariNormal) {
+                        $setJk = $allSetJamKerja->get($nik)?->first(function ($val) use ($hariNormal) {
                             return strtolower($val->hari) == $hariNormal;
                         });
 
@@ -196,14 +197,14 @@ class SnapshotLeaderboard extends Command
 
                         if ($setJk) {
                             $isLiburJamKerja = is_null($setJk->kode_jam_kerja) || $setJk->kode_jam_kerja === 'LIBUR';
-                            if (!$isLiburJamKerja) {
+                            if (! $isLiburJamKerja) {
                                 $kodeJamKerjaAktif = $setJk->kode_jam_kerja;
                             }
                         } else {
                             $konfigDept = $allKonfigJkDept->get("{$karyawan->kode_cabang}_{$karyawan->kode_dept}_{$hariNormal}")?->first();
                             if ($konfigDept) {
                                 $isLiburJamKerja = is_null($konfigDept->kode_jam_kerja) || $konfigDept->kode_jam_kerja === 'LIBUR';
-                                if (!$isLiburJamKerja) {
+                                if (! $isLiburJamKerja) {
                                     $kodeJamKerjaAktif = $konfigDept->kode_jam_kerja;
                                 }
                             } else {
@@ -213,12 +214,12 @@ class SnapshotLeaderboard extends Command
                             }
                         }
 
-                        if ($presensi && !empty($presensi->kode_jam_kerja)) {
+                        if ($presensi && ! empty($presensi->kode_jam_kerja)) {
                             $kodeJamKerjaAktif = $presensi->kode_jam_kerja;
                         }
 
                         $isHariLiburCuti = $isHariLiburNasional || $isLiburJamKerja;
-                        
+
                         $pointComponents = [];
 
                         if ($isDinasLuar) {
@@ -232,15 +233,15 @@ class SnapshotLeaderboard extends Command
                         } elseif (is_null($presensi)) {
                             // Tidak izin, tidak dinas luar, tidak libur, dan tidak absen = ALFA
                             $pointComponents[] = -20;
-                        } elseif ($presensi && ($presensi->status === 'h' || $presensi->status === 'x') && !empty($presensi->jam_in) && $presensi->jam_in != '00:00:00') {
+                        } elseif ($presensi && ($presensi->status === 'h' || $presensi->status === 'x') && ! empty($presensi->jam_in) && $presensi->jam_in != '00:00:00') {
                             // Jika dia Hadir, TAPI terdaftar juga punya surat izin (misal: Izin terlambat masuk / pulang cepat)
                             if ($isIzin) {
                                 $pointComponents[] = 5;
                             } else {
-                                $cacheKey = $processDate . '_' . $nik;
+                                $cacheKey = $processDate.'_'.$nik;
                                 $storedSnapshot = $existingSnapshots->get($cacheKey)?->first();
 
-                                if ($storedSnapshot && !empty($storedSnapshot->jadwal_masuk) && !empty($storedSnapshot->jadwal_pulang)) {
+                                if ($storedSnapshot && ! empty($storedSnapshot->jadwal_masuk) && ! empty($storedSnapshot->jadwal_pulang)) {
                                     $jamMasukJadwal = $storedSnapshot->jadwal_masuk;
                                     $jamPulangJadwal = $storedSnapshot->jadwal_pulang;
                                 } else {
@@ -249,9 +250,9 @@ class SnapshotLeaderboard extends Command
                                     $jamPulangJadwal = $jk?->jam_pulang;
                                 }
 
-                                if (!empty($jamMasukJadwal)) {
-                                    $jamJadwal = Carbon::parse($processDate . ' ' . $jamMasukJadwal)->setSeconds(0);
-                                    $jamAbsen = Carbon::parse($processDate . ' ' . $presensi->jam_in)->setSeconds(0);
+                                if (! empty($jamMasukJadwal)) {
+                                    $jamJadwal = Carbon::parse($processDate.' '.$jamMasukJadwal)->setSeconds(0);
+                                    $jamAbsen = Carbon::parse($processDate.' '.$presensi->jam_in)->setSeconds(0);
 
                                     if ($jamAbsen->lt($jamJadwal)) {
                                         $menitLebihAwal = $jamAbsen->diffInMinutes($jamJadwal);
@@ -287,6 +288,7 @@ class SnapshotLeaderboard extends Command
                         $hasActiveSP = $allSP->get($nik)?->contains(function ($sp) use ($processDate) {
                             $tglTerbit = $sp->issued_at instanceof Carbon ? $sp->issued_at->format('Y-m-d') : substr($sp->issued_at, 0, 10);
                             $tglBerakhir = $sp->expires_at instanceof Carbon ? $sp->expires_at->format('Y-m-d') : substr($sp->expires_at, 0, 10);
+
                             return $processDate >= $tglTerbit && $processDate < $tglBerakhir;
                         });
 
@@ -298,7 +300,7 @@ class SnapshotLeaderboard extends Command
 
                     $calculatedData[] = [
                         'nik' => $nik,
-                        'nama_lengkap' => $karyawan->nama_lengkap, 
+                        'nama_lengkap' => $karyawan->nama_lengkap,
                         'jam_in' => $jam_in,
                         'jam_out' => $jam_out,
                         'jadwal_masuk' => $jamMasukJadwal,
@@ -309,13 +311,16 @@ class SnapshotLeaderboard extends Command
                     ];
                 }
 
-                if (empty($calculatedData)) continue;
+                if (empty($calculatedData)) {
+                    continue;
+                }
 
                 // 5. SORTING RANKING HARIAN PER CABANG
                 usort($calculatedData, function ($a, $b) {
                     if ($a['points'] == $b['points']) {
                         return strcmp($a['sort_time'], $b['sort_time']);
                     }
+
                     return $b['points'] <=> $a['points'];
                 });
 
@@ -345,7 +350,7 @@ class SnapshotLeaderboard extends Command
                 }
             }
 
-            if (!empty($insertDataDay)) {
+            if (! empty($insertDataDay)) {
                 $chunks = array_chunk($insertDataDay, 1000);
                 foreach ($chunks as $chunk) {
                     LeaderboardSnapshot::insert($chunk);

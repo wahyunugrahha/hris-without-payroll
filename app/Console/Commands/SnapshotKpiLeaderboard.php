@@ -2,23 +2,23 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\KpiLeaderboardSnapshot;
 use App\Models\Cabang;
 use App\Models\KPIDaily;
-use App\Models\Karyawan;
+use App\Models\KpiLeaderboardSnapshot;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
 
 class SnapshotKpiLeaderboard extends Command
 {
     protected $signature = 'leaderboard:snapshot-kpi';
+
     protected $description = 'Simpan snapshot poin KPI harian untuk semua karyawan per cabang';
 
     public function handle()
     {
         $hariini = date('Y-m-d');
         $hariIniCarbon = Carbon::parse($hariini);
-        
+
         // Penentuan Awal Siklus: Tanggal 26
         if ($hariIniCarbon->day >= 26) {
             $tglAwal = Carbon::create($hariIniCarbon->year, $hariIniCarbon->month, 26, 0, 0, 0);
@@ -34,7 +34,7 @@ class SnapshotKpiLeaderboard extends Command
             $datesToProcess[] = $date->format('Y-m-d');
         }
 
-        $this->info("🚀 Memulai proses snapshot KPI Leaderboard (Siklus Berjalan): " . $tglAwal->format('Y-m-d') . " s/d " . $hariini);
+        $this->info('🚀 Memulai proses snapshot KPI Leaderboard (Siklus Berjalan): '.$tglAwal->format('Y-m-d').' s/d '.$hariini);
 
         $cabangs = Cabang::all();
 
@@ -42,7 +42,7 @@ class SnapshotKpiLeaderboard extends Command
         // Untuk data volume besar, ini lebih aman daripada load seluruh periode
 
         foreach ($datesToProcess as $processDate) {
-            $this->info(">> Memproses Tanggal: " . $processDate);
+            $this->info('>> Memproses Tanggal: '.$processDate);
 
             KpiLeaderboardSnapshot::where('date', $processDate)->delete();
             $insertData = [];
@@ -51,7 +51,7 @@ class SnapshotKpiLeaderboard extends Command
             $dailyKpiData = KPIDaily::with(['kpiDailyDetail', 'kpiDailyExtra', 'karyawan'])
                 ->where('tanggal', $processDate)
                 ->get()
-                ->groupBy(function($item) {
+                ->groupBy(function ($item) {
                     return $item->karyawan ? $item->karyawan->kode_cabang : 'UNKNOWN';
                 });
 
@@ -63,14 +63,14 @@ class SnapshotKpiLeaderboard extends Command
 
                 foreach ($kpiDailies as $kpiRow) {
                     $kpiPoints = 0;
-                    
+
                     if ($kpiRow->kpiDailyDetail) {
                         $kpiPoints += $kpiRow->kpiDailyDetail->sum('score');
                     }
                     if ($kpiRow->kpiDailyExtra) {
                         $kpiPoints += $kpiRow->kpiDailyExtra->sum('score');
                     }
-                    
+
                     $nik = $kpiRow->nik;
                     $nama_lengkap = $kpiRow->karyawan ? $kpiRow->karyawan->nama_lengkap : 'Unknown';
 
@@ -81,12 +81,15 @@ class SnapshotKpiLeaderboard extends Command
                     ];
                 }
 
-                if (empty($calculatedData)) continue;
+                if (empty($calculatedData)) {
+                    continue;
+                }
 
                 usort($calculatedData, function ($a, $b) {
                     if ($a['points'] === $b['points']) {
                         return strcmp((string) $a['nik'], (string) $b['nik']);
                     }
+
                     return $b['points'] <=> $a['points'];
                 });
 
@@ -108,11 +111,11 @@ class SnapshotKpiLeaderboard extends Command
             }
 
             // Batch insert per hari
-            if (!empty($insertData)) {
+            if (! empty($insertData)) {
                 KpiLeaderboardSnapshot::insert($insertData);
             }
         }
 
-        $this->info("✅ SELESAI. Semua poin KPI (Retroaktif) telah disinkronkan ke Leaderboard.");
+        $this->info('✅ SELESAI. Semua poin KPI (Retroaktif) telah disinkronkan ke Leaderboard.');
     }
 }

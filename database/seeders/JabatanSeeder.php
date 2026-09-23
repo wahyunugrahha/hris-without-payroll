@@ -20,7 +20,7 @@ class JabatanSeeder extends Seeder
             'spv',
             'pjo',
             'kepala bagian',
-            'staff'
+            'staff',
         ])->pluck('id', 'name');
 
         // 2. Definisi Mapping Jabatan ke Role

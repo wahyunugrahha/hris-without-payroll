@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\CheckWajibPresensi;
+use App\Http\Middleware\EnsurePasswordChanged;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -38,12 +40,12 @@ return Application::configure(basePath: dirname(__DIR__))
             : route('dashboard.karyawan'));
 
         $middleware->alias([
-        'permission' => PermissionMiddleware::class,
-        'role' => RoleMiddleware::class,
-        'role_or_permission' => RoleOrPermissionMiddleware::class,
-        'wajib_presensi' => \App\Http\Middleware\CheckWajibPresensi::class,
-        'password_changed' => \App\Http\Middleware\EnsurePasswordChanged::class,
-    ]);
+            'permission' => PermissionMiddleware::class,
+            'role' => RoleMiddleware::class,
+            'role_or_permission' => RoleOrPermissionMiddleware::class,
+            'wajib_presensi' => CheckWajibPresensi::class,
+            'password_changed' => EnsurePasswordChanged::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

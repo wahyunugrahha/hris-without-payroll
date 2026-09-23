@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up()
     {
         Schema::table('karyawan', function (Blueprint $table) {
@@ -73,7 +74,7 @@ return new class extends Migration {
                 'hubungan_darurat',
                 'no_bpjs_kesehatan',
                 'no_bpjs_ketenagakerjaan',
-                'no_rekening'
+                'no_rekening',
             ]);
         });
     }

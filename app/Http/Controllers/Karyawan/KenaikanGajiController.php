@@ -3,15 +3,14 @@
 namespace App\Http\Controllers\Karyawan;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use App\Models\RekapBulanan;
-use App\Models\SuratPeringatan;
-use App\Models\SalaryIncrease;
-use App\Models\KPIReport;
 use App\Models\KpiLeaderboardSnapshot;
 use App\Models\KPIMaster;
+use App\Models\RekapBulanan;
+use App\Models\SalaryIncrease;
+use App\Models\SuratPeringatan;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class KenaikanGajiController extends Controller
@@ -22,23 +21,23 @@ class KenaikanGajiController extends Controller
     {
         $karyawan = Auth::guard('karyawan')->user();
         $nik = $karyawan->nik;
-        
+
         $siteBranches = array_map('trim', explode(',', get_setting('cabang_tambang', 'CBNG0003,CBNG0011,RBJ,TBKR,CBNG0002')));
         $isTambang = in_array($karyawan->kode_cabang, $siteBranches);
         $targetPoin = (int) ($isTambang ? get_setting('point_gaji_tambang', 750) : get_setting('point_gaji_kantor', 500));
-        
+
         // Ambil data rekap terakhir berdasarkan batas bulan
         $rekapTerakhir = RekapBulanan::where('nik', $nik)
             ->orderBy('tahun', 'desc')
             ->orderBy('bulan', 'desc')
             ->limit($this->limitBulan)
             ->get();
-            
+
         // Syarat 1: Rata-rata poin >= 500 selama periode bulan terakhir
         $totalPoin = $rekapTerakhir->sum('total_poin');
         $rataPoin = $rekapTerakhir->count() > 0 ? $totalPoin / $rekapTerakhir->count() : 0;
         $syaratPoin = $rataPoin >= $targetPoin && $rekapTerakhir->count() == $this->limitBulan;
-        
+
         // Syarat 2: Izin/Sakit <= 6 hari/bulan
         $syaratIzinSakit = true;
         foreach ($rekapTerakhir as $rekap) {
@@ -55,8 +54,8 @@ class KenaikanGajiController extends Controller
         $spAktif = SuratPeringatan::where('nik', $nik)
             ->whereDate('expires_at', '>=', Carbon::today())
             ->exists();
-        $syaratSp = !$spAktif;
-        
+        $syaratSp = ! $spAktif;
+
         // Syarat 4: Jeda waktu minimal bulan dari pengajuan sebelumnya
         $pengajuanTerakhir = SalaryIncrease::where('nik', $nik)->orderBy('tanggal_pengajuan', 'desc')->first();
         $syaratJeda = true;
@@ -77,8 +76,8 @@ class KenaikanGajiController extends Controller
         $pengajuanPending = SalaryIncrease::where('nik', $nik)->where('status', 'pending')->exists();
 
         // Kriteria kelayakan: Syarat KPI belum dimasukkan ke sini demi keamanan (belum di-enforce)
-        $isEligible = $syaratPoin && $syaratIzinSakit && $syaratSp && $syaratJeda && !$pengajuanPending;
-        
+        $isEligible = $syaratPoin && $syaratIzinSakit && $syaratSp && $syaratJeda && ! $pengajuanPending;
+
         // Hitung persentase: 15% untuk yang pertama, 10% kedua, 5% dst
         $jumlahPengajuanApproved = SalaryIncrease::where('nik', $nik)->where('status', 'approved')->count();
         $persentase = 15;
@@ -118,11 +117,11 @@ class KenaikanGajiController extends Controller
             ->orderBy('bulan', 'desc')
             ->limit($this->limitBulan)
             ->get();
-            
+
         $totalPoin = $rekapTerakhir->sum('total_poin');
         $rataPoin = $rekapTerakhir->count() > 0 ? $totalPoin / $rekapTerakhir->count() : 0;
         $syaratPoin = $rataPoin >= $targetPoin && $rekapTerakhir->count() == $this->limitBulan;
-        
+
         $syaratIzinSakit = true;
         foreach ($rekapTerakhir as $rekap) {
             if ($rekap->total_izin_sakit > 6) {
@@ -133,12 +132,12 @@ class KenaikanGajiController extends Controller
         if ($rekapTerakhir->count() < $this->limitBulan) {
             $syaratIzinSakit = false;
         }
- 
+
         $spAktif = SuratPeringatan::where('nik', $nik)
             ->whereDate('expires_at', '>=', Carbon::today())
             ->exists();
-        $syaratSp = !$spAktif;
-        
+        $syaratSp = ! $spAktif;
+
         $pengajuanTerakhir = SalaryIncrease::where('nik', $nik)->orderBy('tanggal_pengajuan', 'desc')->first();
         $syaratJeda = true;
         if ($pengajuanTerakhir) {
@@ -156,9 +155,9 @@ class KenaikanGajiController extends Controller
         $pengajuanPending = SalaryIncrease::where('nik', $nik)->where('status', 'pending')->exists();
 
         // Kriteria kelayakan: Syarat KPI belum dimasukkan ke sini demi keamanan (belum di-enforce)
-        $isEligible = $syaratPoin && $syaratIzinSakit && $syaratSp && $syaratJeda && !$pengajuanPending;
+        $isEligible = $syaratPoin && $syaratIzinSakit && $syaratSp && $syaratJeda && ! $pengajuanPending;
 
-        if (!$isEligible) {
+        if (! $isEligible) {
             return redirect()->back()->with(['error' => 'Anda belum memenuhi kriteria untuk pengajuan kenaikan gaji.']);
         }
 
@@ -191,14 +190,14 @@ class KenaikanGajiController extends Controller
             ->where('kode_cabang', $karyawan->kode_cabang)
             ->where('is_active', true)->first();
 
-        if (!$kpiMaster) {
+        if (! $kpiMaster) {
             $kpiMaster = KPIMaster::where('jabatan_id', $karyawan->jabatan_id)
                 ->where('kode_dept', $karyawan->kode_dept)
                 ->whereNull('kode_cabang')
                 ->where('is_active', true)->first();
         }
 
-        if (!$kpiMaster) {
+        if (! $kpiMaster) {
             $kpiMaster = KPIMaster::where('jabatan_id', $karyawan->jabatan_id)
                 ->whereNull('kode_dept')
                 ->whereNull('kode_cabang')
@@ -222,13 +221,13 @@ class KenaikanGajiController extends Controller
 
         if ($rekapTerakhir->isNotEmpty()) {
             $monthsCount = $rekapTerakhir->count();
-            
+
             // Urutkan untuk mendapatkan bulan terlama dan terbaru
             $sortedRekap = $rekapTerakhir->sortBy([
                 ['tahun', 'asc'],
-                ['bulan', 'asc']
+                ['bulan', 'asc'],
             ]);
-            
+
             $firstRekap = $sortedRekap->first();
             $lastRekap = $sortedRekap->last();
 
@@ -256,7 +255,7 @@ class KenaikanGajiController extends Controller
         return [
             'rataKpi' => $rataKpi,
             'syaratKpi' => $syaratKpi,
-            'monthsCount' => $monthsCount
+            'monthsCount' => $monthsCount,
         ];
     }
 }

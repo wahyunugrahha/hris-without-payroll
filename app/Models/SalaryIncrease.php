@@ -16,7 +16,7 @@ class SalaryIncrease extends Model
         'status',
         'approved_at',
         'approved_by',
-        'catatan'
+        'catatan',
     ];
 
     public function karyawan()

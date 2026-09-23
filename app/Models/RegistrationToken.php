@@ -11,14 +11,14 @@ class RegistrationToken extends Model
         'token',
         'is_active',
         'expires_at',
-        'used_at'
+        'used_at',
     ];
 
     private static function generateUniqueTokenString(): string
     {
         for ($i = 0; $i < 10; $i++) {
             $candidate = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-            if (!self::where('token', $candidate)->exists()) {
+            if (! self::where('token', $candidate)->exists()) {
                 return $candidate;
             }
         }
@@ -34,17 +34,17 @@ class RegistrationToken extends Model
         $token = self::where('is_active', true)
             ->where(function ($q) {
                 $q->whereNull('expires_at')
-                  ->orWhere('expires_at', '>', now());
+                    ->orWhere('expires_at', '>', now());
             })
             ->latest()
             ->first();
 
-        if (!$token) {
+        if (! $token) {
             // Deactivate all active tokens first
             self::where('is_active', true)->update(['is_active' => false]);
 
             $token = null;
-            for ($attempt = 0; $attempt < 5 && !$token; $attempt++) {
+            for ($attempt = 0; $attempt < 5 && ! $token; $attempt++) {
                 try {
                     $token = self::create([
                         'token' => self::generateUniqueTokenString(),
@@ -73,8 +73,9 @@ class RegistrationToken extends Model
     public function getFormattedTokenAttribute()
     {
         if (strlen($this->token) === 6) {
-            return substr($this->token, 0, 3) . ' ' . substr($this->token, 3);
+            return substr($this->token, 0, 3).' '.substr($this->token, 3);
         }
+
         return $this->token;
     }
 }

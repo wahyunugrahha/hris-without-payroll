@@ -2,22 +2,26 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
 class Karyawan extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     public const STATUS_AKTIF = 'Aktif';
+
     public const STATUS_NONAKTIF = 'Nonaktif';
+
     public const STATUS_DIBERHENTIKAN = 'Diberhentikan';
+
     public const STATUS_MENUNGGU_APPROVAL = 'Menunggu Approval';
+
     public const FILTER_HABIS_KONTRAK = 'Habis Kontrak';
 
     public const TURNOVER_STATUSES = [
@@ -34,9 +38,13 @@ class Karyawan extends Authenticatable
     ];
 
     protected $table = 'karyawan';
+
     protected $guard_name = 'karyawan';
+
     protected $primaryKey = 'nik';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [
@@ -109,6 +117,7 @@ class Karyawan extends Authenticatable
             if ($this->status_aktif == self::STATUS_MENUNGGU_APPROVAL) {
                 return '-';
             }
+
             return 'Permanen';
         }
 
@@ -125,11 +134,11 @@ class Karyawan extends Authenticatable
         $days = $interval->d;
 
         if ($months > 0) {
-            $parts[] = $months . ' bulan';
+            $parts[] = $months.' bulan';
         }
 
         if ($days > 0) {
-            $parts[] = $days . ' hari';
+            $parts[] = $days.' hari';
         }
 
         if (empty($parts)) {
@@ -137,15 +146,16 @@ class Karyawan extends Authenticatable
         }
 
         return $isExpired
-            ? 'Expired ' . implode(' ', $parts) . ' lalu'
-            : implode(' ', $parts) . ' lagi';
+            ? 'Expired '.implode(' ', $parts).' lalu'
+            : implode(' ', $parts).' lagi';
     }
 
     public function getFotoUrlAttribute()
     {
-        if ($this->foto && Storage::disk('public')->exists('uploads/karyawan/' . $this->foto)) {
-            return asset('storage/uploads/karyawan/' . $this->foto);
+        if ($this->foto && Storage::disk('public')->exists('uploads/karyawan/'.$this->foto)) {
+            return asset('storage/uploads/karyawan/'.$this->foto);
         }
+
         return asset('assets/img/nophoto.png');
     }
 
@@ -202,42 +212,52 @@ class Karyawan extends Authenticatable
     {
         return $this->belongsTo(Jabatan::class, 'jabatan_id', 'id');
     }
+
     public function departemen()
     {
         return $this->belongsTo(Departemen::class, 'kode_dept', 'kode_dept');
     }
+
     public function cabang()
     {
         return $this->belongsTo(Cabang::class, 'kode_cabang', 'kode_cabang');
     }
+
     public function presensis()
     {
         return $this->hasMany(Presensi::class, 'nik', 'nik');
     }
+
     public function konfigurasiJamKerja()
     {
         return $this->hasMany(Setjamkerja::class, 'nik', 'nik');
     }
+
     public function lembur()
     {
         return $this->hasMany(Lembur::class, 'nik', 'nik');
     }
+
     public function izin()
     {
         return $this->hasMany(Izin::class, 'nik', 'nik');
     }
+
     public function dinasLuars()
     {
         return $this->hasMany(DinasLuar::class, 'nik', 'nik');
     }
+
     public function kpiDaily()
     {
         return $this->hasMany(KPIDaily::class, 'nik', 'nik');
     }
+
     public function kpiReport()
     {
         return $this->hasMany(KPIReport::class, 'nik', 'nik');
     }
+
     public function suratPeringatan()
     {
         return $this->hasMany(SuratPeringatan::class, 'nik', 'nik');

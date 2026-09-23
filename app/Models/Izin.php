@@ -14,7 +14,9 @@ class Izin extends Model
     protected $primaryKey = 'kode_izin';
 
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = true;
 
     protected $fillable = [

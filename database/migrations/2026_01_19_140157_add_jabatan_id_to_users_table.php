@@ -11,13 +11,13 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
 
             $table->unsignedBigInteger('jabatan_id')
-                  ->nullable()
-                  ->after('kode_cabang');
+                ->nullable()
+                ->after('kode_cabang');
 
             $table->foreign('jabatan_id')
-                  ->references('id')
-                  ->on('jabatan')
-                  ->nullOnDelete();
+                ->references('id')
+                ->on('jabatan')
+                ->nullOnDelete();
         });
     }
 

@@ -2,10 +2,11 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -25,7 +26,7 @@ return new class extends Migration {
             // STEP B: Tambahkan Foreign Key
             Schema::table('surat_peringatan', function (Blueprint $table) {
                 // Pastikan indeks ada untuk performa (opsional jika sudah ada, tapi aman ditaruh)
-                // $table->index('nik'); 
+                // $table->index('nik');
 
                 $table->foreign('nik')
                     ->references('nik')
@@ -71,7 +72,7 @@ return new class extends Migration {
                 $table->dropForeign(['nik']);
 
                 // Opsional: Kembalikan jadi not null (biasanya tidak perlu/berisiko error data)
-                // $table->string('nik')->nullable(false)->change(); 
+                // $table->string('nik')->nullable(false)->change();
             });
         }
     }

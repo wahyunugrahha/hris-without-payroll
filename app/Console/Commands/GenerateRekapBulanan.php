@@ -2,24 +2,25 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\Karyawan;
-use App\Models\Presensi;
-use App\Models\LeaderboardSnapshot;
-use App\Models\KpiLeaderboardSnapshot;
-use App\Models\RekapBulanan;
 use App\Models\Izin;
-use App\Models\KPIMaster;
-use App\Models\KPIDaily;
+use App\Models\Karyawan;
 use App\Models\KPIAtasanDaily;
+use App\Models\KPIDaily;
+use App\Models\KpiLeaderboardSnapshot;
+use App\Models\KPIMaster;
 use App\Models\KPIReport;
+use App\Models\LeaderboardSnapshot;
+use App\Models\Presensi;
+use App\Models\RekapBulanan;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 class GenerateRekapBulanan extends Command
 {
     protected $signature = 'rekap:bulanan {--bulan=} {--tahun=} {--from-january}';
+
     protected $description = 'Generate rekap bulanan untuk pengajuan gaji & bonus';
 
     public function handle()
@@ -27,24 +28,25 @@ class GenerateRekapBulanan extends Command
         $tahun = $this->option('tahun') ?? date('Y');
 
         if ($this->option('from-january')) {
-            $bulanSekarang = (int)date('m');
-            $tahunSekarang = (int)date('Y');
-            
+            $bulanSekarang = (int) date('m');
+            $tahunSekarang = (int) date('Y');
+
             // Batas maksimal bulan yang diproses untuk tahun ini
-            $limitBulan = ((int)$tahun === $tahunSekarang) ? $bulanSekarang : 12;
+            $limitBulan = ((int) $tahun === $tahunSekarang) ? $bulanSekarang : 12;
 
             $this->info("🚀 Memulai sinkronisasi rekap bulanan dari Januari s/d bulan sekarang untuk Tahun $tahun...");
 
             for ($m = 1; $m <= $limitBulan; $m++) {
                 $this->generateForMonth($m, $tahun);
             }
-            
-            $this->info("✅ Semua proses rekap batch selesai!");
+
+            $this->info('✅ Semua proses rekap batch selesai!');
+
             return;
         }
 
         $bulan = $this->option('bulan') ?? date('m');
-        $this->generateForMonth((int)$bulan, $tahun);
+        $this->generateForMonth((int) $bulan, $tahun);
     }
 
     private function generateForMonth($bulan, $tahun)
@@ -59,7 +61,7 @@ class GenerateRekapBulanan extends Command
         $this->info("🔄 Menjalankan rekap bulanan untuk periode $tglAwalStr s/d $tglAkhirStr (Bulan $bulanPad Tahun $tahun)...");
 
         // Get all employees TMTs to skip those who haven't joined yet
-        $karyawanTmts = Karyawan::whereNotNull('tmt')->get()->pluck('tmt', 'nik')->map(fn($date) => $date->format('Y-m-d'))->toArray();
+        $karyawanTmts = Karyawan::whereNotNull('tmt')->get()->pluck('tmt', 'nik')->map(fn ($date) => $date->format('Y-m-d'))->toArray();
 
         // 1. Dapatkan total poin per karyawan dari LeaderboardSnapshot
         $poinKaryawan = LeaderboardSnapshot::whereBetween('date', [$tglAwalStr, $tglAkhirStr])
@@ -81,11 +83,11 @@ class GenerateRekapBulanan extends Command
         $semuaIzin = Izin::where('status_approved', 1)
             ->where(function ($q) use ($tglAwalStr, $tglAkhirStr) {
                 $q->whereBetween('tgl_izin_dari', [$tglAwalStr, $tglAkhirStr])
-                  ->orWhereBetween('tgl_izin_sampai', [$tglAwalStr, $tglAkhirStr])
-                  ->orWhere(function ($q2) use ($tglAwalStr, $tglAkhirStr) {
-                      $q2->where('tgl_izin_dari', '<', $tglAwalStr)
-                         ->where('tgl_izin_sampai', '>', $tglAkhirStr);
-                  });
+                    ->orWhereBetween('tgl_izin_sampai', [$tglAwalStr, $tglAkhirStr])
+                    ->orWhere(function ($q2) use ($tglAwalStr, $tglAkhirStr) {
+                        $q2->where('tgl_izin_dari', '<', $tglAwalStr)
+                            ->where('tgl_izin_sampai', '>', $tglAkhirStr);
+                    });
             })
             ->whereIn('status', ['i', 's'])
             ->get();
@@ -95,7 +97,7 @@ class GenerateRekapBulanan extends Command
 
         foreach ($semuaIzin as $izin) {
             $nik = $izin->nik;
-            if (!isset($izinSakitKaryawan[$nik])) {
+            if (! isset($izinSakitKaryawan[$nik])) {
                 $izinSakitKaryawan[$nik] = 0;
             }
 
@@ -127,7 +129,7 @@ class GenerateRekapBulanan extends Command
             $totalSeconds = 0;
             $count = 0;
             foreach ($presensis as $p) {
-                if (!empty($p->jam_in) && $p->jam_in !== '00:00:00') {
+                if (! empty($p->jam_in) && $p->jam_in !== '00:00:00') {
                     $parts = explode(':', $p->jam_in);
                     if (count($parts) >= 2) {
                         $hours = (int) $parts[0];
@@ -143,9 +145,9 @@ class GenerateRekapBulanan extends Command
                 $avgHours = floor($avgSeconds / 3600);
                 $avgMinutes = floor(($avgSeconds % 3600) / 60);
                 $avgSecs = $avgSeconds % 60;
-                
-                $avgJamMasukKaryawan[$nik] = str_pad($avgHours, 2, '0', STR_PAD_LEFT) . ':' . 
-                                             str_pad($avgMinutes, 2, '0', STR_PAD_LEFT) . ':' . 
+
+                $avgJamMasukKaryawan[$nik] = str_pad($avgHours, 2, '0', STR_PAD_LEFT).':'.
+                                             str_pad($avgMinutes, 2, '0', STR_PAD_LEFT).':'.
                                              str_pad($avgSecs, 2, '0', STR_PAD_LEFT);
             } else {
                 $avgJamMasukKaryawan[$nik] = '23:59:59'; // default lambat sekali untuk tie-breaker
@@ -164,7 +166,7 @@ class GenerateRekapBulanan extends Command
             // Urutkan dari poin tertinggi ke terendah, lalu avg_jam_masuk asc sebagai tie-breaker
             $sortedKaryawans = $karyawans->sortBy([
                 ['total_poin', 'desc'],
-                ['avg_jam_masuk', 'asc']
+                ['avg_jam_masuk', 'asc'],
             ])->values();
 
             foreach ($sortedKaryawans as $index => $karyawan) {
@@ -186,7 +188,7 @@ class GenerateRekapBulanan extends Command
                 }
 
                 $bonus = 0;
-                
+
                 // Top 1, 2, 3 per cabang
                 if ($index === 0) {
                     $bonus = 150000;
@@ -217,7 +219,7 @@ class GenerateRekapBulanan extends Command
             }
         }
 
-        $this->info("🔄 Menghitung & meng-generate hasil KPI bulanan untuk periode ini...");
+        $this->info('🔄 Menghitung & meng-generate hasil KPI bulanan untuk periode ini...');
         $this->generateKpiReportForMonth($bulan, $tahun);
 
         $this->info("✨ Rekap bulanan & laporan KPI untuk Bulan $bulanPad Tahun $tahun berhasil di-generate!");
@@ -237,8 +239,8 @@ class GenerateRekapBulanan extends Command
 
         // 1. Ambil Data Presensi & Agregasi Langsung di SQL
         $presensiStats = DB::table('presensi')
-            ->select('nik', 
-                DB::raw('COUNT(id) as total_hari'), 
+            ->select('nik',
+                DB::raw('COUNT(id) as total_hari'),
                 DB::raw('SUM(CASE WHEN jam_in <= \'09:10:00\' THEN 1 ELSE 0 END) as tepat_waktu')
             )
             ->whereIn('nik', $nikList)
@@ -263,9 +265,9 @@ class GenerateRekapBulanan extends Command
             ->groupBy('nik');
 
         // 4. Ambil Semua Template Master KPI yang aktif
-        $allMasterKPIs = KPIMaster::with(['kpiMasterAtasan' => function($q) {
-                $q->where('is_active', 1);
-            }])
+        $allMasterKPIs = KPIMaster::with(['kpiMasterAtasan' => function ($q) {
+            $q->where('is_active', 1);
+        }])
             ->where('is_active', 1)
             ->get();
 
@@ -282,7 +284,7 @@ class GenerateRekapBulanan extends Command
                 ->where('kode_cabang', $karyawan->kode_cabang)
                 ->first();
 
-            if (!$kpiMaster) {
+            if (! $kpiMaster) {
                 $kpiMaster = $allMasterKPIs
                     ->where('jabatan_id', $karyawan->jabatan_id)
                     ->where('kode_dept', $karyawan->kode_dept)
@@ -290,7 +292,7 @@ class GenerateRekapBulanan extends Command
                     ->first();
             }
 
-            if (!$kpiMaster) {
+            if (! $kpiMaster) {
                 $kpiMaster = $allMasterKPIs
                     ->where('jabatan_id', $karyawan->jabatan_id)
                     ->whereNull('kode_dept')
@@ -298,19 +300,19 @@ class GenerateRekapBulanan extends Command
                     ->first();
             }
 
-            if (!$kpiMaster) {
+            if (! $kpiMaster) {
                 continue; // Skip jika Karyawan tidak punya format KPI
             }
 
             // A. HITUNG ABSENSI
             $bobotAtasanTotal = $kpiMaster->kpiMasterAtasan->sum('bobot_atasan');
             $bobotAbsensi = 100 - ($kpiMaster->bobot_kpi + $bobotAtasanTotal);
-            
+
             $pStat = $presensiStats->get($karyawan->nik);
-            $achieveAbsensi = ($pStat && $pStat->total_hari > 0) 
-                ? round(($pStat->tepat_waktu / $pStat->total_hari) * 100) 
+            $achieveAbsensi = ($pStat && $pStat->total_hari > 0)
+                ? round(($pStat->tepat_waktu / $pStat->total_hari) * 100)
                 : 0;
-            
+
             $scoreAbsensi = min(100, $achieveAbsensi);
             $totalScoreAbsensi = round(($bobotAbsensi * $scoreAbsensi) / 100);
 
@@ -323,10 +325,12 @@ class GenerateRekapBulanan extends Command
                 foreach ($karyawanDailies as $daily) {
                     $scoreUtama = $daily->kpiDailyDetail->sum('score');
                     $scoreExtra = $daily->kpiDailyExtra->sum('score');
-                    
+
                     $persenHariIni = (($scoreUtama + $scoreExtra) / $kpiMaster->bobot_kpi) * 100;
-                    if ($persenHariIni > 100) $persenHariIni = 100;
-                    
+                    if ($persenHariIni > 100) {
+                        $persenHariIni = 100;
+                    }
+
                     $totalScoreHarian += $persenHariIni;
                 }
                 $achieveKaryawan = round($totalScoreHarian / $karyawanDailies->count());
@@ -344,7 +348,9 @@ class GenerateRekapBulanan extends Command
                 $achieveAtasan = 0;
                 if ($latestAtasan && $latestAtasan->details) {
                     $det = $latestAtasan->details->where('kpi_master_atasan_id', $atasanMaster->id)->first();
-                    if ($det) $achieveAtasan = $det->score;
+                    if ($det) {
+                        $achieveAtasan = $det->score;
+                    }
                 }
 
                 $scoreAtasan = min(100, $achieveAtasan);
@@ -357,16 +363,16 @@ class GenerateRekapBulanan extends Command
             // D. SIMPAN HASIL FINAL KE TABEL kpi_report
             KPIReport::updateOrInsert(
                 [
-                    'nik'           => $karyawan->nik,
+                    'nik' => $karyawan->nik,
                     'periode_bulan' => $bulanPad,
-                    'periode_tahun' => $tahun
+                    'periode_tahun' => $tahun,
                 ],
                 [
-                    'kode_master'    => $kpiMaster->kode_master,
+                    'kode_master' => $kpiMaster->kode_master,
                     'score_presensi' => $totalScoreAbsensi,
                     'score_workbook' => $totalScoreKaryawan,
-                    'score_atasan'   => $atasanScoreSum,
-                    'final_score'    => $overallScore,
+                    'score_atasan' => $atasanScoreSum,
+                    'final_score' => $overallScore,
                 ]
             );
         }

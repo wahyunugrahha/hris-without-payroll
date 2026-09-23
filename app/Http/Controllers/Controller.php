@@ -26,11 +26,11 @@ abstract class Controller
     protected function failMessage(string $prefix, Throwable $e): string
     {
         if ($e instanceof BusinessException) {
-            return trim($prefix . ' ' . $e->getMessage());
+            return trim($prefix.' '.$e->getMessage());
         }
 
         report($e);
 
-        return trim($prefix . ' Terjadi kesalahan sistem, silakan coba lagi atau hubungi admin.');
+        return trim($prefix.' Terjadi kesalahan sistem, silakan coba lagi atau hubungi admin.');
     }
 }

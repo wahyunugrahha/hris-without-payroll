@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cabang;
+use App\Models\Jabatan;
+use App\Models\Karyawan;
+use App\Models\SuratPeringatan;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
-use Carbon\Carbon;
-
-use App\Models\SuratPeringatan;
-use App\Models\Cabang;
-use App\Models\Karyawan;
-use App\Models\Jabatan;
+use Illuminate\Validation\ValidationException;
 
 class SuratPeringatanController extends Controller
 {
@@ -21,7 +21,7 @@ class SuratPeringatanController extends Controller
         $query = SuratPeringatan::query();
 
         // Jika user adalah admin cabang, filter berdasarkan karyawan di cabangnya
-        if ($user && ($user->hasRole('admin cabang') || !empty($user->kode_cabang))) {
+        if ($user && ($user->hasRole('admin cabang') || ! empty($user->kode_cabang))) {
             $query->whereHas('karyawan', function ($q) use ($user) {
                 $q->where('kode_cabang', $user->kode_cabang);
             });
@@ -34,7 +34,7 @@ class SuratPeringatanController extends Controller
     {
         $loggedInUser = Auth::guard('user')->user();
         $hasRoleAdminCabang = $loggedInUser && $loggedInUser->roles->pluck('name')->contains('admin cabang');
-        $forcedKodeCabang = $hasRoleAdminCabang && !empty($loggedInUser->kode_cabang) ? $loggedInUser->kode_cabang : null;
+        $forcedKodeCabang = $hasRoleAdminCabang && ! empty($loggedInUser->kode_cabang) ? $loggedInUser->kode_cabang : null;
 
         // 1. Base Query menggunakan Scope Keamanan
         // Eager load Cabang dan Departemen melalui Karyawan
@@ -65,18 +65,18 @@ class SuratPeringatanController extends Controller
             }
         }
 
-        // Filter Pencarian     
+        // Filter Pencarian
         if ($request->filled('q')) {
             $q = $request->get('q');
             $query->whereHas('karyawan', function ($qk) use ($q) {
-                $qk->whereRaw('LOWER(nama_lengkap) ilike ?', ['%' . strtolower($q) . '%'])
-                    ->orWhereRaw('LOWER(nik) ilike ?', ['%' . strtolower($q) . '%']);
+                $qk->whereRaw('LOWER(nama_lengkap) ilike ?', ['%'.strtolower($q).'%'])
+                    ->orWhereRaw('LOWER(nik) ilike ?', ['%'.strtolower($q).'%']);
             });
         }
 
         // Filter Cabang (Untuk Super Admin yang ingin filter manual)
         // Jika Admin Cabang, forcedKodeCabang sudah di-handle oleh getScopedQuery()
-        if (!$forcedKodeCabang && $request->filled('kode_cabang')) {
+        if (! $forcedKodeCabang && $request->filled('kode_cabang')) {
             $query->whereHas('karyawan', function ($qk) use ($request) {
                 $qk->where('kode_cabang', $request->kode_cabang);
             });
@@ -100,7 +100,7 @@ class SuratPeringatanController extends Controller
         if ($forcedKodeCabang) {
             $karyawanQuery->where('kode_cabang', $forcedKodeCabang);
         }
-        $karyawanList = $karyawanQuery->get(['nik', 'nama_lengkap', 'jabatan_id']); 
+        $karyawanList = $karyawanQuery->get(['nik', 'nama_lengkap', 'jabatan_id']);
 
         $jabatans = Jabatan::whereHas('role', function ($q) {
             $q->where('guard_name', 'karyawan');
@@ -166,7 +166,7 @@ class SuratPeringatanController extends Controller
             return redirect()->route('suratperingatan.index')
                 ->with('success', 'Surat Peringatan berhasil ditambahkan');
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             return back()->with('error', $this->failMessage('Gagal menambahkan Surat Peringatan.', $e));
@@ -178,7 +178,7 @@ class SuratPeringatanController extends Controller
         try {
             $sp = $this->getScopedQuery()->find($id);
 
-            if (!$sp) {
+            if (! $sp) {
                 return back()->with('error', 'Data tidak ditemukan atau akses ditolak.');
             }
 
@@ -191,7 +191,7 @@ class SuratPeringatanController extends Controller
 
             $sp->update([
                 'expires_at' => Carbon::now()->subDay(), // Expired kemarin
-                'note' => $cleanNote . ' [DIPUTIHKAN MANUAL OLEH ' . strtoupper($userName) . ' PADA ' . now()->format('d-m-Y H:i') . ']'
+                'note' => $cleanNote.' [DIPUTIHKAN MANUAL OLEH '.strtoupper($userName).' PADA '.now()->format('d-m-Y H:i').']',
             ]);
 
             return back()->with('success', 'Surat Peringatan berhasil diputihkan (Non-Aktif).');
@@ -204,7 +204,7 @@ class SuratPeringatanController extends Controller
     {
         $sp = $this->getScopedQuery()->with('karyawan')->find($id);
 
-        if (!$sp) {
+        if (! $sp) {
             return back()->with('error', 'Data tidak ditemukan atau akses ditolak.');
         }
 
@@ -225,7 +225,7 @@ class SuratPeringatanController extends Controller
             return response()->json([
                 'active' => true,
                 'level' => $hasActiveSP->level,
-                'expires_at' => $hasActiveSP->expires_at->format('d-m-Y')
+                'expires_at' => $hasActiveSP->expires_at->format('d-m-Y'),
             ]);
         }
 
@@ -246,9 +246,9 @@ class SuratPeringatanController extends Controller
             9 => 'September',
             10 => 'Oktober',
             11 => 'November',
-            12 => 'Desember'
+            12 => 'Desember',
         ];
 
-        return $date->format('d') . ' ' . ($months[(int) $date->format('m')] ?? $date->format('F')) . ' ' . $date->format('Y');
+        return $date->format('d').' '.($months[(int) $date->format('m')] ?? $date->format('F')).' '.$date->format('Y');
     }
 }

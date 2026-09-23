@@ -12,7 +12,7 @@ class LeaderboardSnapshot extends Model
     protected $table = 'leaderboard_snapshots';
 
     protected $fillable = [
-        'date', 'kode_cabang', 'rank', 'nik', 'nama_lengkap', 'jam_in', 'jam_out', 'jadwal_masuk', 'jadwal_pulang', 'points', 'point_details'
+        'date', 'kode_cabang', 'rank', 'nik', 'nama_lengkap', 'jam_in', 'jam_out', 'jadwal_masuk', 'jadwal_pulang', 'points', 'point_details',
     ];
 
     protected $casts = [

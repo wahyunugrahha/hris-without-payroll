@@ -18,7 +18,7 @@ class RekapBulanan extends Model
         'total_poin_kpi',
         'total_izin_sakit',
         'bonus_bulanan',
-        'avg_jam_masuk'
+        'avg_jam_masuk',
     ];
 
     public function karyawan()

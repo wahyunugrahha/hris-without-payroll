@@ -3,25 +3,24 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-
 use App\Models\Cabang;
 use App\Models\Departemen;
 use App\Models\HariLibur;
 use App\Models\Izin;
-use App\Models\Karyawan;
 use App\Models\Jabatan;
+use App\Models\Karyawan;
 use App\Models\KPIAtasanDaily;
 use App\Models\KPIDaily;
 use App\Models\KPIDailyDetail;
 use App\Models\KPIDailyExtra;
 use App\Models\KPIMaster;
-use App\Models\KPIMasterDetail;
 use App\Models\KPIMasterAtasan;
+use App\Models\KPIMasterDetail;
 use App\Models\KPIReport;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class KPIController extends Controller
 {
@@ -34,12 +33,12 @@ class KPIController extends Controller
         $isAdminCabang = $user->hasRole('admin cabang');
         $isHR = $user->hasRole(['hrd', 'administrator']);
 
-        $kpiMaster = KPIMaster::with(['departemen', 'jabatan']) 
+        $kpiMaster = KPIMaster::with(['departemen', 'jabatan'])
             ->select(
-                'kode_master', 
-                'nama_kpi', 
-                'jabatan_id', 
-                'kode_dept', 
+                'kode_master',
+                'nama_kpi',
+                'jabatan_id',
+                'kode_dept',
                 'is_active',
             )
             ->selectRaw('MAX(id) as id')
@@ -62,15 +61,15 @@ class KPIController extends Controller
             ->when($isHR && $request->filled('kode_cabang'), function ($q) use ($request) {
                 $q->where('kode_cabang', $request->kode_cabang);
             })
-            ->groupBy('kode_master', 'nama_kpi', 'jabatan_id', 'kode_dept', 'is_active') 
+            ->groupBy('kode_master', 'nama_kpi', 'jabatan_id', 'kode_dept', 'is_active')
             ->orderBy('latest_update', 'desc')
             ->paginate(25)
             ->withQueryString();
 
         $jabatan = Jabatan::orderBy('nama_jabatan')->get();
         $departemen = Departemen::orderBy('nama_dept')->get();
-        $cabang = $isAdminCabang 
-            ? Cabang::where('kode_cabang', $user->kode_cabang)->get() 
+        $cabang = $isAdminCabang
+            ? Cabang::where('kode_cabang', $user->kode_cabang)->get()
             : Cabang::orderBy('nama_cabang')->get();
 
         return view('admin.kpi.masterkpi', compact(
@@ -81,45 +80,47 @@ class KPIController extends Controller
     public function storeMasterKPI(Request $request)
     {
         $request->validate([
-            'kode_master'   => 'required|string', 
-            'nama_kpi'      => 'required|string|max:255',
-            'jabatan_id'    => 'required|exists:jabatan,id',
-            'kode_dept'     => 'required|exists:departemen,kode_dept',
-            'kode_cabang'   => 'required|array|min:1',
+            'kode_master' => 'required|string',
+            'nama_kpi' => 'required|string|max:255',
+            'jabatan_id' => 'required|exists:jabatan,id',
+            'kode_dept' => 'required|exists:departemen,kode_dept',
+            'kode_cabang' => 'required|array|min:1',
             'kode_cabang.*' => 'required|string|exists:cabang,kode_cabang',
-            'is_active'     => 'required|in:0,1',
+            'is_active' => 'required|in:0,1',
         ], [
             'kode_cabang.required' => 'Minimal harus memilih 1 cabang!',
-            'kode_cabang.min'      => 'Minimal harus memilih 1 cabang!',
+            'kode_cabang.min' => 'Minimal harus memilih 1 cabang!',
         ]);
 
         DB::beginTransaction();
         try {
             $existingKpi = KPIMaster::where('kode_master', $request->kode_master)->first();
 
-            $bobotKpi  = $existingKpi ? $existingKpi->bobot_kpi : 100;
+            $bobotKpi = $existingKpi ? $existingKpi->bobot_kpi : 100;
             $targetKpi = $existingKpi ? $existingKpi->target_kpi : 100;
 
             $createdCount = 0;
             foreach ($request->kode_cabang as $kodeCabang) {
                 KPIMaster::create([
                     'kode_master' => $request->kode_master,
-                    'nama_kpi'    => $request->nama_kpi,
-                    'jabatan_id'  => $request->jabatan_id,
-                    'kode_dept'   => $request->kode_dept,
+                    'nama_kpi' => $request->nama_kpi,
+                    'jabatan_id' => $request->jabatan_id,
+                    'kode_dept' => $request->kode_dept,
                     'kode_cabang' => $kodeCabang,
-                    'is_active'   => (bool) $request->is_active,
-                    'bobot_kpi'   => $bobotKpi,
-                    'target_kpi'  => $targetKpi,
+                    'is_active' => (bool) $request->is_active,
+                    'bobot_kpi' => $bobotKpi,
+                    'target_kpi' => $targetKpi,
                 ]);
                 $createdCount++;
             }
 
             DB::commit();
+
             return redirect()->route('kpi.master.index')
-                ->with('success', 'Data KPI Master berhasil ditambahkan untuk ' . $createdCount . ' cabang');
+                ->with('success', 'Data KPI Master berhasil ditambahkan untuk '.$createdCount.' cabang');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->with('error', $this->failMessage('Gagal menambah data.', $e))->withInput();
         }
     }
@@ -129,15 +130,15 @@ class KPIController extends Controller
         try {
             $user = Auth::guard('user')->user();
             $isAdminCabang = $user->hasRole('admin cabang');
-            
+
             $kpi = KPIMaster::findOrFail($id);
             $kodeMaster = $kpi->kode_master;
-            
+
             $jabatan = Jabatan::orderBy('nama_jabatan')->get();
             $departemen = Departemen::orderBy('nama_dept')->get();
-            
-            $cabang = $isAdminCabang 
-                ? Cabang::where('kode_cabang', $user->kode_cabang)->get() 
+
+            $cabang = $isAdminCabang
+                ? Cabang::where('kode_cabang', $user->kode_cabang)->get()
                 : Cabang::orderBy('nama_cabang')->get();
 
             $selectedCabangs = KPIMaster::where('kode_master', $kodeMaster)
@@ -155,16 +156,16 @@ class KPIController extends Controller
     public function updateMasterKPI(Request $request, $id)
     {
         $request->validate([
-            'kode_master'   => 'required|string',
-            'nama_kpi'      => 'required|string|max:255',
-            'jabatan_id'    => 'required|exists:jabatan,id',
-            'kode_dept'     => 'required|exists:departemen,kode_dept',
-            'kode_cabang'   => 'required|array|min:1',
+            'kode_master' => 'required|string',
+            'nama_kpi' => 'required|string|max:255',
+            'jabatan_id' => 'required|exists:jabatan,id',
+            'kode_dept' => 'required|exists:departemen,kode_dept',
+            'kode_cabang' => 'required|array|min:1',
             'kode_cabang.*' => 'required|string|exists:cabang,kode_cabang',
-            'is_active'     => 'required|in:0,1',
+            'is_active' => 'required|in:0,1',
         ], [
             'kode_cabang.required' => 'Minimal harus memilih 1 cabang!',
-            'kode_cabang.min'      => 'Minimal harus memilih 1 cabang!',
+            'kode_cabang.min' => 'Minimal harus memilih 1 cabang!',
         ]);
 
         DB::beginTransaction();
@@ -173,15 +174,15 @@ class KPIController extends Controller
             $kodeMasterLama = $kpi->kode_master;
             $kodeMasterBaru = $request->kode_master;
 
-            $bobotKpiSaatIni  = $kpi->bobot_kpi;
+            $bobotKpiSaatIni = $kpi->bobot_kpi;
             $targetKpiSaatIni = $kpi->target_kpi;
 
             KPIMaster::where('kode_master', $kodeMasterLama)->update([
                 'kode_master' => $kodeMasterBaru,
-                'nama_kpi'    => $request->nama_kpi,
-                'jabatan_id'  => $request->jabatan_id,
-                'kode_dept'   => $request->kode_dept,
-                'is_active'   => (bool) $request->is_active,
+                'nama_kpi' => $request->nama_kpi,
+                'jabatan_id' => $request->jabatan_id,
+                'kode_dept' => $request->kode_dept,
+                'is_active' => (bool) $request->is_active,
             ]);
 
             if ($kodeMasterLama !== $kodeMasterBaru) {
@@ -198,7 +199,7 @@ class KPIController extends Controller
             $newCabangs = $request->kode_cabang;
 
             $cabangToDelete = array_diff($existingCabangs, $newCabangs);
-            if (!empty($cabangToDelete)) {
+            if (! empty($cabangToDelete)) {
                 KPIMaster::where('kode_master', $kodeMasterBaru)
                     ->whereIn('kode_cabang', $cabangToDelete)
                     ->delete();
@@ -208,22 +209,23 @@ class KPIController extends Controller
             foreach ($cabangToAdd as $kodeCabang) {
                 KPIMaster::create([
                     'kode_master' => $kodeMasterBaru,
-                    'nama_kpi'    => $request->nama_kpi,
-                    'jabatan_id'  => $request->jabatan_id,
-                    'kode_dept'   => $request->kode_dept,
+                    'nama_kpi' => $request->nama_kpi,
+                    'jabatan_id' => $request->jabatan_id,
+                    'kode_dept' => $request->kode_dept,
                     'kode_cabang' => $kodeCabang,
-                    'is_active'   => (bool) $request->is_active,
-                    'bobot_kpi'   => $bobotKpiSaatIni,
-                    'target_kpi'  => $targetKpiSaatIni,
+                    'is_active' => (bool) $request->is_active,
+                    'bobot_kpi' => $bobotKpiSaatIni,
+                    'target_kpi' => $targetKpiSaatIni,
                 ]);
             }
 
             DB::commit();
 
             return redirect()->route('kpi.master.index')
-                ->with('success', 'Data KPI Master berhasil diperbarui. Cabang aktif: ' . count($newCabangs));
+                ->with('success', 'Data KPI Master berhasil diperbarui. Cabang aktif: '.count($newCabangs));
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->with('error', $this->failMessage('Gagal update data.', $e))->withInput();
         }
     }
@@ -251,10 +253,14 @@ class KPIController extends Controller
     public function detailMasterKPI(Request $request, $id)
     {
         $kpiMaster = KPIMaster::with([
-            'jabatan', 
+            'jabatan',
             'departemen',
-            'kpiMasterDetail' => function($q) { $q->orderBy('id', 'asc'); },
-            'kpiMasterAtasan' => function($q) { $q->orderBy('id', 'asc'); }
+            'kpiMasterDetail' => function ($q) {
+                $q->orderBy('id', 'asc');
+            },
+            'kpiMasterAtasan' => function ($q) {
+                $q->orderBy('id', 'asc');
+            },
         ])->findOrFail($id);
 
         $karyawanDetails = $kpiMaster->kpiMasterDetail;
@@ -267,83 +273,83 @@ class KPIController extends Controller
     {
         $kpiMaster = KPIMaster::findOrFail($id);
         $request->merge([
-            'bobot'  => str_replace(',', '.', $request->bobot),
+            'bobot' => str_replace(',', '.', $request->bobot),
             'target' => $request->target ? str_replace(',', '.', $request->target) : null,
         ]);
 
         $request->validate([
-            'indikator'=> 'required|string',
-            'bobot'    => 'required|numeric|min:0',
-            'target'   => 'nullable|required_if:kategori,atasan|numeric|min:0',
+            'indikator' => 'required|string',
+            'bobot' => 'required|numeric|min:0',
+            'target' => 'nullable|required_if:kategori,atasan|numeric|min:0',
             'kategori' => 'required|in:karyawan,atasan',
-            'is_active'=> 'required|boolean',
+            'is_active' => 'required|boolean',
         ]);
 
         if ($request->kategori === 'karyawan') {
             $maxBobotKaryawan = $kpiMaster->bobot_kpi ?? 100;
             $currentTotal = KPIMasterDetail::where('kode_master', $kpiMaster->kode_master)
-                            ->where('is_active', true)
-                            ->sum('score_indikator');
-            
+                ->where('is_active', true)
+                ->sum('score_indikator');
+
             if ($request->is_active && ($currentTotal + $request->bobot) > $maxBobotKaryawan) {
-                return back()->with('warning', "Gagal! Total score untuk Karyawan akan menjadi " . ($currentTotal + $request->bobot) . "%. Maksimal {$maxBobotKaryawan}%.")->withInput();
+                return back()->with('warning', 'Gagal! Total score untuk Karyawan akan menjadi '.($currentTotal + $request->bobot)."%. Maksimal {$maxBobotKaryawan}%.")->withInput();
             }
 
             KPIMasterDetail::create([
-                'kode_master'     => $kpiMaster->kode_master,
-                'indikator'       => $request->indikator,
+                'kode_master' => $kpiMaster->kode_master,
+                'indikator' => $request->indikator,
                 'score_indikator' => $request->bobot,
-                'target'          => 1,
-                'is_active'       => $request->is_active,
+                'target' => 1,
+                'is_active' => $request->is_active,
             ]);
 
         } else {
             KPIMasterAtasan::create([
-                'kode_master'   => $kpiMaster->kode_master,
-                'indikator'     => $request->indikator,
-                'bobot_atasan'  => $request->bobot,
+                'kode_master' => $kpiMaster->kode_master,
+                'indikator' => $request->indikator,
+                'bobot_atasan' => $request->bobot,
                 'target_atasan' => $request->target,
-                'is_active'     => $request->is_active,
+                'is_active' => $request->is_active,
             ]);
         }
 
-        return back()->with('success', 'Indikator berhasil ditambahkan ' . ucfirst($request->kategori));
+        return back()->with('success', 'Indikator berhasil ditambahkan '.ucfirst($request->kategori));
     }
 
     public function updateDetailMasterKPI(Request $request)
     {
         $request->validate([
-            'kode_master'      => 'required|exists:kpi_master,kode_master',
-            'bobot_kpi'        => 'required|numeric|min:0',
-            'target_kpi'       => 'nullable|required|numeric|min:0',
+            'kode_master' => 'required|exists:kpi_master,kode_master',
+            'bobot_kpi' => 'required|numeric|min:0',
+            'target_kpi' => 'nullable|required|numeric|min:0',
             'details_karyawan' => 'nullable|array',
-            'details_atasan'   => 'nullable|array',
+            'details_atasan' => 'nullable|array',
             'details_karyawan.*.score_indikator' => 'nullable|numeric',
-            'details_atasan.*.bobot'             => 'nullable|numeric',
-            'details_atasan.*.target'            => 'nullable|numeric',
+            'details_atasan.*.bobot' => 'nullable|numeric',
+            'details_atasan.*.target' => 'nullable|numeric',
         ]);
 
         DB::beginTransaction();
         try {
             KPIMaster::where('kode_master', $request->kode_master)->update([
-                'bobot_kpi'  => $request->bobot_kpi,
+                'bobot_kpi' => $request->bobot_kpi,
                 'target_kpi' => $request->target_kpi,
             ]);
-            
+
             $master = KPIMaster::where('kode_master', $request->kode_master)->first();
-            
+
             if ($request->has('details_karyawan')) {
                 $totalBobotKaryawan = 0;
                 foreach ($request->details_karyawan as $detailId => $data) {
                     $detail = KPIMasterDetail::find($detailId);
                     if ($detail) {
                         $detail->update([
-                            'indikator'       => $data['indikator'],
+                            'indikator' => $data['indikator'],
                             'score_indikator' => $data['score_indikator'],
-                            'is_active'       => $data['is_active'],
+                            'is_active' => $data['is_active'],
                         ]);
 
-                        if($data['is_active'] == 1) {
+                        if ($data['is_active'] == 1) {
                             $totalBobotKaryawan += $data['score_indikator'];
                         }
                     }
@@ -352,6 +358,7 @@ class KPIController extends Controller
                 $maxBobot = $master->bobot_kpi ?? 100;
                 if ($totalBobotKaryawan > $maxBobot) {
                     DB::rollBack();
+
                     return back()->with('warning', "Data gagal disimpan! Total bobot Karyawan melebihi batas (Aktif: {$totalBobotKaryawan}% / Maks: {$maxBobot}%). Harap perbaiki kembali.");
                 }
             }
@@ -362,10 +369,10 @@ class KPIController extends Controller
                     $detail = KPIMasterAtasan::find($detailId);
                     if ($detail) {
                         $detail->update([
-                            'indikator'    => $data['indikator'],
+                            'indikator' => $data['indikator'],
                             'bobot_atasan' => $data['bobot'],
-                            'target_atasan'=> $data['target'],
-                            'is_active'    => $data['is_active'],
+                            'target_atasan' => $data['target'],
+                            'is_active' => $data['is_active'],
                         ]);
                     }
                 }
@@ -373,10 +380,11 @@ class KPIController extends Controller
 
             DB::commit();
 
-            return back()->with('success', "Data Pengaturan KPI dan Indikator berhasil diperbarui.");
+            return back()->with('success', 'Data Pengaturan KPI dan Indikator berhasil diperbarui.');
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->with('error', $this->failMessage('Gagal memproses data.', $e));
         }
     }
@@ -388,7 +396,7 @@ class KPIController extends Controller
         } elseif ($jenis == 'atasan') {
             KPIMasterAtasan::findOrFail($detail_id)->delete();
         }
-        
+
         return back()->with('success', 'Indikator dihapus.');
     }
 
@@ -401,7 +409,7 @@ class KPIController extends Controller
         $reqTahun = $request->input('tahun', date('Y'));
         $nik = $request->input('nik');
 
-        if (!$nik) {
+        if (! $nik) {
             return redirect()->route('kpi.rekap.karyawan')->with('error', 'Silakan pilih karyawan terlebih dahulu.');
         }
 
@@ -430,14 +438,14 @@ class KPIController extends Controller
     {
         $kpiDaily = KPIDaily::with([
             'karyawan',
-            'kpiDailyDetail' => function($query) {
+            'kpiDailyDetail' => function ($query) {
                 $query->orderBy('kpi_master_detail_id', 'asc');
             },
-            'kpiDailyExtra'
+            'kpiDailyExtra',
         ])->findOrFail($kpi_daily_id);
-        
+
         $jabatanId = $kpiDaily->karyawan->jabatan_id;
-        $kpiMaster = KPIMaster::with(['kpiMasterDetail' => function($query) {
+        $kpiMaster = KPIMaster::with(['kpiMasterDetail' => function ($query) {
             $query->orderBy('id', 'asc');
         }])
             ->where('jabatan_id', $jabatanId)
@@ -445,11 +453,11 @@ class KPIController extends Controller
             ->where('kode_cabang', $kpiDaily->karyawan->kode_cabang)
             ->first();
 
-        if (!$kpiMaster) {
-            $kpiMaster = KPIMaster::with(['kpiMasterDetail' => function($query) {
+        if (! $kpiMaster) {
+            $kpiMaster = KPIMaster::with(['kpiMasterDetail' => function ($query) {
                 $query->orderBy('id', 'asc');
             }])
-                ->whereHas('jabatan', function($query) {
+                ->whereHas('jabatan', function ($query) {
                     $query->where('nama_jabatan', 'ilike', '%staff%');
                 })
                 ->where('kode_dept', $kpiDaily->karyawan->kode_dept)
@@ -461,11 +469,11 @@ class KPIController extends Controller
             ->where('nik', $kpiDaily->nik)
             ->whereDate('tanggal', $kpiDaily->tanggal)
             ->first();
-        
+
         $user = Auth::guard('user')->user();
         $isHR = $user->hasRole(['administrator', 'hrd', 'admin cabang']);
 
-        if (!$isHR) {
+        if (! $isHR) {
             abort(403, 'Akses Ditolak.');
         }
 
@@ -497,24 +505,24 @@ class KPIController extends Controller
         $kpiDaily = KPIDaily::with([
             'karyawan.jabatanRel',
             'kpiDailyDetail.kpiMasterDetail',
-            'kpiDailyExtra'
+            'kpiDailyExtra',
         ])->findOrFail($kpi_daily_id);
-        
+
         $user = Auth::guard('user')->user();
         $isHR = $user->hasRole(['administrator', 'hrd', 'admin cabang']);
 
         if ($kpiDaily->status === 'approved_by_hr') {
             return back()->with('error', 'Data sudah disetujui HR dan tidak dapat diubah.');
         }
-        
-        if ($kpiDaily->status === 'approved_by_atasan' && !$isHR) {
+
+        if ($kpiDaily->status === 'approved_by_atasan' && ! $isHR) {
             return back()->with('error', 'Data sudah disetujui Atasan.');
         }
 
         DB::beginTransaction();
         try {
             foreach ($request->details as $detailId => $data) {
-                
+
                 $isChecked = isset($data['is_checked']) ? 1 : 0;
                 $masterDetail = KPIMasterDetail::find($detailId);
                 $score = $isChecked ? ($masterDetail->score_indikator ?? 0) : 0;
@@ -522,21 +530,23 @@ class KPIController extends Controller
                 KPIDailyDetail::updateOrCreate(
                     [
                         'kpi_daily_id' => $kpi_daily_id,
-                        'kpi_master_detail_id' => $detailId
+                        'kpi_master_detail_id' => $detailId,
                     ],
                     [
-                        'score'      => $score,
+                        'score' => $score,
                         'is_checked' => $isChecked,
-                        'catatan'    => $data['catatan'] ?? null,
+                        'catatan' => $data['catatan'] ?? null,
                     ]
                 );
             }
 
             DB::commit();
+
             return back()->with('success', 'Detail penilaian dan verifikasi berhasil diperbarui.');
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->with('error', $this->failMessage('Gagal update.', $e));
         }
     }
@@ -546,7 +556,7 @@ class KPIController extends Controller
         $kpiDaily = KPIDaily::with([
             'karyawan.jabatanRel',
             'kpiDailyDetail.kpiMasterDetail',
-            'kpiDailyExtra'
+            'kpiDailyExtra',
         ])->findOrFail($kpi_daily_id);
 
         $action = $request->input('action');
@@ -555,7 +565,7 @@ class KPIController extends Controller
 
         if ($action === 'approve_hr') {
             if ($isHR) {
-                
+
                 // if ($kpiDaily->status !== 'approved_by_atasan') {
                 //     return back()->with('error', 'Gagal! Laporan ini harus disetujui dan diberi penilaian oleh Atasan terlebih dahulu.');
                 // }
@@ -563,25 +573,27 @@ class KPIController extends Controller
                 DB::beginTransaction();
                 try {
                     $kpiDaily->update([
-                        'status'        => 'approved_by_hr',
-                        'approve_hr'    => (string) $user->id,
+                        'status' => 'approved_by_hr',
+                        'approve_hr' => (string) $user->id,
                         'approve_hr_at' => now(),
-                        'alasan_reject' => null
+                        'alasan_reject' => null,
                     ]);
 
                     KPIAtasanDaily::where('nik', $kpiDaily->nik)
                         ->where('tanggal', $kpiDaily->tanggal)
                         ->update([
-                            'status'        => 'approved_by_hr',
-                            'approve_hr'    => (string) $user->id,
+                            'status' => 'approved_by_hr',
+                            'approve_hr' => (string) $user->id,
                             'approve_hr_at' => now(),
                         ]);
 
                     DB::commit();
+
                     return back()->with('success', 'Workbook Karyawan dan Penilaian Atasan berhasil disetujui sepenuhnya oleh HR.');
 
                 } catch (\Exception $e) {
                     DB::rollBack();
+
                     return back()->with('error', $this->failMessage('Gagal menyetujui KPI.', $e));
                 }
             }
@@ -601,27 +613,29 @@ class KPIController extends Controller
         DB::beginTransaction();
         try {
             $kpiDaily->update([
-                'status'            => 'rejected',
-                'alasan_reject'     => $request->alasan_reject,
-                'approve_atasan'    => null,
+                'status' => 'rejected',
+                'alasan_reject' => $request->alasan_reject,
+                'approve_atasan' => null,
                 'approve_atasan_at' => null,
-                'approve_hr'        => null,
-                'approve_hr_at'     => null
+                'approve_hr' => null,
+                'approve_hr_at' => null,
             ]);
 
             KPIAtasanDaily::where('nik', $kpiDaily->nik)
                 ->where('tanggal', $kpiDaily->tanggal)
                 ->update([
-                    'status'        => 'draft',
-                    'approve_hr'    => null,
+                    'status' => 'draft',
+                    'approve_hr' => null,
                     'approve_hr_at' => null,
                 ]);
 
             DB::commit();
+
             return back()->with('success', 'KPI Ditolak dan dikembalikan ke karyawan untuk direvisi.');
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->with('error', $this->failMessage('Gagal menolak KPI.', $e));
         }
     }
@@ -631,8 +645,8 @@ class KPIController extends Controller
         $extra = KPIDailyExtra::findOrFail($id);
         $extra->update([
             'indikator_tambahan' => $request->indikator_tambahan,
-            'catatan'            => $request->catatan,
-            'score'              => $request->score,
+            'catatan' => $request->catatan,
+            'score' => $request->score,
         ]);
 
         return back()->with('success', 'KPI Tambahan berhasil diupdate.');
@@ -651,7 +665,7 @@ class KPIController extends Controller
     // ==========================================
     public function rekapKPIKaryawan(Request $request)
     {
-        $hariIni = \Carbon\Carbon::now();
+        $hariIni = Carbon::now();
         if ($hariIni->day >= 26) {
             $hariIni->addMonth();
         }
@@ -670,26 +684,26 @@ class KPIController extends Controller
         $namabulan = [
             1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
             5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
         ];
 
         $periodeList = [];
         for ($i = 1; $i <= 12; $i++) {
             $bulan_lalu = ($i == 1) ? 12 : $i - 1;
-            
+
             $nama_bln_lalu = $namabulan[$bulan_lalu];
-            $nama_bln_ini  = $namabulan[$i];
-            
+            $nama_bln_ini = $namabulan[$i];
+
             $periodeList[$i] = "26 $nama_bln_lalu - 25 $nama_bln_ini";
         }
         [$tglAwal, $tglAkhir] = $this->getCycleDateRange($bulan, $tahun);
         $nik_pencarian = $request->input('nik_pencarian');
 
         $karyawanQuery = Karyawan::with(['departemen', 'cabang'])
-            ->when($kode_cabang, fn($q) => $q->where('kode_cabang', $kode_cabang))
-            ->when($kode_dept, fn($q) => $q->where('kode_dept', $kode_dept))
-            ->when($nik_pencarian, fn($q) => $q->where('nik', $nik_pencarian));
-            
+            ->when($kode_cabang, fn ($q) => $q->where('kode_cabang', $kode_cabang))
+            ->when($kode_dept, fn ($q) => $q->where('kode_dept', $kode_dept))
+            ->when($nik_pencarian, fn ($q) => $q->where('nik', $nik_pencarian));
+
         $listKaryawan = $karyawanQuery->orderBy('nama_lengkap')->paginate(50)->withQueryString();
         $niks = $listKaryawan->pluck('nik');
 
@@ -706,7 +720,7 @@ class KPIController extends Controller
         $dataApproval = [];
         foreach ($listKaryawan as $karyawan) {
             $kpis = $kpiBulanan->get($karyawan->nik, collect());
-            
+
             $totalLaporan = $kpis->count();
             $totalApprovedAtasan = $kpis->whereNotNull('approve_atasan')->count();
             $totalApprovedHR = $kpis->whereNotNull('approve_hr')->count();
@@ -714,7 +728,7 @@ class KPIController extends Controller
             $penilaianAtasan = $penilaianAtasanData->get($karyawan->nik);
             $statusPenilaianAtasan = $penilaianAtasan ? $penilaianAtasan->status : 'Belum Dibuat';
 
-            $dataApproval[] = (object)[
+            $dataApproval[] = (object) [
                 'nik' => $karyawan->nik,
                 'nama_lengkap' => $karyawan->nama_lengkap,
                 'departemen' => $karyawan->departemen->nama_dept ?? '-',
@@ -722,7 +736,7 @@ class KPIController extends Controller
                 'total_laporan' => $totalLaporan,
                 'total_approved_atasan' => $totalApprovedAtasan,
                 'total_approved_hr' => $totalApprovedHR,
-                'status_penilaian_atasan' => $statusPenilaianAtasan
+                'status_penilaian_atasan' => $statusPenilaianAtasan,
             ];
         }
 
@@ -740,7 +754,7 @@ class KPIController extends Controller
             'dataApproval' => collect($dataApproval),
             'paginator' => $listKaryawan,
             'tglAwal' => $tglAwal,
-            'tglAkhir' => $tglAkhir
+            'tglAkhir' => $tglAkhir,
         ]);
     }
 
@@ -761,14 +775,14 @@ class KPIController extends Controller
         }
 
         $namabulan = [
-            "", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli",
-            "Agustus", "September", "Oktober", "November", "Desember"
+            '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli',
+            'Agustus', 'September', 'Oktober', 'November', 'Desember',
         ];
 
         $karyawanQuery = Karyawan::with(['jabatanRel', 'departemen', 'cabang'])
-            ->when($kode_cabang, fn($q) => $q->where('kode_cabang', $kode_cabang))
-            ->when($kode_dept, fn($q) => $q->where('kode_dept', $kode_dept))
-            ->when(!empty($niks), fn($q) => $q->whereIn('nik', $niks));
+            ->when($kode_cabang, fn ($q) => $q->where('kode_cabang', $kode_cabang))
+            ->when($kode_dept, fn ($q) => $q->where('kode_dept', $kode_dept))
+            ->when(! empty($niks), fn ($q) => $q->whereIn('nik', $niks));
 
         $karyawans = $karyawanQuery->orderBy('nama_lengkap')->get();
         $nikList = $karyawans->pluck('nik');
@@ -787,14 +801,16 @@ class KPIController extends Controller
         $rekap = [];
         foreach ($karyawans as $karyawan) {
             $karyawanKPIs = $kpiData->where('nik', $karyawan->nik);
-            if ($karyawanKPIs->isEmpty()) continue; 
+            if ($karyawanKPIs->isEmpty()) {
+                continue;
+            }
 
             $totalHariKerjaEfektif = $this->getHariKerjaEfektif($tglAwal, $tglAkhir, $karyawan->nik);
 
-            $masterIndikators = KPIMasterDetail::whereHas('kpiMaster', function($q) use ($karyawan) {
-                    $q->where('jabatan_id', $karyawan->jabatan_id)
-                      ->where('kode_dept', $karyawan->kode_dept);
-                })
+            $masterIndikators = KPIMasterDetail::whereHas('kpiMaster', function ($q) use ($karyawan) {
+                $q->where('jabatan_id', $karyawan->jabatan_id)
+                    ->where('kode_dept', $karyawan->kode_dept);
+            })
                 ->where('is_active', true)
                 ->orderBy('id')
                 ->get();
@@ -805,8 +821,8 @@ class KPIController extends Controller
             $grandTotalHasil = 0;
 
             foreach ($masterIndikators as $mi) {
-                $progressCount = 0; 
-                
+                $progressCount = 0;
+
                 foreach ($karyawanKPIs as $kpi) {
                     $detail = $kpi->kpiDailyDetail->where('kpi_master_detail_id', $mi->id)->first();
                     if ($detail && $detail->is_checked == 1) {
@@ -815,16 +831,16 @@ class KPIController extends Controller
                 }
 
                 $hasilKpi = $totalHariKerjaEfektif > 0 ? ($progressCount / $totalHariKerjaEfektif) * $mi->score_indikator : 0;
-                
+
                 if ($hasilKpi > $mi->score_indikator) {
                     $hasilKpi = $mi->score_indikator;
                 }
 
-                $items[] = (object)[
-                    'indikator'   => floatval($mi->score_indikator) . '%',
+                $items[] = (object) [
+                    'indikator' => floatval($mi->score_indikator).'%',
                     'description' => $mi->indikator,
-                    'progress'    => $progressCount,
-                    'hasil'       => round($hasilKpi, 2)
+                    'progress' => $progressCount,
+                    'hasil' => round($hasilKpi, 2),
                 ];
 
                 $grandTotalScore += $mi->score_indikator;
@@ -836,51 +852,54 @@ class KPIController extends Controller
             $totalScoreExtra = 0;
             foreach ($karyawanKPIs as $kpi) {
                 foreach ($kpi->kpiDailyExtra as $ext) {
-                    $extras[] = (object)[
-                        'tanggal'  => date('d F Y', strtotime($kpi->tanggal)),
+                    $extras[] = (object) [
+                        'tanggal' => date('d F Y', strtotime($kpi->tanggal)),
                         'kegiatan' => $ext->indikator_tambahan,
-                        'catatan'  => $ext->catatan ?? '-',
-                        'score'    => floatval($ext->score)
+                        'catatan' => $ext->catatan ?? '-',
+                        'score' => floatval($ext->score),
                     ];
                     $totalScoreExtra += $ext->score;
                 }
             }
 
-            $avgProgress = ($masterIndikators->count() > 0 && $totalHariKerjaEfektif > 0) 
-                            ? ($grandTotalProgress / ($totalHariKerjaEfektif * $masterIndikators->count())) * 100 
+            $avgProgress = ($masterIndikators->count() > 0 && $totalHariKerjaEfektif > 0)
+                            ? ($grandTotalProgress / ($totalHariKerjaEfektif * $masterIndikators->count())) * 100
                             : 0;
-                            
-            if($avgProgress > 100) $avgProgress = 100;
+
+            if ($avgProgress > 100) {
+                $avgProgress = 100;
+            }
 
             $totalKeseluruhan = round($avgProgress, 1) + $totalScoreExtra;
 
-            $rekap[] = (object)[
-                'nik'          => $karyawan->nik,
+            $rekap[] = (object) [
+                'nik' => $karyawan->nik,
                 'nama_lengkap' => $karyawan->nama_lengkap,
-                'jabatan'      => $karyawan->jabatanRel->nama_jabatan ?? '-',
-                'departemen'   => $karyawan->departemen->nama_dept ?? '-',
-                'cabang'       => $karyawan->cabang->nama_cabang ?? '-',
-                'periode'      => $periodeString,
-                'hari_efektif' => $totalHariKerjaEfektif, 
-                'items'        => $items,
-                'extras'       => $extras,
-                'summary'      => (object)[
-                    'total_bobot'       => floatval($grandTotalScore) . '%', 
-                    'total_progress'    => round($avgProgress, 1), 
-                    'total_hasil'       => round($grandTotalHasil, 0),
-                    'total_keseluruhan' => $totalKeseluruhan
-                ]
+                'jabatan' => $karyawan->jabatanRel->nama_jabatan ?? '-',
+                'departemen' => $karyawan->departemen->nama_dept ?? '-',
+                'cabang' => $karyawan->cabang->nama_cabang ?? '-',
+                'periode' => $periodeString,
+                'hari_efektif' => $totalHariKerjaEfektif,
+                'items' => $items,
+                'extras' => $extras,
+                'summary' => (object) [
+                    'total_bobot' => floatval($grandTotalScore).'%',
+                    'total_progress' => round($avgProgress, 1),
+                    'total_hasil' => round($grandTotalHasil, 0),
+                    'total_keseluruhan' => $totalKeseluruhan,
+                ],
             ];
         }
 
         $data = compact('bulan', 'tahun', 'namabulan', 'rekap', 'tglAwal', 'tglAkhir');
 
         if ($request->exportexcel == '1') {
-            $time = date("d-m-Y_His");
+            $time = date('d-m-Y_His');
+
             return response()
                 ->view('admin.kpi.cetakrekapkpiexcel_karyawan', $data)
                 ->header('Content-Type', 'application/vnd.ms-excel')
-                ->header('Content-Disposition', "attachment; filename=Rekap_KPI_Harian_{$namabulan[(int)$bulan]}_{$tahun}.xls");
+                ->header('Content-Disposition', "attachment; filename=Rekap_KPI_Harian_{$namabulan[(int) $bulan]}_{$tahun}.xls");
         }
 
         return view('admin.kpi.cetakrekapkpi_karyawan', $data);
@@ -892,30 +911,30 @@ class KPIController extends Controller
     public function reportKPI()
     {
         $namabulan = [
-            "", "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
-            "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+            '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
         ];
 
         $periodeList = [];
         for ($i = 1; $i <= 12; $i++) {
             $bulan_lalu = ($i == 1) ? 12 : $i - 1;
-            $periodeList[$i] = "26 " . $namabulan[$bulan_lalu] . " - 25 " . $namabulan[$i];
+            $periodeList[$i] = '26 '.$namabulan[$bulan_lalu].' - 25 '.$namabulan[$i];
         }
 
-        $hariIni = \Carbon\Carbon::now();
+        $hariIni = Carbon::now();
         if ($hariIni->day >= 26) {
             $hariIni->addMonth();
         }
         $defaultBulan = $hariIni->format('n');
         $defaultTahun = $hariIni->format('Y');
-        
+
         $jabatan = Jabatan::orderBy('nama_jabatan')->get();
         $departemen = Departemen::orderBy('nama_dept')->get();
         $cabang = Cabang::orderBy('nama_cabang')->get();
         $karyawan = Karyawan::orderBy('nama_lengkap')->get();
 
         return view('admin.kpi.reportkpi', compact(
-            'namabulan', 'periodeList', 'defaultBulan', 'defaultTahun', 
+            'namabulan', 'periodeList', 'defaultBulan', 'defaultTahun',
             'jabatan', 'departemen', 'cabang', 'karyawan'
         ));
     }
@@ -929,18 +948,18 @@ class KPIController extends Controller
         $nik_input = $request->nik;
 
         $namabulan = [
-            "", "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
-            "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+            '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
         ];
-        
+
         [$tglAwal, $tglAkhir] = $this->getCycleDateRange($bulan, $tahun);
-        $periodeString = $namabulan[(int)$bulan] . " " . $tahun;
+        $periodeString = $namabulan[(int) $bulan].' '.$tahun;
 
         // 1. FILTER KARYAWAN
         $karyawanQuery = Karyawan::with(['jabatanRel', 'departemen', 'cabang'])
-            ->when($kode_cabang, fn($q) => $q->where('kode_cabang', $kode_cabang))
-            ->when($kode_dept, fn($q) => $q->where('kode_dept', $kode_dept))
-            ->when($nik_input, fn($q) => $q->where('nik', $nik_input));
+            ->when($kode_cabang, fn ($q) => $q->where('kode_cabang', $kode_cabang))
+            ->when($kode_dept, fn ($q) => $q->where('kode_dept', $kode_dept))
+            ->when($nik_input, fn ($q) => $q->where('nik', $nik_input));
 
         $karyawans = $karyawanQuery->orderBy('nama_lengkap')->get();
         $nikList = $karyawans->pluck('nik')->toArray();
@@ -955,8 +974,8 @@ class KPIController extends Controller
 
         // A. Ambil Data Presensi & Agregasi Langsung di SQL
         $presensiStats = DB::table('presensi')
-            ->select('nik', 
-                DB::raw('COUNT(id) as total_hari'), 
+            ->select('nik',
+                DB::raw('COUNT(id) as total_hari'),
                 DB::raw('SUM(CASE WHEN jam_in <= \'09:10:00\' THEN 1 ELSE 0 END) as tepat_waktu')
             )
             ->whereIn('nik', $nikList)
@@ -1000,7 +1019,9 @@ class KPIController extends Controller
                     ->where('kode_dept', $karyawan->kode_dept)
                     ->first();
 
-                if (!$kpiMaster) continue; // Skip jika Karyawan tidak punya format KPI
+                if (! $kpiMaster) {
+                    continue;
+                } // Skip jika Karyawan tidak punya format KPI
 
                 $items = [];
                 $overallScore = 0;
@@ -1012,22 +1033,22 @@ class KPIController extends Controller
                 // --------------------------------------------------
                 $bobotAtasanTotal = $kpiMaster->kpiMasterAtasan->where('is_active', 1)->sum('bobot_atasan');
                 $bobotAbsensi = 100 - ($kpiMaster->bobot_kpi + $bobotAtasanTotal);
-                
+
                 $pStat = $presensiStats->get($karyawan->nik);
-                $achieveAbsensi = ($pStat && $pStat->total_hari > 0) 
-                    ? round(($pStat->tepat_waktu / $pStat->total_hari) * 100) 
+                $achieveAbsensi = ($pStat && $pStat->total_hari > 0)
+                    ? round(($pStat->tepat_waktu / $pStat->total_hari) * 100)
                     : 0;
-                
+
                 $scoreAbsensi = min(100, $achieveAbsensi); // Maksimal 100%
                 $totalScoreAbsensi = round(($bobotAbsensi * $scoreAbsensi) / 100);
 
-                $items[] = (object)[
-                    'objective'   => 'Absensi',
+                $items[] = (object) [
+                    'objective' => 'Absensi',
                     'deliverable' => '% Datang Tepat Waktu',
-                    'weight'      => $bobotAbsensi,
-                    'target'      => '90%',
+                    'weight' => $bobotAbsensi,
+                    'target' => '90%',
                     'achievement' => $achieveAbsensi,
-                    'score'       => $scoreAbsensi,
+                    'score' => $scoreAbsensi,
                     'total_score' => $totalScoreAbsensi,
                 ];
 
@@ -1045,10 +1066,12 @@ class KPIController extends Controller
                     foreach ($karyawanDailies as $daily) {
                         $scoreUtama = $daily->kpiDailyDetail->sum('score');
                         $scoreExtra = $daily->kpiDailyExtra->sum('score'); // Extra masuk ke harian
-                        
+
                         $persenHariIni = (($scoreUtama + $scoreExtra) / $kpiMaster->bobot_kpi) * 100; // Menggunakan bobot dari Master KPI
-                        if ($persenHariIni > 100) $persenHariIni = 100;
-                        
+                        if ($persenHariIni > 100) {
+                            $persenHariIni = 100;
+                        }
+
                         $totalScoreHarian += $persenHariIni;
                     }
                     $achieveKaryawan = round($totalScoreHarian / $karyawanDailies->count());
@@ -1057,13 +1080,13 @@ class KPIController extends Controller
                 $scoreKaryawan = min(100, $achieveKaryawan);
                 $totalScoreKaryawan = round(($kpiMaster->bobot_kpi * $scoreKaryawan) / 100);
 
-                $items[] = (object)[
-                    'objective'   => 'KPI',
+                $items[] = (object) [
+                    'objective' => 'KPI',
                     'deliverable' => '% Kecepatan dan ketepatan', // Sesuai Excel
-                    'weight'      => floatval($kpiMaster->bobot_kpi),
-                    'target'      => floatval($kpiMaster->target_kpi) . '%',
+                    'weight' => floatval($kpiMaster->bobot_kpi),
+                    'target' => floatval($kpiMaster->target_kpi).'%',
                     'achievement' => $achieveKaryawan,
-                    'score'       => $scoreKaryawan,
+                    'score' => $scoreKaryawan,
                     'total_score' => $totalScoreKaryawan,
                 ];
 
@@ -1080,7 +1103,9 @@ class KPIController extends Controller
                     $achieveAtasan = 0;
                     if ($latestAtasan && $latestAtasan->details) {
                         $det = $latestAtasan->details->where('kpi_master_atasan_id', $atasanMaster->id)->first();
-                        if ($det) $achieveAtasan = $det->score;
+                        if ($det) {
+                            $achieveAtasan = $det->score;
+                        }
                     }
 
                     $scoreAtasan = min(100, $achieveAtasan);
@@ -1089,13 +1114,13 @@ class KPIController extends Controller
                     // Ambil kata pertama sebelum % untuk Objective (Misal "% inovasi" -> "Inovasi")
                     $cleanObjective = trim(str_replace('%', '', explode(' ', $atasanMaster->indikator)[0]));
 
-                    $items[] = (object)[
-                        'objective'   => $cleanObjective ?: 'Lainnya',
+                    $items[] = (object) [
+                        'objective' => $cleanObjective ?: 'Lainnya',
                         'deliverable' => $atasanMaster->indikator,
-                        'weight'      => floatval($atasanMaster->bobot_atasan),
-                        'target'      => floatval($atasanMaster->target_atasan) . '%',
+                        'weight' => floatval($atasanMaster->bobot_atasan),
+                        'target' => floatval($atasanMaster->target_atasan).'%',
                         'achievement' => $achieveAtasan,
-                        'score'       => $scoreAtasan,
+                        'score' => $scoreAtasan,
                         'total_score' => $totScoreA,
                     ];
 
@@ -1109,38 +1134,39 @@ class KPIController extends Controller
                 // --------------------------------------------------
                 KPIReport::updateOrInsert(
                     [
-                        'nik'           => $karyawan->nik,
+                        'nik' => $karyawan->nik,
                         'periode_bulan' => str_pad($bulan, 2, '0', STR_PAD_LEFT),
-                        'periode_tahun' => $tahun
+                        'periode_tahun' => $tahun,
                     ],
                     [
-                        'kode_master'    => $kpiMaster->kode_master,
+                        'kode_master' => $kpiMaster->kode_master,
                         'score_presensi' => $totalScoreAbsensi,
                         'score_workbook' => $totalScoreKaryawan,
-                        'score_atasan'   => $atasanScoreSum,
-                        'final_score'    => $overallScore,
+                        'score_atasan' => $atasanScoreSum,
+                        'final_score' => $overallScore,
                     ]
                 );
 
                 // Kemas untuk dikirim ke View
-                $rekap[] = (object)[
-                    'nik'          => $karyawan->nik,
+                $rekap[] = (object) [
+                    'nik' => $karyawan->nik,
                     'nama_lengkap' => $karyawan->nama_lengkap,
-                    'jabatan'      => $karyawan->jabatanRel->nama_jabatan ?? '-',
-                    'departemen'   => $karyawan->departemen->nama_dept ?? '-',
-                    'cabang'       => $karyawan->cabang->nama_cabang ?? '-',
-                    'periode'      => $periodeString,
-                    'items'        => $items,
-                    'summary'      => (object)[
-                        'weight_total'  => $weightTotal,
-                        'overall_score' => $overallScore
-                    ]
+                    'jabatan' => $karyawan->jabatanRel->nama_jabatan ?? '-',
+                    'departemen' => $karyawan->departemen->nama_dept ?? '-',
+                    'cabang' => $karyawan->cabang->nama_cabang ?? '-',
+                    'periode' => $periodeString,
+                    'items' => $items,
+                    'summary' => (object) [
+                        'weight_total' => $weightTotal,
+                        'overall_score' => $overallScore,
+                    ],
                 ];
             }
             DB::commit();
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->with('error', $this->failMessage('Gagal membuat laporan.', $e));
         }
 
@@ -1179,7 +1205,7 @@ class KPIController extends Controller
     public function bulkApproveHR(Request $request)
     {
         $request->validate([
-            'niks'  => 'required|array|min:1',
+            'niks' => 'required|array|min:1',
             'bulan' => 'required',
             'tahun' => 'required',
         ], [
@@ -1190,29 +1216,29 @@ class KPIController extends Controller
         $hrIdentifier = (string) $user->id;
 
         [$tglAwal, $tglAkhir] = $this->getCycleDateRange($request->bulan, $request->tahun);
-        
+
         DB::beginTransaction();
         try {
-            // 1. Bulk Approve KPI Karyawan (Workbook) 
+            // 1. Bulk Approve KPI Karyawan (Workbook)
             $updatedDaily = KPIDaily::whereIn('nik', $request->niks)
                 ->whereBetween('tanggal', [$tglAwal, $tglAkhir])
-                ->whereNull('approve_hr') 
+                ->whereNull('approve_hr')
                 // ->where('status', 'approved_by_atasan')
                 ->update([
-                    'status'        => 'approved_by_hr',
-                    'approve_hr'    => $hrIdentifier,
+                    'status' => 'approved_by_hr',
+                    'approve_hr' => $hrIdentifier,
                     'approve_hr_at' => now(),
                 ]);
-            
+
             // 2. Bulk Approve KPI Atasan
             $updatedAtasanDaily = KPIAtasanDaily::whereIn('nik', $request->niks)
                 ->whereBetween('tanggal', [$tglAwal, $tglAkhir])
                 ->whereNull('approve_hr')
                 // ->where('status', 'submitted')
                 ->update([
-                    'status'        => 'approved_by_hr',
-                    'approve_hr'    => $hrIdentifier, 
-                    'approve_hr_at' => now(), 
+                    'status' => 'approved_by_hr',
+                    'approve_hr' => $hrIdentifier,
+                    'approve_hr_at' => now(),
                 ]);
 
             DB::commit();
@@ -1222,9 +1248,10 @@ class KPIController extends Controller
             // }
 
             return redirect()->back()->with('success', "Berhasil menyetujui $updatedDaily laporan KPI harian dan $updatedAtasanDaily penilaian atasan.");
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->with('error', $this->failMessage('Terjadi kesalahan saat Bulk Approve.', $e));
         }
     }
@@ -1236,16 +1263,16 @@ class KPIController extends Controller
         $totalDays = 0;
 
         $hariLiburDb = HariLibur::whereBetween('tanggal_libur', [$tglAwal, $tglAkhir])
-                        ->pluck('tanggal_libur')
-                        ->toArray();
+            ->pluck('tanggal_libur')
+            ->toArray();
 
         $tglIzinSakit = [];
         $izinRecords = Izin::where('nik', $nik)
             ->where('status_approved', '1')
             ->whereIn('status', ['i', 's', 'c', 'r'])
-            ->where(function($q) use ($tglAwal, $tglAkhir) {
+            ->where(function ($q) use ($tglAwal, $tglAkhir) {
                 $q->whereBetween('tgl_izin_dari', [$tglAwal, $tglAkhir])
-                  ->orWhereBetween('tgl_izin_sampai', [$tglAwal, $tglAkhir]);
+                    ->orWhereBetween('tgl_izin_sampai', [$tglAwal, $tglAkhir]);
             })->get();
 
         foreach ($izinRecords as $iz) {
@@ -1265,7 +1292,7 @@ class KPIController extends Controller
             $isLiburNasional = in_array($dateString, $hariLiburDb);
             $isIzinSakit = in_array($dateString, $tglIzinSakit);
 
-            if (!$isMinggu && !$isLiburNasional && !$isIzinSakit) {
+            if (! $isMinggu && ! $isLiburNasional && ! $isIzinSakit) {
                 $totalDays++;
             }
 

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class KPIMaster extends Model
 {
     protected $table = 'kpi_master';
+
     protected $guarded = ['id'];
 
     public function kpiMasterDetail()
@@ -33,5 +34,4 @@ class KPIMaster extends Model
     {
         return $this->belongsTo(Cabang::class, 'kode_cabang', 'kode_cabang');
     }
-
 }

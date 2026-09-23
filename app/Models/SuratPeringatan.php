@@ -29,5 +29,4 @@ class SuratPeringatan extends Model
     {
         return $this->belongsTo(Karyawan::class, 'nik', 'nik');
     }
-
 }

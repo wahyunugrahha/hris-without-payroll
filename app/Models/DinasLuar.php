@@ -24,13 +24,13 @@ class DinasLuar extends Model
         'status_acc',
         'catatan_approval',
         'approved_by',
-        'approved_at'
+        'approved_at',
     ];
 
     protected $casts = [
         'tgl_mulai' => 'date',
         'tgl_selesai' => 'date',
-        'approved_at' => 'datetime'
+        'approved_at' => 'datetime',
     ];
 
     /**

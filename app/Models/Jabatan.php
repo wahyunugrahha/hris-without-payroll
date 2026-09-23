@@ -33,5 +33,4 @@ class Jabatan extends Model
     {
         return $this->hasMany(User::class, 'jabatan_id', 'id');
     }
-
 }

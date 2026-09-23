@@ -1,17 +1,15 @@
 <?php
 
-use App\Http\Controllers\Karyawan\KenaikanGajiController;
-use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\Auth\KaryawanAuthController;
 use App\Http\Controllers\Karyawan\DashboardController;
-use App\Http\Controllers\Karyawan\PengajuanIzinController;
-
 use App\Http\Controllers\Karyawan\DinasLuarController;
+use App\Http\Controllers\Karyawan\KaryawanController;
+use App\Http\Controllers\Karyawan\KenaikanGajiController;
 use App\Http\Controllers\Karyawan\KPIController;
 use App\Http\Controllers\Karyawan\LemburController;
+use App\Http\Controllers\Karyawan\PengajuanIzinController;
 use App\Http\Controllers\Karyawan\PresensiController;
-use App\Http\Controllers\Karyawan\KaryawanController;
+use Illuminate\Support\Facades\Route;
 
 // Karyawan Routes
 Route::middleware(['auth:karyawan'])->group(function () {
@@ -43,7 +41,7 @@ Route::middleware(['auth:karyawan'])->group(function () {
         ->name('karyawan.profile.darurat');
     Route::post('/presensi/profile/updatedarurat', [KaryawanController::class, 'updateDarurat'])
         ->name('karyawan.profile.updatedarurat');
-        
+
     Route::get('/presensi/profile/administrasi', [KaryawanController::class, 'profileAdministrasi'])
         ->middleware('permission:profile-view-karyawan,karyawan')
         ->name('karyawan.profile.administrasi');

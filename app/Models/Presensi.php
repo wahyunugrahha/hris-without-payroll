@@ -38,5 +38,4 @@ class Presensi extends Model
     {
         return $this->belongsTo(JamKerja::class, 'kode_jam_kerja', 'kode_jam_kerja');
     }
-
 }

@@ -3,11 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Auth;
-
 use App\Models\Cabang;
 use App\Models\Departemen;
 use App\Models\JamKerja;
@@ -15,6 +10,10 @@ use App\Models\Karyawan;
 use App\Models\KonfigurasiJkDept;
 use App\Models\KonfigurasiJkDeptDetail;
 use App\Models\Setjamkerja;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redirect;
 
 class KonfigurasiController extends Controller
 {
@@ -22,18 +21,18 @@ class KonfigurasiController extends Controller
     public function jamkerja(Request $request)
     {
         $query = JamKerja::query();
-        
-        if ($request->has('nama_jam_kerja') && !empty($request->nama_jam_kerja)) {
-            $query->where('nama_jam_kerja', 'ilike', '%' . $request->nama_jam_kerja . '%');
+
+        if ($request->has('nama_jam_kerja') && ! empty($request->nama_jam_kerja)) {
+            $query->where('nama_jam_kerja', 'ilike', '%'.$request->nama_jam_kerja.'%');
         }
 
-        if ($request->has('lintashari') && $request->lintashari != "") {
-        $query->where('lintashari', $request->lintashari);
-    }
+        if ($request->has('lintashari') && $request->lintashari != '') {
+            $query->where('lintashari', $request->lintashari);
+        }
 
         $jam_kerja = $query->orderBy('nama_jam_kerja')
-                           ->paginate(25)
-                           ->appends($request->all());
+            ->paginate(25)
+            ->appends($request->all());
 
         return view('admin.konfigurasi.jamkerja', compact('jam_kerja'));
     }
@@ -57,11 +56,12 @@ class KonfigurasiController extends Controller
             'jam_masuk',
             'akhir_jam_masuk',
             'jam_pulang',
-            'lintashari'
+            'lintashari',
         ]);
 
         try {
             JamKerja::create($data);
+
             return Redirect::back()->with(['success' => 'Data Jam Kerja Berhasil Disimpan']);
         } catch (\Exception $e) {
             // Log::error('Gagal menyimpan jam kerja: ' . $e->getMessage());
@@ -72,13 +72,14 @@ class KonfigurasiController extends Controller
     public function editjamkerja($kode_jam_kerja)
     {
         $jam_kerja = JamKerja::where('kode_jam_kerja', $kode_jam_kerja)->firstOrFail();
+
         return view('admin.konfigurasi.editjamkerja', compact('jam_kerja'));
     }
 
     public function updatejamkerja(Request $request, $kode_jam_kerja)
     {
         $request->validate([
-            'kode_jam_kerja_edit' => 'required|string|size:4|unique:jam_kerja,kode_jam_kerja,' . $kode_jam_kerja . ',kode_jam_kerja',
+            'kode_jam_kerja_edit' => 'required|string|size:4|unique:jam_kerja,kode_jam_kerja,'.$kode_jam_kerja.',kode_jam_kerja',
             'nama_jam_kerja' => 'required|string|max:15',
             'awal_jam_masuk' => 'required|date_format:H:i',
             'jam_masuk' => 'required|date_format:H:i',
@@ -97,7 +98,7 @@ class KonfigurasiController extends Controller
             'jam_masuk',
             'akhir_jam_masuk',
             'jam_pulang',
-            'lintashari'
+            'lintashari',
         ]);
         $data['kode_jam_kerja'] = $new_kode_jam_kerja;
 
@@ -126,12 +127,12 @@ class KonfigurasiController extends Controller
                     'presensi' => $jamkerja->presensis()->count(),
                     'configuration' => $jamkerja->deptDetails()->count(),
                     'personal' => $jamkerja->personalSchedules()->count(),
-                ]
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $this->failMessage('Gagal memproses data.', $e)
+                'message' => $this->failMessage('Gagal memproses data.', $e),
             ], 500);
         }
     }
@@ -140,17 +141,18 @@ class KonfigurasiController extends Controller
     {
         try {
             $jamkerja = JamKerja::where('kode_jam_kerja', $kode_jam_kerja)->first();
-            if (!$jamkerja) {
+            if (! $jamkerja) {
                 return Redirect::back()->with(['warning' => 'Data Jam Kerja tidak ditemukan']);
             }
 
             $jamkerja->delete();
+
             return Redirect::back()->with(['success' => 'Data Jam Kerja Berhasil Dihapus']);
         } catch (\Exception $e) {
             return Redirect::back()->with(['warning' => $this->failMessage('Data Jam Kerja Gagal Dihapus.', $e)]);
         }
     }
-    
+
     // Jam Kerja Departemen
     public function jamkerjadept(Request $request)
     {
@@ -183,10 +185,11 @@ class KonfigurasiController extends Controller
         $jamkerja = JamKerja::orderBy('nama_jam_kerja')->get();
         $user = Auth::guard('user')->user();
         $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
-        $cabang = $isAdminCabang && !empty($user->kode_cabang)
+        $cabang = $isAdminCabang && ! empty($user->kode_cabang)
             ? Cabang::where('kode_cabang', $user->kode_cabang)->get()
             : Cabang::get();
         $departemen = Departemen::get();
+
         return view('admin.konfigurasi.createjamkerjadept', compact('jamkerja', 'cabang', 'departemen'));
     }
 
@@ -196,11 +199,11 @@ class KonfigurasiController extends Controller
         $kode_dept = $request->kode_dept;
         $hari = $request->hari;
         $kode_jam_kerja = $request->kode_jam_kerja;
-        $kode_jk_dept = "J" . $kode_cabang . $kode_dept;
+        $kode_jk_dept = 'J'.$kode_cabang.$kode_dept;
 
         $user = Auth::guard('user')->user();
         $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
-        if ($isAdminCabang && !empty($user->kode_cabang) && $user->kode_cabang !== $kode_cabang) {
+        if ($isAdminCabang && ! empty($user->kode_cabang) && $user->kode_cabang !== $kode_cabang) {
             return redirect('/konfigurasi/jamkerjadept')->with(['warning' => 'Anda hanya dapat mengatur jam kerja departemen untuk cabang Anda.']);
         }
 
@@ -223,9 +226,11 @@ class KonfigurasiController extends Controller
 
             KonfigurasiJkDeptDetail::insert($data);
             DB::commit();
+
             return redirect('/konfigurasi/jamkerjadept')->with(['success' => 'Data Berhasil Disimpan']);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return redirect('/konfigurasi/jamkerjadept')->with(['warning' => 'Data Gagal Disimpan']);
         }
     }
@@ -235,7 +240,7 @@ class KonfigurasiController extends Controller
         $jamkerja = JamKerja::orderBy('nama_jam_kerja')->get();
         $user = Auth::guard('user')->user();
         $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
-        $cabang = $isAdminCabang && !empty($user->kode_cabang)
+        $cabang = $isAdminCabang && ! empty($user->kode_cabang)
             ? Cabang::where('kode_cabang', $user->kode_cabang)->get()
             : Cabang::get();
         $departemen = Departemen::get();
@@ -243,16 +248,17 @@ class KonfigurasiController extends Controller
             ->where('kode_jk_dept', $kode_jk_dept)
             ->first();
 
-        if (!$jamkerjadept) {
+        if (! $jamkerjadept) {
             return redirect('/konfigurasi/jamkerjadept')->with(['warning' => 'Data tidak ditemukan']);
         }
 
-        if ($isAdminCabang && !empty($user->kode_cabang) && $jamkerjadept->kode_cabang !== $user->kode_cabang) {
+        if ($isAdminCabang && ! empty($user->kode_cabang) && $jamkerjadept->kode_cabang !== $user->kode_cabang) {
             return redirect('/konfigurasi/jamkerjadept')->with(['warning' => 'Anda tidak berhak mengubah jam kerja cabang lain.']);
         }
         $jamkerjadept_detail = DB::table('konfigurasi_jk_dept_detail')
             ->where('kode_jk_dept', $kode_jk_dept)
             ->get();
+
         return view('admin.konfigurasi.editjamkerjadept', compact('jamkerja', 'cabang', 'departemen', 'jamkerjadept', 'jamkerjadept_detail'));
     }
 
@@ -261,10 +267,10 @@ class KonfigurasiController extends Controller
         $user = Auth::guard('user')->user();
         $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
         $header = DB::table('konfigurasi_jk_dept')->where('kode_jk_dept', $kode_jk_dept)->first();
-        if (!$header) {
+        if (! $header) {
             return redirect('/konfigurasi/jamkerjadept')->with(['warning' => 'Data tidak ditemukan']);
         }
-        if ($isAdminCabang && !empty($user->kode_cabang) && $header->kode_cabang !== $user->kode_cabang) {
+        if ($isAdminCabang && ! empty($user->kode_cabang) && $header->kode_cabang !== $user->kode_cabang) {
             return redirect('/konfigurasi/jamkerjadept')->with(['warning' => 'Anda tidak berhak mengubah jam kerja cabang lain.']);
         }
         $hari = $request->hari;
@@ -280,7 +286,7 @@ class KonfigurasiController extends Controller
                 $data[] = [
                     'kode_jk_dept' => $kode_jk_dept,
                     'hari' => $hari[$i],
-                    'kode_jam_kerja' => ($kode_jam_kerja[$i] === '' || $kode_jam_kerja[$i] === 'LIBUR') ? null : $kode_jam_kerja[$i]
+                    'kode_jam_kerja' => ($kode_jam_kerja[$i] === '' || $kode_jam_kerja[$i] === 'LIBUR') ? null : $kode_jam_kerja[$i],
                 ];
             }
 
@@ -290,6 +296,7 @@ class KonfigurasiController extends Controller
             return redirect('/konfigurasi/jamkerjadept')->with(['success' => 'Data Berhasil Disimpan']);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return redirect('/konfigurasi/jamkerjadept')->with(['warning' => 'Data Gagal Disimpan']);
         }
     }
@@ -300,21 +307,22 @@ class KonfigurasiController extends Controller
         $user = Auth::guard('user')->user();
         $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
         $cabang = DB::table('cabang')
-            ->when($isAdminCabang && !empty($user->kode_cabang), function ($q) use ($user) {
+            ->when($isAdminCabang && ! empty($user->kode_cabang), function ($q) use ($user) {
                 $q->where('kode_cabang', $user->kode_cabang);
             })->get();
         $departemen = DB::table('departemen')->get();
         $jamkerjadept = DB::table('konfigurasi_jk_dept')->where('kode_jk_dept', $kode_jk_dept)->first();
-        if (!$jamkerjadept) {
+        if (! $jamkerjadept) {
             return redirect('/konfigurasi/jamkerjadept')->with(['warning' => 'Data tidak ditemukan']);
         }
-        if ($isAdminCabang && !empty($user->kode_cabang) && $jamkerjadept->kode_cabang !== $user->kode_cabang) {
+        if ($isAdminCabang && ! empty($user->kode_cabang) && $jamkerjadept->kode_cabang !== $user->kode_cabang) {
             return redirect('/konfigurasi/jamkerjadept')->with(['warning' => 'Anda tidak berhak melihat jam kerja cabang lain.']);
         }
         $jamkerjadept_detail = DB::table('konfigurasi_jk_dept_detail')
             ->leftJoin('jam_kerja', 'konfigurasi_jk_dept_detail.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
             ->select('konfigurasi_jk_dept_detail.*', 'jam_kerja.nama_jam_kerja', 'jam_kerja.jam_masuk', 'jam_kerja.jam_pulang')
             ->where('kode_jk_dept', $kode_jk_dept)->get();
+
         return view('admin.konfigurasi.showjamkerjadept', compact('jamkerja', 'cabang', 'departemen', 'jamkerjadept', 'jamkerjadept_detail'));
     }
 
@@ -329,13 +337,13 @@ class KonfigurasiController extends Controller
             return response()->json([
                 'success' => true,
                 'relations' => [
-                    'karyawan' => $karyawanCount
-                ]
+                    'karyawan' => $karyawanCount,
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $this->failMessage('Gagal memproses data.', $e)
+                'message' => $this->failMessage('Gagal memproses data.', $e),
             ], 500);
         }
     }
@@ -347,15 +355,16 @@ class KonfigurasiController extends Controller
             $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
             $header = KonfigurasiJkDept::where('kode_jk_dept', $kode_jk_dept)->first();
 
-            if (!$header) {
+            if (! $header) {
                 return Redirect::back()->with(['warning' => 'Data konfigurasi tidak ditemukan']);
             }
 
-            if ($isAdminCabang && !empty($user->kode_cabang) && $header->kode_cabang !== $user->kode_cabang) {
+            if ($isAdminCabang && ! empty($user->kode_cabang) && $header->kode_cabang !== $user->kode_cabang) {
                 return Redirect::back()->with(['warning' => 'Anda tidak berhak menghapus jam kerja cabang lain.']);
             }
 
             $header->delete();
+
             return Redirect::back()->with(['success' => 'Data Konfigurasi Jam Kerja Berhasil Dihapus']);
         } catch (\Exception $e) {
             return Redirect::back()->with(['warning' => $this->failMessage('Data Gagal Dihapus.', $e)]);
@@ -379,6 +388,7 @@ class KonfigurasiController extends Controller
             $setjamkerja = Setjamkerja::where('nik', $nik)
                 ->with('jamKerja')
                 ->get();
+
             return view('admin.konfigurasi.editsetjamkerja', compact('karyawan', 'jamkerja', 'setjamkerja'));
         } else {
             return view('admin.konfigurasi.setjamkerja', compact('karyawan', 'jamkerja'));
@@ -390,24 +400,24 @@ class KonfigurasiController extends Controller
         $nik = $request->nik;
         $hari = $request->hari;
         $kode_jam_kerja = $request->kode_jam_kerja;
-        
+
         $karyawan = Karyawan::where('nik', $nik)->first();
         $user = Auth::guard('user')->user();
         $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
-        
+
         if ($isAdminCabang && $karyawan && $user->kode_cabang !== $karyawan->kode_cabang) {
             return Redirect::back()->with(['warning' => 'Anda hanya bisa mengatur jam kerja karyawan di cabang Anda.']);
         }
 
         // Validasi Sederhana
-        if (!is_array($hari) || count($hari) != 7) {
+        if (! is_array($hari) || count($hari) != 7) {
             return Redirect::back()->with(['warning' => 'Data hari tidak lengkap.']);
         }
 
         $data = [];
         for ($i = 0; $i < count($hari); $i++) {
             $kode = $kode_jam_kerja[$i];
-            
+
             // LOGIKA DIPERBAIKI: Tangkap 'null' (bawaan konversi Laravel) ATAU string kosong
             if ($kode === null || $kode === '') {
                 continue; // Skip baris ini agar sistem otomatis ikut jadwal departemen
@@ -417,16 +427,16 @@ class KonfigurasiController extends Controller
                 'nik' => $nik,
                 'hari' => $hari[$i],
                 // Jika LIBUR, set null. Jika ada kode jam kerja, masukkan kodenya.
-                'kode_jam_kerja' => ($kode === 'LIBUR') ? null : $kode
+                'kode_jam_kerja' => ($kode === 'LIBUR') ? null : $kode,
             ];
         }
 
         try {
             DB::transaction(function () use ($nik, $data) {
                 Setjamkerja::where('nik', $nik)->delete();
-                
+
                 // Hanya insert jika ada override jam kerja personal
-                if (!empty($data)) {
+                if (! empty($data)) {
                     Setjamkerja::insert($data);
                 }
             });
@@ -448,11 +458,11 @@ class KonfigurasiController extends Controller
         $nik = $request->nik;
         $hari = $request->hari;
         $kode_jam_kerja = $request->kode_jam_kerja;
-        
+
         $karyawan = Karyawan::where('nik', $nik)->first();
         $user = Auth::guard('user')->user();
         $isAdminCabang = $user && method_exists($user, 'hasRole') && $user->hasRole('admin cabang');
-        
+
         if ($isAdminCabang && $karyawan && $user->kode_cabang !== $karyawan->kode_cabang) {
             return redirect('/karyawan')->with(['warning' => 'Anda hanya bisa mengatur jam kerja karyawan di cabang Anda.']);
         }
@@ -473,18 +483,19 @@ class KonfigurasiController extends Controller
             $data[] = [
                 'nik' => $nik,
                 'hari' => $hari[$i],
-                'kode_jam_kerja' => ($kode === 'LIBUR') ? null : $kode
+                'kode_jam_kerja' => ($kode === 'LIBUR') ? null : $kode,
             ];
         }
 
         try {
             DB::transaction(function () use ($nik, $data) {
                 Setjamkerja::where('nik', $nik)->delete();
-                
-                if (!empty($data)) {
+
+                if (! empty($data)) {
                     Setjamkerja::insert($data);
                 }
             });
+
             return redirect('/karyawan')->with(['success' => 'Jam Kerja Berhasil Di Seting']);
         } catch (\Exception $e) {
             return redirect('/karyawan')->with(['warning' => 'Jam Kerja Gagal Di Seting: Terjadi kesalahan database.']);
@@ -494,6 +505,7 @@ class KonfigurasiController extends Controller
     public function getjamkerja()
     {
         $jamkerja = JamKerja::orderBy('nama_jam_kerja', 'asc')->get();
+
         return response()->json($jamkerja);
     }
 
@@ -503,7 +515,7 @@ class KonfigurasiController extends Controller
             $request->validate([
                 'kode_cabang_set' => 'required',
                 'jam_kerja' => 'required|array',
-                'jam_kerja.*' => 'required'
+                'jam_kerja.*' => 'required',
             ]);
 
             $user = Auth::guard('user')->user();
@@ -511,7 +523,7 @@ class KonfigurasiController extends Controller
             $kodeCabang = $request->kode_cabang_set;
 
             // Validasi admin cabang hanya bisa set untuk cabang mereka
-            if ($isAdminCabang && !empty($user->kode_cabang) && $kodeCabang !== $user->kode_cabang) {
+            if ($isAdminCabang && ! empty($user->kode_cabang) && $kodeCabang !== $user->kode_cabang) {
                 return response()->json(['message' => 'Anda tidak berhak mengatur jam kerja cabang lain.'], 403);
             }
 
@@ -526,19 +538,21 @@ class KonfigurasiController extends Controller
                     ->where('kode_dept', $dept->kode_dept)
                     ->first();
 
-                if (!$existing) {
+                if (! $existing) {
                     // Buat header baru jika belum ada
-                    $kodeJkDept = 'JKD' . $kodeCabang . $dept->kode_dept;
+                    $kodeJkDept = 'JKD'.$kodeCabang.$dept->kode_dept;
                     $existing = KonfigurasiJkDept::create([
                         'kode_jk_dept' => $kodeJkDept,
                         'kode_cabang' => $kodeCabang,
-                        'kode_dept' => $dept->kode_dept
+                        'kode_dept' => $dept->kode_dept,
                     ]);
                 }
 
                 // Loop untuk setiap hari yang dipilih
                 foreach ($jamKerjaPerHari as $hari => $kodeJamKerja) {
-                    if (empty($kodeJamKerja)) continue;
+                    if (empty($kodeJamKerja)) {
+                        continue;
+                    }
                     $kodeJamKerjaVal = ($kodeJamKerja === 'LIBUR') ? null : $kodeJamKerja;
 
                     // Cek apakah sudah ada detail untuk hari ini
@@ -554,7 +568,7 @@ class KonfigurasiController extends Controller
                         KonfigurasiJkDeptDetail::create([
                             'kode_jk_dept' => $existing->kode_jk_dept,
                             'hari' => $hari,
-                            'kode_jam_kerja' => $kodeJamKerjaVal
+                            'kode_jam_kerja' => $kodeJamKerjaVal,
                         ]);
                     }
                 }
@@ -562,7 +576,7 @@ class KonfigurasiController extends Controller
             }
 
             return response()->json([
-                'message' => "Berhasil mengatur jam kerja untuk {$updated} departemen untuk semua hari yang dipilih"
+                'message' => "Berhasil mengatur jam kerja untuk {$updated} departemen untuk semua hari yang dipilih",
             ]);
         } catch (\Exception $e) {
             return response()->json(['message' => $this->failMessage('Gagal memproses data.', $e)], 500);

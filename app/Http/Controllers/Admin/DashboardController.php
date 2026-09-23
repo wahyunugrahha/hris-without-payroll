@@ -3,27 +3,28 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
-
-// Models
-use App\Models\Karyawan;
-use App\Models\Presensi;
-use App\Models\Cabang;
-use App\Models\Izin;
-use App\Models\Lembur;
-use App\Models\DinasLuar;
-use App\Models\Departemen;
-use App\Models\KPIDaily;
-use App\Models\HariLibur;
-use App\Models\Pengumuman;
-use App\Models\LeaderboardSnapshot;
-use App\Models\KpiLeaderboardSnapshot;
-use App\Models\RegistrationToken;
 use App\Models\BpjsRequest;
+use App\Models\Cabang;
+use App\Models\Departemen;
+use App\Models\DinasLuar;
+// Models
+use App\Models\HariLibur;
+use App\Models\Izin;
+use App\Models\Karyawan;
+use App\Models\KPIDaily;
+use App\Models\KpiLeaderboardSnapshot;
+use App\Models\LeaderboardSnapshot;
+use App\Models\Lembur;
+use App\Models\Pengumuman;
+use App\Models\Presensi;
+use App\Models\RegistrationToken;
+use App\Models\RekapBulanan;
 use App\Models\SalaryIncrease;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -47,7 +48,7 @@ class DashboardController extends Controller
         $ctx = [
             'today' => date('Y-m-d'),
             'year' => date('Y'),
-            'month' => date('m')
+            'month' => date('m'),
         ];
 
         // 2. Cek Role & Filter Cabang
@@ -58,7 +59,7 @@ class DashboardController extends Controller
         $filterDept = (string) $request->query('dept', '');
         $filterPeriode = (string) $request->query('periode', '');
 
-        if ($isAdminCabang && !empty($user->kode_cabang)) {
+        if ($isAdminCabang && ! empty($user->kode_cabang)) {
             $filterCabang = $user->kode_cabang;
         }
 
@@ -132,7 +133,6 @@ class DashboardController extends Controller
         // 5. KPI Leaderboard per Cabang
         $kpiLeaderboardsByCabang = $this->getKpiBranchLeaderboards($hariini, false, $periodInfo['startDate'], $periodInfo['endDate'], null); // Harian KPI
         $kpiLeaderboardsByCabangMonthly = $this->getKpiBranchLeaderboards($hariini, true, $periodInfo['startDate'], $periodInfo['endDate'], null); // Bulanan KPI
-
 
         return view('admin.dashboard.dashboardoverview', array_merge(
             $headerStats,
@@ -214,7 +214,7 @@ class DashboardController extends Controller
             }
         }
 
-        $label = Carbon::parse($startDate)->translatedFormat('d F') . ' - ' . Carbon::parse($endDate)->translatedFormat('d F Y');
+        $label = Carbon::parse($startDate)->translatedFormat('d F').' - '.Carbon::parse($endDate)->translatedFormat('d F Y');
 
         return compact('startDate', 'endDate', 'label');
     }
@@ -224,18 +224,19 @@ class DashboardController extends Controller
      */
     private function applyCabangFilter($query, $userCtx, $tablePrefix = null)
     {
-        $cabangColumn = $tablePrefix ? $tablePrefix . '.kode_cabang' : 'kode_cabang';
-        $deptColumn = $tablePrefix ? $tablePrefix . '.kode_dept' : 'kode_dept';
+        $cabangColumn = $tablePrefix ? $tablePrefix.'.kode_cabang' : 'kode_cabang';
+        $deptColumn = $tablePrefix ? $tablePrefix.'.kode_dept' : 'kode_dept';
 
-        if (!empty($userCtx['filterCabang'])) {
+        if (! empty($userCtx['filterCabang'])) {
             $query->where($cabangColumn, $userCtx['filterCabang']);
         } elseif ($userCtx['isAdminCabang'] && $userCtx['kodeCabang']) {
             $query->where($cabangColumn, $userCtx['kodeCabang']);
         }
 
-        if (!empty($userCtx['filterDept'])) {
+        if (! empty($userCtx['filterDept'])) {
             $query->where($deptColumn, $userCtx['filterDept']);
         }
+
         return $query;
     }
 
@@ -246,8 +247,8 @@ class DashboardController extends Controller
             return $query;
         }
 
-        $nikColumn = $tablePrefix ? $tablePrefix . '.nik' : 'nik';
-        $namaColumn = $tablePrefix ? $tablePrefix . '.nama_lengkap' : 'nama_lengkap';
+        $nikColumn = $tablePrefix ? $tablePrefix.'.nik' : 'nik';
+        $namaColumn = $tablePrefix ? $tablePrefix.'.nama_lengkap' : 'nama_lengkap';
 
         $query->where(function ($sub) use ($nikColumn, $namaColumn, $keyword) {
             $sub->whereRaw("LOWER({$nikColumn}) LIKE ?", ["%{$keyword}%"])
@@ -460,7 +461,7 @@ class DashboardController extends Controller
             ->get();
 
         $kpiCabangLabels = $kpiByCabangQuery->pluck('cabang')->values();
-        $kpiCabangSeries = $kpiByCabangQuery->pluck('total_points')->map(fn($v) => (int) round($v))->values();
+        $kpiCabangSeries = $kpiByCabangQuery->pluck('total_points')->map(fn ($v) => (int) round($v))->values();
 
         $kpiLeaderboardQuery = (clone $baseKpiQuery)
             ->join('karyawan', 'kpi_leaderboard_snapshots.nik', '=', 'karyawan.nik')
@@ -571,7 +572,7 @@ class DashboardController extends Controller
             'izin.status',
             'karyawan.nik',
             'karyawan.nama_lengkap',
-            'karyawan.foto'
+            'karyawan.foto',
         ]);
 
         $dinasQuery = DinasLuar::query()
@@ -586,14 +587,14 @@ class DashboardController extends Controller
             'dinas_luar.lokasi_tujuan',
             'karyawan.nik',
             'karyawan.nama_lengkap',
-            'karyawan.foto'
+            'karyawan.foto',
         ]);
 
         $calendarEvents = [];
         $calendarDailyDetails = [];
 
         $ensureCalendarDay = function (&$arr, $key) {
-            if (!isset($arr[$key])) {
+            if (! isset($arr[$key])) {
                 $arr[$key] = [
                     'holiday' => false,
                     'leave' => 0,
@@ -601,18 +602,18 @@ class DashboardController extends Controller
                     'sakit' => 0,
                     'cuti' => 0,
                     'dinas' => 0,
-                    'kpi_cutoff' => false
+                    'kpi_cutoff' => false,
                 ];
             }
         };
 
         $ensureDetailsDay = function (&$arr, $key) {
-            if (!isset($arr[$key])) {
+            if (! isset($arr[$key])) {
                 $arr[$key] = [
                     'izin' => [],
                     'sakit' => [],
                     'cuti' => [],
-                    'dinas' => []
+                    'dinas' => [],
                 ];
             }
         };
@@ -633,7 +634,7 @@ class DashboardController extends Controller
                 'nik' => $row->nik,
                 'nama_lengkap' => $row->nama_lengkap,
                 'foto' => $row->foto,
-                'keterangan' => strtoupper($type)
+                'keterangan' => strtoupper($type),
             ];
 
             for ($d = $from->copy(); $d->lte($to); $d->addDay()) {
@@ -653,7 +654,7 @@ class DashboardController extends Controller
                 'nik' => $row->nik,
                 'nama_lengkap' => $row->nama_lengkap,
                 'foto' => $row->foto,
-                'keterangan' => $row->lokasi_tujuan ?: '-'
+                'keterangan' => $row->lokasi_tujuan ?: '-',
             ];
 
             for ($d = $from->copy(); $d->lte($to); $d->addDay()) {
@@ -728,13 +729,13 @@ class DashboardController extends Controller
         // Umur (PostgreSQL Syntax)
         $queryUmur = Karyawan::where('status_aktif', 'Aktif');
         $this->applyCabangFilter($queryUmur, $userCtx);
-        $dataSebaranUmur = $queryUmur->selectRaw("
+        $dataSebaranUmur = $queryUmur->selectRaw('
             COUNT(CASE WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, tanggal_lahir)) < 20 THEN 1 END) as umur_under_20,
             COUNT(CASE WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, tanggal_lahir)) BETWEEN 20 AND 29 THEN 1 END) as umur_20_29,
             COUNT(CASE WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, tanggal_lahir)) BETWEEN 30 AND 39 THEN 1 END) as umur_30_39,
             COUNT(CASE WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, tanggal_lahir)) BETWEEN 40 AND 49 THEN 1 END) as umur_40_49,
             COUNT(CASE WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, tanggal_lahir)) >= 50 THEN 1 END) as umur_50_plus
-        ")->first();
+        ')->first();
 
         // Pendidikan
         $queryPendidikan = Karyawan::where('status_aktif', 'Aktif')->selectRaw("
@@ -771,8 +772,9 @@ class DashboardController extends Controller
     private function getTurnoverStats($ctx, $userCtx, $jmlKaryawanAktifSaatIni)
     {
         // OPTIMASI: Cache hasil kalkulasi turnover yang berat
-        $cacheKey = 'turnover_stats_' . $ctx['year'] . '_' . $ctx['month'] . '_' . md5(json_encode($userCtx));
-        return \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addHours(6), function () use ($ctx, $userCtx, $jmlKaryawanAktifSaatIni) {
+        $cacheKey = 'turnover_stats_'.$ctx['year'].'_'.$ctx['month'].'_'.md5(json_encode($userCtx));
+
+        return Cache::remember($cacheKey, now()->addHours(6), function () use ($ctx, $userCtx, $jmlKaryawanAktifSaatIni) {
             return $this->calculateTurnoverStatsInternal($ctx, $userCtx, $jmlKaryawanAktifSaatIni);
         });
     }
@@ -868,10 +870,10 @@ class DashboardController extends Controller
         for ($i = 6; $i >= 0; $i--) {
             $trendDates[] = date('Y-m-d', strtotime("-$i days"));
         }
-        
+
         $qTrendBatch = Karyawan::query()
             ->whereRaw("{$joinDateExpr} <= ?", [max($trendDates)])
-            ->select(DB::raw("date::date, COUNT(*) as cnt"))
+            ->select(DB::raw('date::date, COUNT(*) as cnt'))
             ->where(function ($q) use ($trendDates) {
                 $q->where('status_aktif', 'Aktif')
                     ->orWhere(function ($sub) use ($trendDates) {
@@ -881,7 +883,7 @@ class DashboardController extends Controller
                     });
             });
         $this->applyCabangFilter($qTrendBatch, $userCtx);
-        
+
         // Fallback ke loop jika query batch gagal (tetap safe)
         $trendKaryawanAktif = [];
         foreach ($trendDates as $date) {
@@ -909,7 +911,7 @@ class DashboardController extends Controller
             'turnoverAnomalyCount' => $turnoverAnomalyCount,
             'trendKaryawanAktif' => $trendKaryawanAktif,
             'karyawanAktifBulanIni' => $jmlKaryawanAktifSaatIni,
-            'trendPersentase' => $trendPersentase
+            'trendPersentase' => $trendPersentase,
         ];
     }
 
@@ -933,11 +935,11 @@ class DashboardController extends Controller
 
         // Karyawan Masuk (Pilih yang lebih cepat antara TMT atau Tanggal Awal Kontrak)
         $qMasuk = Karyawan::with(['jabatanRel', 'cabang'])
-            ->whereRaw("LEAST(COALESCE(tmt, tanggal_awal_kontrak), COALESCE(tanggal_awal_kontrak, tmt)) BETWEEN ? AND ?", [
+            ->whereRaw('LEAST(COALESCE(tmt, tanggal_awal_kontrak), COALESCE(tanggal_awal_kontrak, tmt)) BETWEEN ? AND ?', [
                 $threeMonthsAgo->format('Y-m-d'),
-                $selectedMonthEnd->format('Y-m-d')
+                $selectedMonthEnd->format('Y-m-d'),
             ])
-            ->orderByRaw("LEAST(COALESCE(tmt, tanggal_awal_kontrak), COALESCE(tanggal_awal_kontrak, tmt)) DESC");
+            ->orderByRaw('LEAST(COALESCE(tmt, tanggal_awal_kontrak), COALESCE(tanggal_awal_kontrak, tmt)) DESC');
         $this->applyCabangFilter($qMasuk, $userCtx);
         $this->applyKeywordFilter($qMasuk, $userCtx);
         $karyawanMasuk = $qMasuk->get();
@@ -1068,7 +1070,7 @@ class DashboardController extends Controller
             ->where(function ($query) use ($date) {
                 $query->where('izin.status_approved', '0')  // Pending
                     ->orWhere(function ($q) use ($date) {
-                        $q->where('izin.status_approved', '1')->whereRaw("? BETWEEN izin.tgl_izin_dari AND izin.tgl_izin_sampai", [$date]);  // Approved & berlangsung
+                        $q->where('izin.status_approved', '1')->whereRaw('? BETWEEN izin.tgl_izin_dari AND izin.tgl_izin_sampai', [$date]);  // Approved & berlangsung
                     })
                     ->orWhere(function ($q) use ($date) {
                         $q->where('izin.status_approved', '2')->whereDate('izin.created_at', '=', $date);  // Rejected hari ini
@@ -1090,7 +1092,7 @@ class DashboardController extends Controller
             'rekapizin' => (object) [
                 'jmlizin' => $rekapizinsakit->jmlizin ?? 0,
                 'jmlsakit' => $rekapizinsakit->jmlsakit ?? 0,
-                'jmlcuti' => $rekapizinsakit->jmlcuti ?? 0
+                'jmlcuti' => $rekapizinsakit->jmlcuti ?? 0,
             ],
             // Hitung Belum Absen
             'jmltidakabsen' => DB::table('karyawan')
@@ -1099,7 +1101,7 @@ class DashboardController extends Controller
                 })
                 ->where('karyawan.status_aktif', 'Aktif')
                 ->whereNull('presensi.nik')
-                ->count()
+                ->count(),
         ];
     }
 
@@ -1143,10 +1145,10 @@ class DashboardController extends Controller
         $bulan = $dateObj->month;
         $tahun = $dateObj->year;
 
-        $hasRekap = \App\Models\RekapBulanan::where('bulan', $bulan)->where('tahun', $tahun)->exists();
+        $hasRekap = RekapBulanan::where('bulan', $bulan)->where('tahun', $tahun)->exists();
 
         if ($hasRekap) {
-            $topQueryBase = \App\Models\RekapBulanan::query()
+            $topQueryBase = RekapBulanan::query()
                 ->select(
                     'rekap_bulanans.nik',
                     'karyawan.nama_lengkap',
@@ -1197,7 +1199,7 @@ class DashboardController extends Controller
             ->where(function ($query) use ($hariini) {
                 $query->where('izin.status_approved', '0')
                     ->orWhere(function ($q) use ($hariini) {
-                        $q->where('izin.status_approved', '1')->whereRaw("? BETWEEN izin.tgl_izin_dari AND izin.tgl_izin_sampai", [$hariini]);
+                        $q->where('izin.status_approved', '1')->whereRaw('? BETWEEN izin.tgl_izin_dari AND izin.tgl_izin_sampai', [$hariini]);
                     })
                     ->orWhere(function ($q) use ($hariini) {
                         $q->where('izin.status_approved', '2')->whereDate('izin.created_at', '=', $hariini);
@@ -1257,10 +1259,10 @@ class DashboardController extends Controller
         $bulan = $dateObj->month;
         $tahun = $dateObj->year;
 
-        $hasRekap = \App\Models\RekapBulanan::where('bulan', $bulan)->where('tahun', $tahun)->exists();
+        $hasRekap = RekapBulanan::where('bulan', $bulan)->where('tahun', $tahun)->exists();
 
         if ($hasRekap) {
-            $topQueryBase = \App\Models\RekapBulanan::query()
+            $topQueryBase = RekapBulanan::query()
                 ->select(
                     'rekap_bulanans.nik',
                     'karyawan.nama_lengkap',
@@ -1282,7 +1284,7 @@ class DashboardController extends Controller
             $topSite = (clone $topQueryBase)->whereIn('karyawan.kode_cabang', $this->siteBranches)->limit(10)->get();
 
             // 1b. TOP KPI PERFORMANCE (Bulanan)
-            $topKpiQueryBase = \App\Models\RekapBulanan::query()
+            $topKpiQueryBase = RekapBulanan::query()
                 ->select(
                     'rekap_bulanans.nik',
                     'karyawan.nama_lengkap',
@@ -1419,7 +1421,7 @@ class DashboardController extends Controller
 
         $groupedData = collect([]);
 
-        if (!$isMonthly) {
+        if (! $isMonthly) {
             // --- HARIAN (Presensi) ---
             $allData = DB::table('presensi')
                 ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
@@ -1439,10 +1441,10 @@ class DashboardController extends Controller
             $bulan = $dateObj->month;
             $tahun = $dateObj->year;
 
-            $hasRekap = \App\Models\RekapBulanan::where('bulan', $bulan)->where('tahun', $tahun)->exists();
+            $hasRekap = RekapBulanan::where('bulan', $bulan)->where('tahun', $tahun)->exists();
 
             if ($hasRekap) {
-                $allData = \App\Models\RekapBulanan::query()
+                $allData = RekapBulanan::query()
                     ->select(
                         'rekap_bulanans.nik',
                         'karyawan.nama_lengkap',
@@ -1486,7 +1488,7 @@ class DashboardController extends Controller
 
             $results[$cabang->kode_cabang] = [
                 'cabang' => $cabang,
-                'rows' => $rows
+                'rows' => $rows,
             ];
         }
 
@@ -1501,7 +1503,7 @@ class DashboardController extends Controller
         $cabangs = Cabang::orderBy('nama_cabang')->get();
         $kodeCabangs = $cabangs->pluck('kode_cabang')->toArray();
 
-        if (!$isMonthly) {
+        if (! $isMonthly) {
             // --- HARIAN KPI ---
             $allData = KpiLeaderboardSnapshot::query()
                 ->select('kpi_leaderboard_snapshots.nik', 'kpi_leaderboard_snapshots.nama_lengkap', DB::raw('SUM(kpi_leaderboard_snapshots.points) as total_points'), 'karyawan.foto', 'jabatan.nama_jabatan as jabatan_nama', 'kpi_leaderboard_snapshots.kode_cabang')
@@ -1518,10 +1520,10 @@ class DashboardController extends Controller
             $bulan = $dateObj->month;
             $tahun = $dateObj->year;
 
-            $hasRekap = \App\Models\RekapBulanan::where('bulan', $bulan)->where('tahun', $tahun)->exists();
+            $hasRekap = RekapBulanan::where('bulan', $bulan)->where('tahun', $tahun)->exists();
 
             if ($hasRekap) {
-                $allData = \App\Models\RekapBulanan::query()
+                $allData = RekapBulanan::query()
                     ->select(
                         'rekap_bulanans.nik',
                         'karyawan.nama_lengkap',
@@ -1560,7 +1562,7 @@ class DashboardController extends Controller
 
             $results[$cabang->kode_cabang] = [
                 'cabang' => $cabang,
-                'rows' => $rows
+                'rows' => $rows,
             ];
         }
 
@@ -1588,7 +1590,7 @@ class DashboardController extends Controller
             $totalSeconds = 0;
             $count = 0;
             foreach ($presensis as $p) {
-                if (!empty($p->jam_in) && $p->jam_in !== '00:00:00') {
+                if (! empty($p->jam_in) && $p->jam_in !== '00:00:00') {
                     $parts = explode(':', $p->jam_in);
                     if (count($parts) >= 2) {
                         $hours = (int) $parts[0];
@@ -1604,7 +1606,7 @@ class DashboardController extends Controller
 
         return $collection->sortBy([
             [$pointsField, 'desc'],
-            ['avg_jam_masuk', 'asc']
+            ['avg_jam_masuk', 'asc'],
         ])->values();
     }
 }

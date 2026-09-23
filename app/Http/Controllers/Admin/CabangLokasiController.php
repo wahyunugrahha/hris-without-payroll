@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Cabang;
 use App\Models\CabangLokasi;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CabangLokasiController extends Controller
 {
@@ -18,7 +18,7 @@ class CabangLokasiController extends Controller
         $user = Auth::guard('user')->user();
 
         // Security fix: Pastikan user login
-        if (!$user) {
+        if (! $user) {
             abort(401);
         }
 
@@ -48,7 +48,7 @@ class CabangLokasiController extends Controller
                 'lon' => (float) $l->longitude,
                 'radius' => (int) $l->radius,
                 'nama' => $l->nama_lokasi,
-                'aktif' => $l->aktif
+                'aktif' => $l->aktif,
             ];
         })->toArray();
 

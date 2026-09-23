@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Lembur extends Model
 {
     protected $table = 'lembur';
+
     protected $fillable = [
         'kode_lembur',
         'nik',
@@ -22,7 +23,7 @@ class Lembur extends Model
         'keterangan',
         'status_approved',
         'update_count',
-        'last_update_at'
+        'last_update_at',
     ];
 
     protected $casts = [
@@ -34,5 +35,4 @@ class Lembur extends Model
     {
         return $this->belongsTo(Karyawan::class, 'nik', 'nik');
     }
-
 }

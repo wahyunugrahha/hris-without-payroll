@@ -3,22 +3,22 @@
 namespace App\Http\Controllers\Karyawan;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
-
-use App\Models\Izin;
 use App\Models\HariLibur;
+use App\Models\Izin;
+use App\Models\KonfigurasiJkDeptDetail;
 use App\Models\MasterCuti;
 use App\Models\Presensi;
 use App\Models\Setjamkerja;
-use App\Models\KonfigurasiJkDeptDetail;
 use App\Models\SuratPeringatan;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class PengajuanIzinController extends Controller
 {
@@ -120,10 +120,11 @@ class PengajuanIzinController extends Controller
 
         for ($i = 1; $i < count($dates); $i++) {
             $current = $dates[$i];
-            $nextExpected = date('Y-m-d', strtotime($segmentEnd . ' +1 day'));
+            $nextExpected = date('Y-m-d', strtotime($segmentEnd.' +1 day'));
 
             if ($current === $nextExpected) {
                 $segmentEnd = $current;
+
                 continue;
             }
 
@@ -142,7 +143,8 @@ class PengajuanIzinController extends Controller
             if ($start === $end) {
                 return $format($start);
             }
-            return $format($start) . ' s/d ' . $format($end);
+
+            return $format($start).' s/d '.$format($end);
         })->implode(', ');
     }
 
@@ -154,13 +156,14 @@ class PengajuanIzinController extends Controller
 
         $clean = preg_replace('/\s*\[CUTI_DATES:[^\]]*\]?\s*/i', ' ', $keterangan);
         $clean = preg_replace('/\s*\|\s*$/', '', (string) $clean);
+
         return trim(preg_replace('/\s{2,}/', ' ', (string) $clean));
     }
 
     private function appendCutiDatesMeta(string $keterangan, $selectedDates): string
     {
         $cleanKeterangan = $this->stripCutiDatesMeta($keterangan);
-        $dates = $selectedDates instanceof \Illuminate\Support\Collection
+        $dates = $selectedDates instanceof Collection
             ? $selectedDates->all()
             : (array) $selectedDates;
 
@@ -168,8 +171,9 @@ class PengajuanIzinController extends Controller
             return $cleanKeterangan;
         }
 
-        $meta = self::CUTI_DATES_META_PREFIX . implode(',', $dates) . ']';
-        return trim($cleanKeterangan . ' ' . $meta);
+        $meta = self::CUTI_DATES_META_PREFIX.implode(',', $dates).']';
+
+        return trim($cleanKeterangan.' '.$meta);
     }
 
     private function getDatesFromRange($fromDate, $toDate): array
@@ -201,7 +205,7 @@ class PengajuanIzinController extends Controller
     {
         if ($this->isMultiDateStatus($izin->status)) {
             $metaDates = $this->parseCutiDatesMeta($izin->keterangan);
-            if (!empty($metaDates)) {
+            if (! empty($metaDates)) {
                 return $metaDates;
             }
         }
@@ -209,7 +213,7 @@ class PengajuanIzinController extends Controller
         return $this->getDatesFromRange($izin->tgl_izin_dari, $izin->tgl_izin_sampai);
     }
 
-    private function hasIzinDateConflict($nik, \Illuminate\Support\Collection $selectedDates, $excludeKodeIzin = null): bool
+    private function hasIzinDateConflict($nik, Collection $selectedDates, $excludeKodeIzin = null): bool
     {
         if ($selectedDates->isEmpty()) {
             return false;
@@ -223,7 +227,7 @@ class PengajuanIzinController extends Controller
                     ->where('tgl_izin_sampai', '>=', $selectedDates->first());
             });
 
-        if (!empty($excludeKodeIzin)) {
+        if (! empty($excludeKodeIzin)) {
             $query->where('kode_izin', '!=', $excludeKodeIzin);
         }
 
@@ -245,7 +249,7 @@ class PengajuanIzinController extends Controller
     {
         $query = HariLibur::query();
 
-        if (!empty($dateFrom) && !empty($dateTo)) {
+        if (! empty($dateFrom) && ! empty($dateTo)) {
             $query->whereBetween('tanggal_libur', [$dateFrom, $dateTo]);
         }
 
@@ -262,7 +266,7 @@ class PengajuanIzinController extends Controller
                 });
             });
 
-            if (!empty($kodeCabang)) {
+            if (! empty($kodeCabang)) {
                 $query->orWhere(function ($q) use ($kodeCabang) {
                     $q->where(function ($c) use ($kodeCabang) {
                         $c->where('kode_cabang', $kodeCabang)
@@ -275,7 +279,7 @@ class PengajuanIzinController extends Controller
                 });
             }
 
-            if (!empty($kodeDept)) {
+            if (! empty($kodeDept)) {
                 $query->orWhere(function ($q) use ($kodeDept) {
                     $q->where(function ($d) use ($kodeDept) {
                         $d->where('kode_dept', $kodeDept)
@@ -288,7 +292,7 @@ class PengajuanIzinController extends Controller
                 });
             }
 
-            if (!empty($kodeCabang) && !empty($kodeDept)) {
+            if (! empty($kodeCabang) && ! empty($kodeDept)) {
                 $query->orWhere(function ($q) use ($kodeCabang, $kodeDept) {
                     $q->where(function ($c) use ($kodeCabang) {
                         $c->where('kode_cabang', $kodeCabang)
@@ -330,7 +334,7 @@ class PengajuanIzinController extends Controller
             if ($exists) {
                 $openDetailIzin = $detailIzinRequest;
                 // Jika datang dari notifikasi (tanpa filter manual), tampilkan seluruh histori dulu.
-                if (!$request->filled('bulan') && !$request->filled('tahun')) {
+                if (! $request->filled('bulan') && ! $request->filled('tahun')) {
                     $showAllHistory = true;
                     $bulan = '';
                     $tahun = '';
@@ -342,7 +346,7 @@ class PengajuanIzinController extends Controller
             ->with('masterCuti')
             ->where('nik', $nik);
 
-        if (!$showAllHistory) {
+        if (! $showAllHistory) {
             if ($bulan !== '') {
                 $dataIzinQuery->whereMonth('tgl_izin_dari', $bulan);
             }
@@ -397,13 +401,13 @@ class PengajuanIzinController extends Controller
                 ->where('nik', $nik)
                 ->first();
 
-            if (!$izin) {
+            if (! $izin) {
                 return response()->json(['error' => 'Data tidak ditemukan'], 404);
             }
 
-            $dari = \Carbon\Carbon::parse($izin->tgl_izin_dari);
-            $sampai = \Carbon\Carbon::parse($izin->tgl_izin_sampai ?? $izin->tgl_izin_dari);
-            
+            $dari = Carbon::parse($izin->tgl_izin_dari);
+            $sampai = Carbon::parse($izin->tgl_izin_sampai ?? $izin->tgl_izin_dari);
+
             $requestedDates = [];
             if ($this->isMultiDateStatus($izin->status)) {
                 $requestedDates = $this->getEffectiveIzinDates($izin);
@@ -418,7 +422,7 @@ class PengajuanIzinController extends Controller
                 }
             }
 
-            $jumlahHari = $this->isMultiDateStatus($izin->status) && !empty($requestedDates)
+            $jumlahHari = $this->isMultiDateStatus($izin->status) && ! empty($requestedDates)
                 ? count($requestedDates)
                 : (abs($sampai->diffInDays($dari)) + 1);
 
@@ -429,8 +433,8 @@ class PengajuanIzinController extends Controller
                 $jenis_badge = '<span class="badge bg-pink-lt">Sakit</span>';
             } elseif ($izin->status == 'r') {
                 $jenis_badge = '<span class="badge bg-cyan-lt">Roster</span>';
-            } elseif (!empty($izin->kode_cuti)) {
-                $jenis_badge = '<span class="badge bg-teal-lt">' . ($izin->masterCuti->nama_cuti ?? 'Cuti') . '</span>';
+            } elseif (! empty($izin->kode_cuti)) {
+                $jenis_badge = '<span class="badge bg-teal-lt">'.($izin->masterCuti->nama_cuti ?? 'Cuti').'</span>';
             } elseif ($izin->status == 't') {
                 $jenis_badge = '<span class="badge bg-orange-lt">Terlambat</span>';
             } elseif ($izin->status == 'p') {
@@ -452,7 +456,7 @@ class PengajuanIzinController extends Controller
                 $izin->tgl_izin_sampai,
                 $izin->status
             );
-            if ($this->isMultiDateStatus($izin->status) && !empty($requestedDates)) {
+            if ($this->isMultiDateStatus($izin->status) && ! empty($requestedDates)) {
                 $approvedDates = array_values(array_intersect($requestedDates, $approvedDates));
 
                 // Fallback aman untuk data lama/inkonsisten: jika status sudah disetujui,
@@ -499,8 +503,8 @@ class PengajuanIzinController extends Controller
         $holidayDates = $this->getHariLiburDatesByScope(
             $kodeCabang,
             $kodeDept,
-            $tahun . '-01-01',
-            $tahun . '-12-31'
+            $tahun.'-01-01',
+            $tahun.'-12-31'
         );
         $holidayLookup = array_flip($holidayDates);
 
@@ -526,7 +530,7 @@ class PengajuanIzinController extends Controller
                 return $date ? $date->format('Y-m-d') : null;
             })
             ->filter(function ($date) {
-                return !empty($date);
+                return ! empty($date);
             })
             ->all());
 
@@ -535,14 +539,14 @@ class PengajuanIzinController extends Controller
                 if ((int) date('Y', strtotime($dateStr)) !== (int) $tahun) {
                     continue;
                 }
-                
+
                 $namahari = $this->gethari(date('D', strtotime($dateStr)));
                 [$jkObj, $isLiburShift] = $this->resolveJamKerja($nik, $kodeDept, $kodeCabang, $namahari);
 
                 if (isset($holidayLookup[$dateStr]) || $isLiburShift) {
                     continue;
                 }
-                if (!isset($approvedLookup[$dateStr])) {
+                if (! isset($approvedLookup[$dateStr])) {
                     continue;
                 }
                 $sumDays++;
@@ -561,7 +565,7 @@ class PengajuanIzinController extends Controller
             $nextNumber = $lastNumber + 1;
         }
 
-        return $format . str_pad($nextNumber, $padLength, '0', STR_PAD_LEFT);
+        return $format.str_pad($nextNumber, $padLength, '0', STR_PAD_LEFT);
     }
 
     public function createizinabsen()
@@ -645,8 +649,8 @@ class PengajuanIzinController extends Controller
             ->orderByDesc('kode_izin')
             ->first();
 
-        $lastkodeizin = $lastizin != null ? $lastizin->kode_izin : "";
-        $format = "IZ" . $bulan . $thn;
+        $lastkodeizin = $lastizin != null ? $lastizin->kode_izin : '';
+        $format = 'IZ'.$bulan.$thn;
         $kode_izin = $this->generateKodeIzin($lastkodeizin, $format, 4);
 
         $data = [
@@ -655,12 +659,13 @@ class PengajuanIzinController extends Controller
             'tgl_izin_dari' => $tgl_izin_dari,
             'tgl_izin_sampai' => $tgl_izin_sampai,
             'status' => $status,
-            'keterangan' => $keterangan
+            'keterangan' => $keterangan,
         ];
 
         try {
             Izin::create($data);
-            return redirect('/presensi/izin')->with('success', 'Data Izin Berhasil Disimpan. Kode Izin: ' . $kode_izin);
+
+            return redirect('/presensi/izin')->with('success', 'Data Izin Berhasil Disimpan. Kode Izin: '.$kode_izin);
         } catch (\Exception $e) {
             return redirect('/presensi/izin')->with('error', $this->failMessage('Data Gagal Disimpan.', $e));
         }
@@ -693,8 +698,8 @@ class PengajuanIzinController extends Controller
             ->orderByDesc('kode_izin')
             ->first();
 
-        $lastkodeizin = $lastizin != null ? $lastizin->kode_izin : "";
-        $format = "IZ" . $bulan . $thn;
+        $lastkodeizin = $lastizin != null ? $lastizin->kode_izin : '';
+        $format = 'IZ'.$bulan.$thn;
         $kode_izin = $this->generateKodeIzin($lastkodeizin, $format, 4);
 
         $data = [
@@ -719,7 +724,7 @@ class PengajuanIzinController extends Controller
                 }
             }
 
-            return redirect('/presensi/izin')->with('success', 'Data Izin Sakit Berhasil Disimpan. Kode Izin: ' . $kode_izin);
+            return redirect('/presensi/izin')->with('success', 'Data Izin Sakit Berhasil Disimpan. Kode Izin: '.$kode_izin);
         } catch (\Exception $e) {
             return redirect('/presensi/izin')->with('error', $this->failMessage('Data Izin Sakit Gagal Disimpan.', $e));
         }
@@ -752,8 +757,8 @@ class PengajuanIzinController extends Controller
             ->orderByDesc('kode_izin')
             ->first();
 
-        $lastkodeizin = $lastizin != null ? $lastizin->kode_izin : "";
-        $format = "IZ" . $bulan . $thn;
+        $lastkodeizin = $lastizin != null ? $lastizin->kode_izin : '';
+        $format = 'IZ'.$bulan.$thn;
         $kode_izin = $this->generateKodeIzin($lastkodeizin, $format, 4);
 
         $data = [
@@ -762,12 +767,13 @@ class PengajuanIzinController extends Controller
             'tgl_izin_dari' => $tgl_izin_dari,
             'tgl_izin_sampai' => $tgl_izin_sampai,
             'status' => $status,
-            'keterangan' => $keterangan
+            'keterangan' => $keterangan,
         ];
 
         try {
             Izin::create($data);
-            return redirect('/presensi/izin')->with('success', 'Pengajuan Izin Terlambat Berhasil Disimpan. Kode Izin: ' . $kode_izin);
+
+            return redirect('/presensi/izin')->with('success', 'Pengajuan Izin Terlambat Berhasil Disimpan. Kode Izin: '.$kode_izin);
         } catch (\Exception $e) {
             return redirect('/presensi/izin')->with('error', $this->failMessage('Data Gagal Disimpan.', $e));
         }
@@ -782,11 +788,11 @@ class PengajuanIzinController extends Controller
             ->whereDate('tgl_presensi', $tanggal)
             ->first();
 
-        if (!$presensiHariIni || empty($presensiHariIni->jam_in) || $presensiHariIni->jam_in == '00:00:00') {
+        if (! $presensiHariIni || empty($presensiHariIni->jam_in) || $presensiHariIni->jam_in == '00:00:00') {
             return redirect('/presensi/izin')->with('error', 'Pengajuan pulang cepat hanya bisa dilakukan setelah absen masuk.');
         }
 
-        if (!empty($presensiHariIni->jam_out) && $presensiHariIni->jam_out != '00:00:00') {
+        if (! empty($presensiHariIni->jam_out) && $presensiHariIni->jam_out != '00:00:00') {
             return redirect('/presensi/izin')->with('error', 'Anda sudah absen pulang hari ini.');
         }
 
@@ -822,8 +828,8 @@ class PengajuanIzinController extends Controller
             ->orderByDesc('kode_izin')
             ->first();
 
-        $lastkodeizin = $lastizin != null ? $lastizin->kode_izin : "";
-        $format = "IZ" . $bulan . $thn;
+        $lastkodeizin = $lastizin != null ? $lastizin->kode_izin : '';
+        $format = 'IZ'.$bulan.$thn;
         $kode_izin = $this->generateKodeIzin($lastkodeizin, $format, 4);
 
         $data = [
@@ -832,12 +838,13 @@ class PengajuanIzinController extends Controller
             'tgl_izin_dari' => $tanggal,
             'tgl_izin_sampai' => $tanggal,
             'status' => 'p',
-            'keterangan' => $keterangan
+            'keterangan' => $keterangan,
         ];
 
         try {
             Izin::create($data);
-            return redirect('/presensi/izin')->with('success', 'Pengajuan Pulang Cepat Berhasil Disimpan. Kode Izin: ' . $kode_izin);
+
+            return redirect('/presensi/izin')->with('success', 'Pengajuan Pulang Cepat Berhasil Disimpan. Kode Izin: '.$kode_izin);
         } catch (\Exception $e) {
             return redirect('/presensi/izin')->with('error', $this->failMessage('Data Gagal Disimpan.', $e));
         }
@@ -857,7 +864,7 @@ class PengajuanIzinController extends Controller
 
         if ($hasActiveSP) {
             throw ValidationException::withMessages([
-                'kode_cuti' => 'Maaf, Anda memiliki Surat Peringatan (SP) yang masih aktif sehingga tidak dapat mengajukan cuti.'
+                'kode_cuti' => 'Maaf, Anda memiliki Surat Peringatan (SP) yang masih aktif sehingga tidak dapat mengajukan cuti.',
             ]);
         }
 
@@ -874,7 +881,7 @@ class PengajuanIzinController extends Controller
 
         if ($selectedDates->isEmpty()) {
             throw ValidationException::withMessages([
-                'selected_dates' => 'Pilih minimal satu tanggal cuti.'
+                'selected_dates' => 'Pilih minimal satu tanggal cuti.',
             ]);
         }
 
@@ -888,20 +895,20 @@ class PengajuanIzinController extends Controller
         );
 
         $selectedHolidayDates = $selectedDates->intersect($holidayDates)->values();
-        
+
         // Cek Libur Shift Khusus menggunakan resolveJamKerja (Filter "Terima Beres")
         $finalSelectedDates = collect();
         foreach ($selectedDates as $sd) {
             $namahari = $this->gethari(date('D', strtotime($sd)));
             [$jkObj, $isLiburShift] = $this->resolveJamKerja($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namahari);
-            if (!$isLiburShift && !$selectedHolidayDates->contains($sd)) {
+            if (! $isLiburShift && ! $selectedHolidayDates->contains($sd)) {
                 $finalSelectedDates->push($sd);
             }
         }
 
         if ($finalSelectedDates->isEmpty()) {
             throw ValidationException::withMessages([
-                'selected_dates' => 'Seluruh tanggal yang dipilih bertepatan dengan libur / shift libur.'
+                'selected_dates' => 'Seluruh tanggal yang dipilih bertepatan dengan libur / shift libur.',
             ]);
         }
 
@@ -916,7 +923,7 @@ class PengajuanIzinController extends Controller
 
         if ($existingPresensi || $existingIzinOverlap) {
             throw ValidationException::withMessages([
-                'selected_dates' => 'Sebagian tanggal yang diajukan sudah memiliki presensi / izin lain.'
+                'selected_dates' => 'Sebagian tanggal yang diajukan sudah memiliki presensi / izin lain.',
             ]);
         }
 
@@ -928,7 +935,7 @@ class PengajuanIzinController extends Controller
 
             if ($jml_hari > $sisa_cuti) {
                 throw ValidationException::withMessages([
-                    'jmlhari' => "Sisa jatah cuti untuk jenis {$masterCutiRec->nama_cuti} Anda ({$sisa_cuti} hari) tidak mencukupi untuk {$jml_hari} hari efektif yang diajukan."
+                    'jmlhari' => "Sisa jatah cuti untuk jenis {$masterCutiRec->nama_cuti} Anda ({$sisa_cuti} hari) tidak mencukupi untuk {$jml_hari} hari efektif yang diajukan.",
                 ]);
             }
         }
@@ -943,8 +950,8 @@ class PengajuanIzinController extends Controller
                 ->orderByDesc('kode_izin')
                 ->first();
 
-            $lastkodeizin = $lastizin != null ? $lastizin->kode_izin : "";
-            $format = "IZ" . $bulan . $thn;
+            $lastkodeizin = $lastizin != null ? $lastizin->kode_izin : '';
+            $format = 'IZ'.$bulan.$thn;
             $kode_izin = $this->generateKodeIzin($lastkodeizin, $format, 4);
 
             Izin::create([
@@ -984,7 +991,7 @@ class PengajuanIzinController extends Controller
 
         if ($selectedDates->isEmpty()) {
             throw ValidationException::withMessages([
-                'selected_dates' => 'Pilih minimal satu tanggal roster.'
+                'selected_dates' => 'Pilih minimal satu tanggal roster.',
             ]);
         }
 
@@ -1000,14 +1007,14 @@ class PengajuanIzinController extends Controller
             $namaHari = $this->gethari(date('D', strtotime($selectedDate)));
             [$jamKerja, $isLiburShift] = $this->resolveJamKerja($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namaHari);
 
-            if (!$isLiburShift && !in_array($selectedDate, $holidayDates, true)) {
+            if (! $isLiburShift && ! in_array($selectedDate, $holidayDates, true)) {
                 $finalSelectedDates->push($selectedDate);
             }
         }
 
         if ($finalSelectedDates->isEmpty()) {
             throw ValidationException::withMessages([
-                'selected_dates' => 'Seluruh tanggal yang dipilih bertepatan dengan libur / shift libur.'
+                'selected_dates' => 'Seluruh tanggal yang dipilih bertepatan dengan libur / shift libur.',
             ]);
         }
 
@@ -1020,7 +1027,7 @@ class PengajuanIzinController extends Controller
 
         if ($existingPresensi || $existingIzinOverlap) {
             throw ValidationException::withMessages([
-                'selected_dates' => 'Sebagian tanggal yang diajukan sudah memiliki presensi / izin lain.'
+                'selected_dates' => 'Sebagian tanggal yang diajukan sudah memiliki presensi / izin lain.',
             ]);
         }
 
@@ -1034,8 +1041,8 @@ class PengajuanIzinController extends Controller
                 ->orderByDesc('kode_izin')
                 ->first();
 
-            $lastkodeizin = $lastizin != null ? $lastizin->kode_izin : "";
-            $format = "IZ" . $bulan . $thn;
+            $lastkodeizin = $lastizin != null ? $lastizin->kode_izin : '';
+            $format = 'IZ'.$bulan.$thn;
             $kode_izin = $this->generateKodeIzin($lastkodeizin, $format, 4);
 
             Izin::create([
@@ -1133,22 +1140,23 @@ class PengajuanIzinController extends Controller
             $daterange = new \DatePeriod($begin, new \DateInterval('P1D'), $end);
 
             foreach ($daterange as $dt) {
-                $d = $dt->format("Y-m-d");
+                $d = $dt->format('Y-m-d');
                 $namahari = $this->gethari($dt->format('D'));
                 [$jkObj, $isLiburShift] = $this->resolveJamKerja($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namahari);
-                
-                if ($isLiburShift || (strtolower($namahari) === 'minggu' && !$jkObj)) {
+
+                if ($isLiburShift || (strtolower($namahari) === 'minggu' && ! $jkObj)) {
                     $shiftLiburDates[] = $d;
                 }
             }
-        } catch (\Exception $e) { }
+        } catch (\Exception $e) {
+        }
 
         $blacklistDates = array_unique(array_merge($presensiDates, $izinDates, $holidayDates, $shiftLiburDates));
 
         if ($request->boolean('include_holidays')) {
             return response()->json([
                 'blacklist_dates' => array_values($blacklistDates),
-                'holiday_dates' => array_values($holidayDates)
+                'holiday_dates' => array_values($holidayDates),
             ]);
         }
 
@@ -1178,7 +1186,7 @@ class PengajuanIzinController extends Controller
      */
     private function storeSuratSakit($file, string $kode_izin): string
     {
-        $fileName = $kode_izin . '.' . $file->extension();
+        $fileName = $kode_izin.'.'.$file->extension();
         $file->storeAs('uploads/sid', $fileName, 'public');
 
         return $fileName;
@@ -1190,7 +1198,7 @@ class PengajuanIzinController extends Controller
             ->where('nik', Auth::guard('karyawan')->user()->nik)
             ->first();
 
-        if (!$dataizin) {
+        if (! $dataizin) {
             return Redirect::back()->with('error', 'Data Izin tidak ditemukan.');
         }
 
@@ -1218,16 +1226,17 @@ class PengajuanIzinController extends Controller
     public function editizinabsen($kode_izin)
     {
         $dataizin = $this->findOwnPendingIzin($kode_izin, 'i');
-        if (!$dataizin) {
+        if (! $dataizin) {
             return Redirect::back()->with('error', 'Data Izin Absen tidak valid.');
         }
+
         return view('karyawan.pengajuanizin.editizinabsen', compact('dataizin'));
     }
 
     public function editizinterlambat($kode_izin)
     {
         $dataizin = $this->findOwnPendingIzin($kode_izin, 't');
-        if (!$dataizin) {
+        if (! $dataizin) {
             return Redirect::back()->with('error', 'Data Izin Terlambat tidak valid.');
         }
 
@@ -1240,7 +1249,7 @@ class PengajuanIzinController extends Controller
 
     public function updateizinabsen($kode_izin, Request $request)
     {
-        if (!$this->findOwnPendingIzin($kode_izin, 'i')) {
+        if (! $this->findOwnPendingIzin($kode_izin, 'i')) {
             return $this->izinTidakValid();
         }
 
@@ -1262,6 +1271,7 @@ class PengajuanIzinController extends Controller
 
         try {
             Izin::where('kode_izin', $kode_izin)->update($data_update);
+
             return redirect('/presensi/izin')->with('success', 'Data Izin Absen Berhasil Diupdate.');
         } catch (\Exception $e) {
             return redirect('/presensi/izin')->with('error', $this->failMessage('Data Izin Absen Gagal Diupdate.', $e));
@@ -1270,7 +1280,7 @@ class PengajuanIzinController extends Controller
 
     public function updateizinterlambat($kode_izin, Request $request)
     {
-        if (!$this->findOwnPendingIzin($kode_izin, 't')) {
+        if (! $this->findOwnPendingIzin($kode_izin, 't')) {
             return $this->izinTidakValid();
         }
 
@@ -1288,6 +1298,7 @@ class PengajuanIzinController extends Controller
 
         try {
             Izin::where('kode_izin', $kode_izin)->update($data_update);
+
             return redirect('/pengajuanizin/index')->with('success', 'Data Izin Terlambat Berhasil Diupdate.');
         } catch (\Exception $e) {
             return redirect('/pengajuanizin/index')->with('error', $this->failMessage('Data Izin Terlambat Gagal Diupdate.', $e));
@@ -1297,7 +1308,7 @@ class PengajuanIzinController extends Controller
     public function editizinpulangcepat($kode_izin)
     {
         $dataizin = $this->findOwnPendingIzin($kode_izin, 'p');
-        if (!$dataizin) {
+        if (! $dataizin) {
             return Redirect::back()->with('error', 'Data Izin Pulang Cepat tidak valid.');
         }
 
@@ -1310,7 +1321,7 @@ class PengajuanIzinController extends Controller
 
     public function updateizinpulangcepat($kode_izin, Request $request)
     {
-        if (!$this->findOwnPendingIzin($kode_izin, 'p')) {
+        if (! $this->findOwnPendingIzin($kode_izin, 'p')) {
             return $this->izinTidakValid();
         }
 
@@ -1324,6 +1335,7 @@ class PengajuanIzinController extends Controller
 
         try {
             Izin::where('kode_izin', $kode_izin)->update($data_update);
+
             return redirect('/pengajuanizin/index')->with('success', 'Data Izin Pulang Cepat Berhasil Diupdate.');
         } catch (\Exception $e) {
             return redirect('/pengajuanizin/index')->with('error', $this->failMessage('Data Izin Pulang Cepat Gagal Diupdate.', $e));
@@ -1333,7 +1345,7 @@ class PengajuanIzinController extends Controller
     public function editizinsakit($kode_izin)
     {
         $dataizin = $this->findOwnPendingIzin($kode_izin, 's');
-        if (!$dataizin) {
+        if (! $dataizin) {
             return Redirect::back()->with('error', 'Data Izin Sakit tidak valid.');
         }
 
@@ -1347,7 +1359,7 @@ class PengajuanIzinController extends Controller
     public function updateizinsakit($kode_izin, Request $request)
     {
         $izin = $this->findOwnPendingIzin($kode_izin, 's');
-        if (!$izin) {
+        if (! $izin) {
             return $this->izinTidakValid();
         }
 
@@ -1375,9 +1387,9 @@ class PengajuanIzinController extends Controller
         try {
             if ($request->hasFile('sid')) {
                 // Delete old file if it exists
-                $folderPath = "uploads/sid";
-                if (!empty($old_doc_sid) && $old_doc_sid !== '-') {
-                    Storage::disk('public')->delete($folderPath . '/' . $old_doc_sid);
+                $folderPath = 'uploads/sid';
+                if (! empty($old_doc_sid) && $old_doc_sid !== '-') {
+                    Storage::disk('public')->delete($folderPath.'/'.$old_doc_sid);
                 }
 
                 $sid_file_name = $this->storeSuratSakit($request->file('sid'), $kode_izin);
@@ -1389,6 +1401,7 @@ class PengajuanIzinController extends Controller
             }
 
             Izin::where('kode_izin', $kode_izin)->update($data_update);
+
             return redirect('/presensi/izin')->with('success', 'Data Izin Sakit Berhasil Diupdate.');
         } catch (\Exception $e) {
             return redirect('/presensi/izin')->with('error', $this->failMessage('Data Izin Sakit Gagal Diupdate.', $e));
@@ -1402,7 +1415,7 @@ class PengajuanIzinController extends Controller
 
         $dataizin = $this->findOwnPendingIzin($kode_izin, 'c')?->load('masterCuti');
 
-        if (!$dataizin) {
+        if (! $dataizin) {
             return Redirect::back()->with('error', 'Data Izin Cuti tidak valid.');
         }
 
@@ -1439,7 +1452,7 @@ class PengajuanIzinController extends Controller
     {
         $dataizin = $this->findOwnPendingIzin($kode_izin, 'r');
 
-        if (!$dataizin) {
+        if (! $dataizin) {
             return Redirect::back()->with('error', 'Data Pengajuan Roster tidak valid.');
         }
 
@@ -1465,7 +1478,7 @@ class PengajuanIzinController extends Controller
 
     public function updateizincuti($kode_izin, Request $request)
     {
-        if (!$this->findOwnPendingIzin($kode_izin, 'c')) {
+        if (! $this->findOwnPendingIzin($kode_izin, 'c')) {
             return $this->izinTidakValid();
         }
 
@@ -1481,7 +1494,7 @@ class PengajuanIzinController extends Controller
 
         if ($hasActiveSP) {
             throw ValidationException::withMessages([
-                'kode_cuti' => 'Maaf, Anda memiliki Surat Peringatan (SP) yang masih aktif sehingga tidak dapat mengupdate pengajuan cuti.'
+                'kode_cuti' => 'Maaf, Anda memiliki Surat Peringatan (SP) yang masih aktif sehingga tidak dapat mengupdate pengajuan cuti.',
             ]);
         }
 
@@ -1498,7 +1511,7 @@ class PengajuanIzinController extends Controller
 
         if ($selectedDates->isEmpty()) {
             throw ValidationException::withMessages([
-                'selected_dates' => 'Pilih minimal satu tanggal cuti.'
+                'selected_dates' => 'Pilih minimal satu tanggal cuti.',
             ]);
         }
 
@@ -1514,7 +1527,7 @@ class PengajuanIzinController extends Controller
         $selectedHolidayDates = $selectedDates->intersect($holidayDates)->values();
         if ($selectedHolidayDates->isNotEmpty()) {
             throw ValidationException::withMessages([
-                'selected_dates' => 'Tanggal ' . $selectedHolidayDates->join(', ') . ' adalah hari libur dan tidak dapat diajukan cuti.'
+                'selected_dates' => 'Tanggal '.$selectedHolidayDates->join(', ').' adalah hari libur dan tidak dapat diajukan cuti.',
             ]);
         }
 
@@ -1527,7 +1540,7 @@ class PengajuanIzinController extends Controller
 
         if ($existingPresensi || $existingIzinOverlap) {
             throw ValidationException::withMessages([
-                'selected_dates' => 'Sebagian tanggal yang dipilih bentrok dengan presensi/pengajuan izin lain.'
+                'selected_dates' => 'Sebagian tanggal yang dipilih bentrok dengan presensi/pengajuan izin lain.',
             ]);
         }
 
@@ -1539,7 +1552,7 @@ class PengajuanIzinController extends Controller
 
             if ($jml_hari > $sisa_cuti) {
                 throw ValidationException::withMessages([
-                    'jmlhari' => "Sisa jatah cuti untuk jenis {$masterCutiRec->nama_cuti} Anda ({$sisa_cuti} hari) tidak mencukupi untuk {$jml_hari} hari yang diajukan."
+                    'jmlhari' => "Sisa jatah cuti untuk jenis {$masterCutiRec->nama_cuti} Anda ({$sisa_cuti} hari) tidak mencukupi untuk {$jml_hari} hari yang diajukan.",
                 ]);
             }
         }
@@ -1563,7 +1576,7 @@ class PengajuanIzinController extends Controller
 
     public function updateizinroster($kode_izin, Request $request)
     {
-        if (!$this->findOwnPendingIzin($kode_izin, 'r')) {
+        if (! $this->findOwnPendingIzin($kode_izin, 'r')) {
             return $this->izinTidakValid();
         }
 
@@ -1584,7 +1597,7 @@ class PengajuanIzinController extends Controller
 
         if ($selectedDates->isEmpty()) {
             throw ValidationException::withMessages([
-                'selected_dates' => 'Pilih minimal satu tanggal roster.'
+                'selected_dates' => 'Pilih minimal satu tanggal roster.',
             ]);
         }
 
@@ -1600,14 +1613,14 @@ class PengajuanIzinController extends Controller
             $namaHari = $this->gethari(date('D', strtotime($selectedDate)));
             [$jamKerja, $isLiburShift] = $this->resolveJamKerja($nik, $karyawan->kode_dept, $karyawan->kode_cabang, $namaHari);
 
-            if (!$isLiburShift && !in_array($selectedDate, $holidayDates, true)) {
+            if (! $isLiburShift && ! in_array($selectedDate, $holidayDates, true)) {
                 $finalSelectedDates->push($selectedDate);
             }
         }
 
         if ($finalSelectedDates->isEmpty()) {
             throw ValidationException::withMessages([
-                'selected_dates' => 'Seluruh tanggal yang dipilih bertepatan dengan libur / shift libur.'
+                'selected_dates' => 'Seluruh tanggal yang dipilih bertepatan dengan libur / shift libur.',
             ]);
         }
 
@@ -1620,7 +1633,7 @@ class PengajuanIzinController extends Controller
 
         if ($existingPresensi || $existingIzinOverlap) {
             throw ValidationException::withMessages([
-                'selected_dates' => 'Sebagian tanggal yang dipilih bentrok dengan presensi/pengajuan izin lain.'
+                'selected_dates' => 'Sebagian tanggal yang dipilih bentrok dengan presensi/pengajuan izin lain.',
             ]);
         }
 
@@ -1649,7 +1662,7 @@ class PengajuanIzinController extends Controller
             ->where('nik', $nik)
             ->first();
 
-        if (!$izin) {
+        if (! $izin) {
             return Redirect::back()->with('error', 'Data pengajuan tidak ditemukan atau bukan milik Anda.');
         }
 
@@ -1659,9 +1672,9 @@ class PengajuanIzinController extends Controller
 
         try {
             // Delete associated document file if exists
-            if (Schema::hasColumn('izin', 'doc_sid') && !empty($izin->doc_sid) && $izin->doc_sid !== '-') {
-                $folderPath = "uploads/sid";
-                Storage::disk('public')->delete($folderPath . '/' . $izin->doc_sid);
+            if (Schema::hasColumn('izin', 'doc_sid') && ! empty($izin->doc_sid) && $izin->doc_sid !== '-') {
+                $folderPath = 'uploads/sid';
+                Storage::disk('public')->delete($folderPath.'/'.$izin->doc_sid);
             }
 
             $izin->delete();
@@ -1675,14 +1688,14 @@ class PengajuanIzinController extends Controller
     private function gethari($hari)
     {
         switch ($hari) {
-            case 'Sun': return "Minggu";
-            case 'Mon': return "Senin";
-            case 'Tue': return "Selasa";
-            case 'Wed': return "Rabu";
-            case 'Thu': return "Kamis";
-            case 'Fri': return "Jumat";
-            case 'Sat': return "Sabtu";
-            default: return "Tidak diketahui";
+            case 'Sun': return 'Minggu';
+            case 'Mon': return 'Senin';
+            case 'Tue': return 'Selasa';
+            case 'Wed': return 'Rabu';
+            case 'Thu': return 'Kamis';
+            case 'Fri': return 'Jumat';
+            case 'Sat': return 'Sabtu';
+            default: return 'Tidak diketahui';
         }
     }
 
@@ -1697,6 +1710,7 @@ class PengajuanIzinController extends Controller
 
         if ($setJamKerja) {
             $isLibur = is_null($setJamKerja->kode_jam_kerja) || $setJamKerja->kode_jam_kerja === 'LIBUR';
+
             return [$setJamKerja->jamKerja, $isLibur];
         }
 
@@ -1709,6 +1723,7 @@ class PengajuanIzinController extends Controller
 
             if ($setJamKerjaDept) {
                 $isLibur = is_null($setJamKerjaDept->kode_jam_kerja) || $setJamKerjaDept->kode_jam_kerja === 'LIBUR';
+
                 return [$setJamKerjaDept->jamKerja, $isLibur];
             }
         }

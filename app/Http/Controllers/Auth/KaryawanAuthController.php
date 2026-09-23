@@ -5,17 +5,17 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Karyawan;
 use App\Models\RegistrationToken;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Carbon\Carbon;
 
 class KaryawanAuthController extends Controller
 {
     private function findValidRegistrationToken(?string $tokenStr): ?RegistrationToken
     {
-        if (!$tokenStr) {
+        if (! $tokenStr) {
             return null;
         }
 
@@ -23,7 +23,7 @@ class KaryawanAuthController extends Controller
             ->where('is_active', true)
             ->where(function ($q) {
                 $q->whereNull('expires_at')
-                  ->orWhere('expires_at', '>', now());
+                    ->orWhere('expires_at', '>', now());
             })
             ->first();
     }
@@ -31,11 +31,11 @@ class KaryawanAuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'nik'      => 'required|string',
+            'nik' => 'required|string',
             'password' => 'required|string',
         ], [
-            'nik.required'      => 'NIK tidak boleh kosong.',
-            'password.required' => 'Password tidak boleh kosong.'
+            'nik.required' => 'NIK tidak boleh kosong.',
+            'password.required' => 'Password tidak boleh kosong.',
         ]);
 
         $karyawan = Karyawan::where('nik', $request->nik)->first();
@@ -58,6 +58,7 @@ class KaryawanAuthController extends Controller
 
         if (Auth::guard('karyawan')->attempt($credentials, $remember)) {
             $request->session()->regenerate();
+
             return redirect()->route('dashboard.karyawan');
         }
 
@@ -82,15 +83,15 @@ class KaryawanAuthController extends Controller
         $request->validate([
             'token' => 'required|string',
         ], [
-            'token.required' => 'Token registrasi harus diisi.'
+            'token.required' => 'Token registrasi harus diisi.',
         ]);
 
         // Bersihkan token dari spasi (misal user input "123 456")
         $tokenInput = str_replace(' ', '', $request->token);
 
-                $token = $this->findValidRegistrationToken($tokenInput);
+        $token = $this->findValidRegistrationToken($tokenInput);
 
-        if (!$token) {
+        if (! $token) {
             return back()->with('warning', 'Token registrasi tidak valid atau sudah kadaluwarsa.');
         }
 
@@ -103,7 +104,7 @@ class KaryawanAuthController extends Controller
     public function registrasi()
     {
         // Cek apakah token ada di session
-        if (!session()->has('registration_token')) {
+        if (! session()->has('registration_token')) {
             return redirect()->route('registrasi.pretoken')->with('warning', 'Silakan masukkan token registrasi terlebih dahulu.');
         }
 
@@ -111,8 +112,9 @@ class KaryawanAuthController extends Controller
         $tokenStr = session('registration_token');
         $token = $this->findValidRegistrationToken($tokenStr);
 
-        if (!$token) {
+        if (! $token) {
             session()->forget('registration_token');
+
             return redirect()->route('registrasi.pretoken')->with('warning', 'Token Anda sudah tidak berlaku.');
         }
 
@@ -124,8 +126,9 @@ class KaryawanAuthController extends Controller
         // Re-validate token on store
         $tokenStr = session('registration_token');
         $token = $this->findValidRegistrationToken($tokenStr);
-        if (!$token) {
+        if (! $token) {
             session()->forget('registration_token');
+
             return redirect()->route('registrasi.pretoken')->with('warning', 'Token registrasi tidak valid atau sudah kadaluwarsa.');
         }
         $validated = $request->validate([
@@ -136,7 +139,7 @@ class KaryawanAuthController extends Controller
             'tanggal_lahir' => 'required|date',
             'jenis_kelamin' => 'required|in:L,P',
             'nama_ibu_kandung' => 'required|string|max:255',
-            
+
             // Kontak & Info
             'nama_panggilan' => 'required|string|max:255',
             'no_hp' => 'required|string|max:20',
@@ -147,7 +150,7 @@ class KaryawanAuthController extends Controller
             'status_ptkp' => 'required|string|max:10',
             'pendidikan_terakhir' => 'required|string|max:255',
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:3072',
-            
+
             // Darurat & Bank
             'nama_darurat' => 'required|string|max:255',
             'no_darurat' => 'required|string|max:255',
@@ -175,7 +178,7 @@ class KaryawanAuthController extends Controller
         // Upload Foto Profile
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
-            $foto_baru = $request->nik . "_" . time() . "." . $file->extension();
+            $foto_baru = $request->nik.'_'.time().'.'.$file->extension();
             $file->storeAs('uploads/karyawan/', $foto_baru, 'public');
             $data['foto'] = $foto_baru;
         }
@@ -183,7 +186,7 @@ class KaryawanAuthController extends Controller
         // Upload Foto BPJS Kesehatan
         if ($request->hasFile('foto_bpjs_kesehatan')) {
             $fileBpjs = $request->file('foto_bpjs_kesehatan');
-            $foto_bpjs_baru = $request->nik . "_bpjs_kes_" . time() . "." . $fileBpjs->extension();
+            $foto_bpjs_baru = $request->nik.'_bpjs_kes_'.time().'.'.$fileBpjs->extension();
             $fileBpjs->storeAs('uploads/karyawan/bpjs/', $foto_bpjs_baru, 'public');
             $data['foto_bpjs_kesehatan'] = $foto_bpjs_baru;
         }

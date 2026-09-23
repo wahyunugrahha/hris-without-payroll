@@ -14,23 +14,23 @@ return new class extends Migration
     {
         // Bersihkan duplikat sebelum menambah unique index.
         // Simpan baris dengan id terbesar (snapshot terbaru) untuk setiap kombinasi unik.
-        DB::statement("
+        DB::statement('
             DELETE FROM leaderboard_snapshots a
             USING leaderboard_snapshots b
             WHERE a.id < b.id
               AND a.date = b.date
               AND a.kode_cabang = b.kode_cabang
               AND a.nik = b.nik
-        ");
+        ');
 
-        DB::statement("
+        DB::statement('
             DELETE FROM kpi_leaderboard_snapshots a
             USING kpi_leaderboard_snapshots b
             WHERE a.id < b.id
               AND a.date = b.date
               AND a.kode_cabang = b.kode_cabang
               AND a.nik = b.nik
-        ");
+        ');
 
         Schema::table('leaderboard_snapshots', function (Blueprint $table) {
             $table->unique(['date', 'kode_cabang', 'nik'], 'leaderboard_snapshots_date_cabang_nik_unique');

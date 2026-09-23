@@ -5,7 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('cabang_lokasis', function (Blueprint $table) {
@@ -25,14 +26,14 @@ return new class extends Migration {
         // Assumes lokasi_kantor formatted as "lat,long"
         $cabangs = DB::table('cabang')->select('kode_cabang', 'lokasi_kantor', 'radius')->get();
         foreach ($cabangs as $cabang) {
-            if (!empty($cabang->lokasi_kantor) && strpos($cabang->lokasi_kantor, ',') !== false) {
+            if (! empty($cabang->lokasi_kantor) && strpos($cabang->lokasi_kantor, ',') !== false) {
                 [$lat, $lon] = explode(',', $cabang->lokasi_kantor);
                 DB::table('cabang_lokasis')->insert([
                     'kode_cabang' => $cabang->kode_cabang,
                     'nama_lokasi' => 'Lokasi Utama',
-                    'latitude' => (float)$lat,
-                    'longitude' => (float)$lon,
-                    'radius' => (int)($cabang->radius ?? 0),
+                    'latitude' => (float) $lat,
+                    'longitude' => (float) $lon,
+                    'radius' => (int) ($cabang->radius ?? 0),
                     'aktif' => true,
                 ]);
             }

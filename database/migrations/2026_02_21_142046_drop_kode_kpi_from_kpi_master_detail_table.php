@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('kpi_master_detail', function (Blueprint $table) {
-            $table->string('kode_kpi', 255)->nullable(); 
+            $table->string('kode_kpi', 255)->nullable();
         });
     }
 };

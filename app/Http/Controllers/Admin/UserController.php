@@ -3,16 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cabang;
+use App\Models\Departemen;
+use App\Models\Jabatan;
+use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-
-use App\Models\Departemen;
-use App\Models\Cabang;
-use App\Models\Jabatan;
-use App\Models\User;
 
 class UserController extends Controller
 {
@@ -36,8 +35,8 @@ class UserController extends Controller
             ->withQueryString();
 
         $departemen = Departemen::orderBy('kode_dept')->get();
-        $cabang     = Cabang::orderBy('nama_cabang')->get();
-        $jabatan = Jabatan::whereHas('role', function($q) {
+        $cabang = Cabang::orderBy('nama_cabang')->get();
+        $jabatan = Jabatan::whereHas('role', function ($q) {
             $q->where('guard_name', 'user');
         })->orderBy('nama_jabatan')->get();
 
@@ -52,11 +51,11 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'        => 'required',
-            'email'       => 'required|email|unique:users,email',
-            'password'    => 'required|min:6',
-            'kode_dept'   => 'required',
-            'jabatan_id'  => 'required|exists:jabatan,id',
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:6',
+            'kode_dept' => 'required',
+            'jabatan_id' => 'required|exists:jabatan,id',
             'kode_cabang' => 'nullable|string|max:8',
         ]);
 
@@ -65,12 +64,12 @@ class UserController extends Controller
             $jabatan = Jabatan::with('role')->findOrFail($request->jabatan_id);
 
             $user = User::create([
-                'name'        => $request->name,
-                'email'       => $request->email,
-                'password'    => bcrypt($request->password),
-                'kode_dept'   => $request->kode_dept,
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => bcrypt($request->password),
+                'kode_dept' => $request->kode_dept,
                 'kode_cabang' => $request->kode_cabang,
-                'jabatan_id'  => $jabatan->id,
+                'jabatan_id' => $jabatan->id,
             ]);
 
             if ($jabatan->role) {
@@ -83,10 +82,10 @@ class UserController extends Controller
 
     public function edit($id)
     {
-        $user       = User::with(['roles', 'jabatan'])->findOrFail($id);
+        $user = User::with(['roles', 'jabatan'])->findOrFail($id);
         $departemen = Departemen::orderBy('kode_dept')->get();
-        $cabang     = Cabang::orderBy('nama_cabang')->get();
-        $jabatan = Jabatan::whereHas('role', function($q) {
+        $cabang = Cabang::orderBy('nama_cabang')->get();
+        $jabatan = Jabatan::whereHas('role', function ($q) {
             $q->where('guard_name', 'user');
         })->orderBy('nama_jabatan')->get();
 
@@ -101,24 +100,24 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'name'        => 'required',
-            'email'       => 'required|email|unique:users,email,' . $id,
-            'kode_dept'   => 'required',
-            'jabatan_id'  => 'required|exists:jabatan,id',
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email,'.$id,
+            'kode_dept' => 'required',
+            'jabatan_id' => 'required|exists:jabatan,id',
             'kode_cabang' => 'nullable|string|max:8',
         ]);
 
         DB::transaction(function () use ($request, $id) {
 
-            $user    = User::findOrFail($id);
+            $user = User::findOrFail($id);
             $jabatan = Jabatan::with('role')->findOrFail($request->jabatan_id);
 
             $user->update([
-                'name'        => $request->name,
-                'email'       => $request->email,
-                'kode_dept'   => $request->kode_dept,
+                'name' => $request->name,
+                'email' => $request->email,
+                'kode_dept' => $request->kode_dept,
                 'kode_cabang' => $request->kode_cabang,
-                'jabatan_id'  => $jabatan->id,
+                'jabatan_id' => $jabatan->id,
             ]);
 
             if ($request->filled('password')) {
@@ -139,6 +138,7 @@ class UserController extends Controller
     {
         try {
             User::findOrFail($id)->delete();
+
             return back()->with('success', 'Data user berhasil dihapus');
         } catch (QueryException $e) {
             return back()->with(
@@ -164,7 +164,7 @@ class UserController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'email' => 'required|email|unique:users,email,'.$user->id,
             'password' => 'nullable|string|min:8|confirmed',
             'current_password' => 'required_with:password|current_password:user',
         ]);
@@ -199,12 +199,12 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|unique:roles,name',
             'guard_name' => 'required|in:user,karyawan',
-            'permissions' => 'array'
+            'permissions' => 'array',
         ]);
 
         $role = Role::create([
             'name' => $request->name,
-            'guard_name' => $request->guard_name
+            'guard_name' => $request->guard_name,
         ]);
 
         if ($request->has('permissions')) {
@@ -217,12 +217,12 @@ class UserController extends Controller
     public function rolesUpdate(Request $request, Role $role)
     {
         $request->validate([
-            'name' => 'required|unique:roles,name,' . $role->id,
-            'permissions' => 'array'
+            'name' => 'required|unique:roles,name,'.$role->id,
+            'permissions' => 'array',
         ]);
 
         $role->update(['name' => $request->name]);
-        
+
         if ($request->has('permissions')) {
             $role->syncPermissions($request->permissions);
         } else {
@@ -235,6 +235,7 @@ class UserController extends Controller
     public function rolesDestroy(Role $role)
     {
         $role->delete();
+
         return back()->with('success', 'Role berhasil dihapus');
     }
 
@@ -242,7 +243,7 @@ class UserController extends Controller
     public function permissionsIndex()
     {
         return view('admin.users.permission', [
-            'permissions' => Permission::orderBy('guard_name', 'asc')->orderBy('name', 'asc')->get()
+            'permissions' => Permission::orderBy('guard_name', 'asc')->orderBy('name', 'asc')->get(),
         ]);
     }
 
@@ -250,12 +251,12 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required|unique:permissions,name',
-            'guard_name' => 'required|in:user,karyawan' // Validasi guard
+            'guard_name' => 'required|in:user,karyawan', // Validasi guard
         ]);
 
         Permission::create([
             'name' => $request->name,
-            'guard_name' => $request->guard_name
+            'guard_name' => $request->guard_name,
         ]);
 
         return back()->with('success', 'Permission berhasil ditambahkan');
@@ -264,13 +265,13 @@ class UserController extends Controller
     public function permissionsUpdate(Request $request, Permission $permission)
     {
         $request->validate([
-            'name' => 'required|unique:permissions,name,' . $permission->id,
-            'guard_name' => 'required|in:user,karyawan' // Validasi guard
+            'name' => 'required|unique:permissions,name,'.$permission->id,
+            'guard_name' => 'required|in:user,karyawan', // Validasi guard
         ]);
 
         $permission->update([
             'name' => $request->name,
-            'guard_name' => $request->guard_name
+            'guard_name' => $request->guard_name,
         ]);
 
         return back()->with('success', 'Permission berhasil diupdate');
@@ -279,6 +280,7 @@ class UserController extends Controller
     public function permissionsDestroy(Permission $permission)
     {
         $permission->delete();
+
         return back()->with('success', 'Permission berhasil dihapus');
     }
 }

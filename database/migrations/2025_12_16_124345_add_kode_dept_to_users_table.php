@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->char('kode_dept', 3)
-              ->default('DEV')
-              ->after('email');
+                ->default('DEV')
+                ->after('email');
         });
     }
 

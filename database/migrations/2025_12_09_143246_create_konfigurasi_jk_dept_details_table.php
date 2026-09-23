@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('konfigurasi_jk_dept_detail', function (Blueprint $table) {
@@ -12,7 +13,7 @@ return new class extends Migration {
             // Kolom Foreign Key (FK) ke konfigurasi_jk_dept
             $table->char('kode_jk_dept', 50);
 
-            // Kolom untuk Hari 
+            // Kolom untuk Hari
             $table->char('hari', length: 10);
 
             // Kolom Foreign Key (FK) untuk Jam Kerja (kode_jam_kerja) - nullable untuk LIBUR

@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Cabang;
 use App\Models\KonfigurasiUmum;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redirect;
 
@@ -17,9 +18,9 @@ class KonfigurasiUmumController extends Controller
             ->where('key', '!=', 'nama_pengesahan_dokumen')
             ->get()
             ->groupBy('group');
-        
-        $cabang = \App\Models\Cabang::orderBy('nama_cabang')->get();
-        
+
+        $cabang = Cabang::orderBy('nama_cabang')->get();
+
         return view('admin.konfigurasi_umum.index', compact('konfigurasi', 'cabang'));
     }
 
@@ -27,17 +28,17 @@ class KonfigurasiUmumController extends Controller
     {
         try {
             $settings = $request->input('settings', []);
-            
+
             foreach ($settings as $key => $value) {
                 if (is_array($value)) {
                     $value = implode(',', $value);
                 }
                 KonfigurasiUmum::where('key', $key)->update(['value' => $value]);
-                
+
                 // Clear the cache for each updated key
                 Cache::forget("setting.{$key}");
             }
-            
+
             return Redirect::back()->with(['success' => 'Konfigurasi berhasil disimpan.']);
         } catch (\Exception $e) {
             return Redirect::back()->with(['warning' => $this->failMessage('Konfigurasi gagal disimpan.', $e)]);

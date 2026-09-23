@@ -18,7 +18,7 @@ return new class extends Migration
             $table->enum('jenis_libur', ['nasional', 'cuti_bersama', 'lainnya'])->default('nasional');
             $table->string('kode_cabang')->nullable();
             $table->timestamps();
-            
+
             // Index untuk pencarian cepat berdasarkan tanggal
             $table->index('tanggal_libur');
         });

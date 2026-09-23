@@ -18,17 +18,17 @@ return new class extends Migration
 
         if (Schema::hasTable('kpi_monthly')) {
             Schema::rename('kpi_monthly', 'kpi_report');
-            
+
             Schema::table('kpi_report', function (Blueprint $table) {
                 // Tambah relasi kode_master
                 $table->string('kode_master')->nullable()->after('nik');
-                
+
                 // Tambah rincian skor
                 $table->decimal('score_presensi', 8, 2)->nullable()->after('periode_tahun');
                 $table->decimal('score_workbook', 8, 2)->nullable()->after('score_presensi');
                 $table->decimal('score_atasan', 8, 2)->nullable()->after('score_workbook');
                 $table->renameColumn('avg_score', 'final_score');
-                
+
                 // Hapus kolom status (karena di gambar ERD kpi_report tidak ada status)
                 if (Schema::hasColumn('kpi_report', 'status')) {
                     $table->dropColumn('status');
