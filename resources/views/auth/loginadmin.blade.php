@@ -101,8 +101,11 @@
             box-shadow: none;
         }
 
+        /* Tanpa foto: gradien warna brand. Foto dipakai bila public/assets/img/login-bg.jpg ada. */
         .login-hero {
             position: relative;
+            background-color: var(--color-accent);
+            background-image: linear-gradient(135deg, var(--color-accent) 0%, color-mix(in oklab, var(--color-accent) 55%, black) 100%);
             background-position: center;
             background-size: cover;
         }
@@ -240,8 +243,9 @@
 
             {{-- Kanan: gambar --}}
             <div class="col-12 col-lg-6 col-xl-8 d-none d-lg-block">
+                @php $fotoLogin = is_file(public_path('assets/img/login-bg.jpg')) ? asset_v('assets/img/login-bg.jpg') : null; @endphp
                 <div class="login-hero h-100 min-vh-100"
-                    style="background-image: url('{{ asset_v('assets/img/login-bg.jpg') }}');">
+                    @if ($fotoLogin) style="background-image: url('{{ $fotoLogin }}');" @endif>
                     <div class="login-hero-inner h-100 d-flex flex-column justify-content-between p-4 p-xl-5">
                         <div class="d-flex justify-content-end">
                             <span class="login-hero-tag">Panel Admin</span>
