@@ -11,8 +11,8 @@
 @endphp
 
 <div class="container-narrow-lg">
-    <form action="{{ $action }}" method="POST" class="card" id="frmLaporan">
-        @csrf
+    {{-- GET: hasil cetak punya URL sendiri sehingga aman di-refresh / dibuka ulang. --}}
+    <form action="{{ $action }}" method="GET" class="card" id="frmLaporan">
         <div class="card-header">
             <div>
                 <h3 class="card-title">Pilih data laporan</h3>

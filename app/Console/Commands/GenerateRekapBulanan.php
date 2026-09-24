@@ -331,7 +331,7 @@ class GenerateRekapBulanan extends Command
                     $scoreUtama = $daily->kpiDailyDetail->sum('score');
                     $scoreExtra = $daily->kpiDailyExtra->sum('score');
 
-                    $persenHariIni = (($scoreUtama + $scoreExtra) / $kpiMaster->bobot_kpi) * 100;
+                    $persenHariIni = $kpiMaster->bobot_kpi > 0 ? (($scoreUtama + $scoreExtra) / $kpiMaster->bobot_kpi) * 100 : 0;
                     if ($persenHariIni > 100) {
                         $persenHariIni = 100;
                     }

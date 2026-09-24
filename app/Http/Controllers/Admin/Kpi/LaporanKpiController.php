@@ -418,7 +418,8 @@ class LaporanKpiController extends Controller
                         $scoreUtama = $daily->kpiDailyDetail->sum('score');
                         $scoreExtra = $daily->kpiDailyExtra->sum('score'); // Extra masuk ke harian
 
-                        $persenHariIni = (($scoreUtama + $scoreExtra) / $kpiMaster->bobot_kpi) * 100; // Menggunakan bobot dari Master KPI
+                        // Bobot dari Master KPI; bobot 0 (belum diatur) berarti capaian 0, bukan pembagian dengan nol.
+                        $persenHariIni = $kpiMaster->bobot_kpi > 0 ? (($scoreUtama + $scoreExtra) / $kpiMaster->bobot_kpi) * 100 : 0;
                         if ($persenHariIni > 100) {
                             $persenHariIni = 100;
                         }
