@@ -68,7 +68,7 @@
                                     <tr data-role-row data-nama="{{ strtolower($role->name) }}">
                                         <td class="cell-person"><span class="person-name text-capitalize">{{ $role->name }}</span></td>
                                         <td data-label="Panel akses">
-                                            <span class="emp-status emp-status--{{ $role->guard_name == 'user' ? 'success' : 'neutral' }}">{{ $panelAkses[$role->guard_name] ?? $role->guard_name }}</span>
+                                            <span class="tag hue-{{ \App\Support\WarnaJenis::PANEL_AKSES[$role->guard_name] ?? 'slate' }}">{{ $panelAkses[$role->guard_name] ?? $role->guard_name }}</span>
                                         </td>
                                         <td data-label="Izin" class="cell-num text-lg-end">{{ $role->permissions->count() }}</td>
                                         <td class="cell-actions">

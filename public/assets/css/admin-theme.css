@@ -2913,6 +2913,37 @@ button.summary-item.is-current {
     }
 }
 
+/* Tag jenis: pil berwarna lembut per kategori (.hue-*). Warna dari --hue-* (admin-tokens). */
+.hue-blue { --hue: var(--hue-blue); }
+.hue-teal { --hue: var(--hue-teal); }
+.hue-green { --hue: var(--hue-green); }
+.hue-violet { --hue: var(--hue-violet); }
+.hue-pink { --hue: var(--hue-pink); }
+.hue-red { --hue: var(--hue-red); }
+.hue-orange { --hue: var(--hue-orange); }
+.hue-amber { --hue: var(--hue-amber); }
+.hue-indigo { --hue: var(--hue-indigo); }
+.hue-slate { --hue: var(--hue-slate); }
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 8px;
+    border: 1px solid color-mix(in oklab, var(--hue, var(--hue-slate)) 28%, transparent);
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--hue, var(--hue-slate)) 13%, var(--color-surface));
+    color: color-mix(in oklab, var(--hue, var(--hue-slate)) 70%, var(--color-ink));
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
+/* Status titik mengikuti warna jenis bila diberi .hue-*. */
+.emp-status[class*="hue-"] {
+    --status: var(--hue);
+}
+
 /* ════════════════════════════════════════════════════════════════════
  * 15. Footer
  * ════════════════════════════════════════════════════════════════════ */

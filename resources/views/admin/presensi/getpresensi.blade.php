@@ -23,6 +23,8 @@
         $doc_sid = !empty($d->doc_sid) && $d->doc_sid != '-' ? Storage::url('uploads/sid/' . $d->doc_sid) : null;
 
         [$status_label, $nada] = $statusPresensi[$d->status] ?? ['Alpha', 'danger'];
+        // Jenis ketidakhadiran (izin, sakit, cuti, …) memakai warna kategorinya masing-masing.
+        $hue = isset(\App\Support\WarnaJenis::KETIDAKHADIRAN[$d->status]) ? 'hue-' . \App\Support\WarnaJenis::ketidakhadiran($d->status) : '';
         if ($d->status == 'h' && !empty($d->jam_masuk) && $d->jam_in != '00:00:00' && $d->jam_in > $d->jam_masuk) {
             [$status_label, $nada] = ['Terlambat', 'warning'];
         }
@@ -56,7 +58,7 @@
             @endif
         </td>
         <td data-label="Status">
-            <span class="emp-status emp-status--{{ $nada }}">{{ $status_label }}</span>
+            <span class="emp-status emp-status--{{ $nada }} {{ $hue }}">{{ $status_label }}</span>
             @if ($d->kejanggalan)
                 <div class="cell-sub text-danger" title="{{ $d->kejanggalan }}">Lokasi janggal</div>
             @endif
@@ -79,7 +81,7 @@
                 data-nama="{{ $d->nama_karyawan }}" data-jabatan="{{ $jabatanNama }}" data-dept="{{ $d->nama_dept }}"
                 data-cabang="{{ $d->nama_cabang }}" data-jadwal="{{ $jadwal_info }}"
                 data-jamin="{{ $jam_in_display ?? '-' }}" data-jamout="{{ $jam_out_display ?? '-' }}"
-                data-status="{{ $status_label }}" data-nada="{{ $nada }}" data-kejanggalan="{{ $d->kejanggalan }}"
+                data-status="{{ $status_label }}" data-nada="{{ $nada }}" data-hue="{{ $hue }}" data-kejanggalan="{{ $d->kejanggalan }}"
                 data-fotoin="{{ $foto_in }}" data-fotoout="{{ $foto_out }}" data-sid="{{ $doc_sid }}"
                 data-lokasivalid="{{ !empty($d->lokasi_in) && $d->lokasi_in != '999,999' ? 1 : 0 }}">
                 Detail

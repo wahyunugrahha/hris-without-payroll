@@ -154,7 +154,7 @@
                                         </td>
                                         <td data-label="Tingkat">
                                             <div class="cell-main fw-medium">SP {{ $it->level }}</div>
-                                            <div class="cell-sub">{{ $jenisPelanggaran[$it->violation_type] ?? 'Lainnya' }}</div>
+                                            <span class="tag hue-{{ \App\Support\WarnaJenis::PELANGGARAN_SP[$it->violation_type] ?? 'slate' }}">{{ $jenisPelanggaran[$it->violation_type] ?? 'Lainnya' }}</span>
                                         </td>
                                         <td data-label="Berlaku" class="cell-num">
                                             <div class="cell-main">{{ $expires->translatedFormat('d M Y') }}</div>
@@ -174,6 +174,7 @@
                                                     data-cabang="{{ $it->karyawan?->cabang?->nama_cabang ?? '-' }}"
                                                     data-dept="{{ $it->karyawan?->departemen?->nama_dept ?? '-' }}"
                                                     data-level="{{ $it->level }}" data-jenis="{{ $jenisPelanggaran[$it->violation_type] ?? 'Lainnya' }}"
+                                                    data-hue="{{ \App\Support\WarnaJenis::PELANGGARAN_SP[$it->violation_type] ?? 'slate' }}"
                                                     data-tgl-terbit="{{ date('d-m-Y', strtotime($it->issued_at)) }}"
                                                     data-tgl-akhir="{{ $expires->format('d-m-Y') }}"
                                                     data-aktif="{{ $aktif ? 1 : 0 }}" data-keterangan="{{ $it->note }}">Lihat detail</button>
@@ -220,7 +221,7 @@
                     <dl class="info-grid">
                         <div><dt>Tingkat</dt><dd id="mdl-level" class="fw-medium">-</dd></div>
                         <div><dt>Status</dt><dd><span id="mdl-status" class="emp-status">-</span></dd></div>
-                        <div><dt>Jenis pelanggaran</dt><dd id="mdl-jenis">-</dd></div>
+                        <div><dt>Jenis pelanggaran</dt><dd><span id="mdl-jenis" class="tag">-</span></dd></div>
                         <div><dt>Masa berlaku</dt><dd class="cell-num"><span id="mdl-tgl-terbit">-</span> s/d <span id="mdl-tgl-akhir">-</span></dd></div>
                         <div><dt>Jabatan</dt><dd id="mdl-jabatan">-</dd></div>
                         <div><dt>Departemen · cabang</dt><dd><span id="mdl-dept">-</span> · <span id="mdl-cabang">-</span></dd></div>
@@ -380,6 +381,7 @@
                 set('mdl-keterangan', d.keterangan);
                 set('mdl-level', 'SP ' + d.level);
                 set('mdl-jenis', d.jenis);
+                document.getElementById('mdl-jenis').className = 'tag hue-' + (d.hue || 'slate');
                 const status = document.getElementById('mdl-status');
                 status.textContent = d.aktif === '1' ? 'Aktif' : 'Berakhir';
                 status.className = 'emp-status emp-status--' + (d.aktif === '1' ? 'danger' : 'neutral');

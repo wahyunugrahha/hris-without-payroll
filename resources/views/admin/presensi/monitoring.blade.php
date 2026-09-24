@@ -199,7 +199,7 @@
                 $('#dt_jadwal').text(d.jadwal || '-');
                 $('#dt_jamin').text(d.jamin || '-');
                 $('#dt_jamout').text(d.jamout || '-');
-                $('#dt_status').text(d.status || '-').attr('class', 'emp-status emp-status--' + (d.nada || 'neutral'));
+                $('#dt_status').text(d.status || '-').attr('class', 'emp-status emp-status--' + (d.nada || 'neutral') + ' ' + (d.hue || ''));
                 $('#dt_kejanggalan').text(d.kejanggalan || '');
                 $('#dt_kejanggalan_wrap').toggleClass('d-none', !d.kejanggalan);
 

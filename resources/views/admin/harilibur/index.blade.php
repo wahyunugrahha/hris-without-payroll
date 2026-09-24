@@ -2,9 +2,9 @@
 
 @php
     $jenisLibur = [
-        'nasional' => ['Nasional', 'danger'],
-        'cuti_bersama' => ['Cuti bersama', 'warning'],
-        'lokal' => ['Lokal', 'neutral'],
+        'nasional' => 'Nasional',
+        'cuti_bersama' => 'Cuti bersama',
+        'lokal' => 'Lokal',
     ];
     $filterAktif = collect([request('dari'), request('sampai'), request('kode_dept'), request('kode_cabang'), request('jenis_libur'), request('q')])
         ->filter(fn ($v) => filled($v))->count();
@@ -65,7 +65,7 @@
                                 <span class="filter-label">Jenis</span>
                                 <select name="jenis_libur" class="form-select form-select-sm" data-auto-submit>
                                     <option value="">Semua</option>
-                                    @foreach ($jenisLibur as $nilai => [$label])
+                                    @foreach ($jenisLibur as $nilai => $label)
                                         <option value="{{ $nilai }}" @selected(request('jenis_libur') === $nilai)>{{ $label }}</option>
                                     @endforeach
                                 </select>
@@ -134,7 +134,7 @@
                                         $namaDept = $namaDari($item->kode_dept, $departemen, 'kode_dept', 'nama_dept');
                                         $namaCabang = $namaDari($item->kode_cabang, $cabang, 'kode_cabang', 'nama_cabang');
                                         $tanggal = \Carbon\Carbon::parse($item->tanggal_libur);
-                                        [$labelJenis, $nadaJenis] = $jenisLibur[$item->jenis_libur] ?? [$item->jenis_libur, 'neutral'];
+                                        $labelJenis = $jenisLibur[$item->jenis_libur] ?? $item->jenis_libur;
                                     @endphp
                                     <tr>
                                         <td class="cell-person">
@@ -143,7 +143,7 @@
                                         </td>
                                         <td data-label="Keterangan">{{ $item->keterangan }}</td>
                                         <td data-label="Jenis">
-                                            <span class="emp-status emp-status--{{ $nadaJenis }}">{{ $labelJenis }}</span>
+                                            <span class="tag hue-{{ \App\Support\WarnaJenis::HARI_LIBUR[$item->jenis_libur] ?? 'slate' }}">{{ $labelJenis }}</span>
                                         </td>
                                         <td data-label="Berlaku">
                                             <div class="cell-main" @if ($namaDept->isNotEmpty()) title="{{ $namaDept->implode(', ') }}" @endif>

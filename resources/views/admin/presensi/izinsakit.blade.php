@@ -109,7 +109,8 @@
                             <thead>
                                 <tr>
                                     <th>Karyawan</th>
-                                    <th>Jenis &amp; periode</th>
+                                    <th>Jenis</th>
+                                    <th>Periode</th>
                                     <th>Keterangan</th>
                                     <th>Status</th>
                                     <th class="w-1"><span class="visually-hidden">Aksi</span></th>
@@ -165,9 +166,12 @@
                                             <span class="person-name" title="{{ $d->nama_lengkap }}">{{ $d->nama_lengkap }}</span>
                                             <span class="person-sub">{{ $d->nik }} · {{ $d->karyawan->cabang->nama_cabang ?? '-' }}</span>
                                         </td>
+                                        <td data-label="Jenis">
+                                            <span class="tag hue-{{ \App\Support\WarnaJenis::ketidakhadiran($d->status) }}">{{ $labelJenis }}</span>
+                                        </td>
                                         <td data-label="Periode">
                                             <div class="cell-main cell-num">{{ $periodeDisplay }}</div>
-                                            <div class="cell-sub">{{ $labelJenis }} · {{ $jumlahHari }} hari{{ $periodeHint ? ' · ' . $periodeHint : '' }}</div>
+                                            <div class="cell-sub">{{ $jumlahHari }} hari{{ $periodeHint ? ' · ' . $periodeHint : '' }}</div>
                                         </td>
                                         <td data-label="Keterangan">
                                             <div class="cell-clamp" title="{{ $keteranganDisplay }}">{{ $keteranganDisplay !== '' ? $keteranganDisplay : '-' }}</div>

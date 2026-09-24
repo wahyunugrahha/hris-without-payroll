@@ -2203,7 +2203,7 @@
                     .replaceAll("'", '&#039;');
             };
 
-            const renderList = (title, items, badgeClass) => {
+            const renderList = (title, items, hue) => {
                 const list = Array.isArray(items) ? items : [];
                 const listClass = list.length > 6 ? 'calendar-person-list calendar-person-list-scroll' :
                     'calendar-person-list';
@@ -2225,8 +2225,8 @@
                         <div class="card card-sm border-0 bg-light h-100">
                             <div class="card-body">
                                 <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <span class="fw-semibold">${title}</span>
-                                    <span class="badge ${badgeClass}">${list.length}</span>
+                                    <span class="tag hue-${hue}">${title}</span>
+                                    <span class="fw-semibold cell-num">${list.length}</span>
                                 </div>
                                 <div class="${listClass}">${itemHtml}</div>
                             </div>
@@ -2308,18 +2308,18 @@
 
                     detailTitle.textContent = `Detail Aktivitas ${dateLabel}`;
                     detailStats.innerHTML = [
-                        `<span class="emp-status emp-status--info">Izin: ${(detail.izin || []).length}</span>`,
-                        `<span class="emp-status emp-status--info">Sakit: ${(detail.sakit || []).length}</span>`,
-                        `<span class="emp-status emp-status--info">Cuti: ${(detail.cuti || []).length}</span>`,
-                        `<span class="emp-status emp-status--info">Dinas luar: ${(detail.dinas || []).length}</span>`,
-                        `<span class="emp-status">Total karyawan: ${uniqueNiks.length}</span>`
+                        `<span class="tag hue-blue">Izin: ${(detail.izin || []).length}</span>`,
+                        `<span class="tag hue-pink">Sakit: ${(detail.sakit || []).length}</span>`,
+                        `<span class="tag hue-teal">Cuti: ${(detail.cuti || []).length}</span>`,
+                        `<span class="tag hue-indigo">Dinas luar: ${(detail.dinas || []).length}</span>`,
+                        `<span class="tag">Total karyawan: ${uniqueNiks.length}</span>`
                     ].join('');
 
                     detailBody.innerHTML = [
-                        renderList('Izin', detail.izin, 'bg-blue-lt'),
-                        renderList('Sakit', detail.sakit, 'bg-red-lt'),
-                        renderList('Cuti', detail.cuti, 'bg-indigo-lt'),
-                        renderList('Dinas Luar', detail.dinas, 'bg-azure-lt')
+                        renderList('Izin', detail.izin, 'blue'),
+                        renderList('Sakit', detail.sakit, 'pink'),
+                        renderList('Cuti', detail.cuti, 'teal'),
+                        renderList('Dinas Luar', detail.dinas, 'indigo')
                     ].join('');
 
                     if (detailModalEl) {

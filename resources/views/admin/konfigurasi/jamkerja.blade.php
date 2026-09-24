@@ -100,7 +100,7 @@
                                             <div class="cell-sub">masuk – pulang</div>
                                         </td>
                                         <td data-label="Tipe">
-                                            <span class="emp-status emp-status--{{ $d->lintashari == 1 ? 'warning' : 'neutral' }}">
+                                            <span class="tag hue-{{ $d->lintashari == 1 ? 'indigo' : 'amber' }}">
                                                 {{ $d->lintashari == 1 ? 'Lintas hari' : 'Normal' }}
                                             </span>
                                         </td>

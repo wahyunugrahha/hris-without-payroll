@@ -103,7 +103,7 @@
                                         </td>
                                         <td data-label="Role">{{ $data->role->name ?? '-' }}</td>
                                         <td data-label="Panel akses">
-                                            <span class="emp-status emp-status--{{ ($data->role->guard_name ?? '') === 'user' ? 'success' : 'neutral' }}">
+                                            <span class="tag hue-{{ \App\Support\WarnaJenis::PANEL_AKSES[$data->role->guard_name ?? ''] ?? 'slate' }}">
                                                 {{ $panelAkses[$data->role->guard_name ?? ''] ?? '-' }}
                                             </span>
                                         </td>

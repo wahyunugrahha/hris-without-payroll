@@ -82,7 +82,7 @@
                                         <td class="cell-person"><span class="person-name cell-num">{{ $permission->name }}</span></td>
                                         <td data-label="Modul" class="text-capitalize">{{ str_replace('_', ' ', explode('-', $permission->name, 2)[0]) }}</td>
                                         <td data-label="Panel">
-                                            <span class="emp-status emp-status--{{ $permission->guard_name == 'user' ? 'success' : 'neutral' }}">{{ $panelAkses[$permission->guard_name] ?? $permission->guard_name }}</span>
+                                            <span class="tag hue-{{ \App\Support\WarnaJenis::PANEL_AKSES[$permission->guard_name] ?? 'slate' }}">{{ $panelAkses[$permission->guard_name] ?? $permission->guard_name }}</span>
                                         </td>
                                         <td class="cell-actions">
                                             @canany(['permissions-edit-admin', 'permissions-delete-admin'])

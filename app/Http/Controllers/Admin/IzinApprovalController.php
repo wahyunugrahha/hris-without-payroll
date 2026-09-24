@@ -11,6 +11,7 @@ use App\Models\Jabatan;
 use App\Services\IzinApprovalService;
 use App\Services\IzinService;
 use App\Support\CutiDatesMeta;
+use App\Support\WarnaJenis;
 use DateInterval;
 use DatePeriod;
 use Exception;
@@ -166,20 +167,12 @@ class IzinApprovalController extends Controller
             // Fix: Null Coalescing & Optional Helper for Master Cuti
             $nama_cuti = optional($izin->masterCuti)->nama_cuti ?? 'Cuti';
 
-            $jenis_badge = '';
-            if ($izin->status == 'i') {
-                $jenis_badge = '<span class="badge bg-blue-lt">Izin</span>';
-            } elseif ($izin->status == 's') {
-                $jenis_badge = '<span class="badge bg-pink-lt">Sakit</span>';
-            } elseif ($izin->status == 'r') {
-                $jenis_badge = '<span class="badge bg-cyan-lt">Roster</span>';
-            } elseif ($izin->status == 't') {
-                $jenis_badge = '<span class="badge bg-orange-lt">Izin Terlambat</span>';
-            } elseif ($izin->status == 'p') {
-                $jenis_badge = '<span class="badge bg-indigo-lt">Pulang Cepat</span>';
-            } elseif (! empty($izin->kode_cuti)) {
-                $jenis_badge = '<span class="badge bg-teal-lt">'.e($nama_cuti).'</span>';
-            }
+            $labelJenis = $izin->status === 'c' && ! empty($izin->kode_cuti)
+                ? $nama_cuti
+                : (['i' => 'Izin', 's' => 'Sakit', 'r' => 'Roster', 't' => 'Izin Terlambat', 'p' => 'Pulang Cepat', 'c' => 'Cuti'][$izin->status] ?? '');
+            $jenis_badge = $labelJenis === ''
+                ? ''
+                : '<span class="tag hue-'.WarnaJenis::ketidakhadiran($izin->status).'">'.e($labelJenis).'</span>';
 
             $status_badge = '';
             if ($izin->status_approved == 1) {

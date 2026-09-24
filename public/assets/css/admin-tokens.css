@@ -28,6 +28,17 @@
     --color-danger: oklch(55% 0.19 27);
     --color-info: oklch(58% 0.12 230);
     --color-warning-tint: oklch(96% 0.05 90);
+    /* Palet kategori untuk membedakan jenis (izin, sakit, cuti, jenis libur, dll.). */
+    --hue-blue: oklch(56% 0.15 250);
+    --hue-teal: oklch(56% 0.15 190);
+    --hue-green: oklch(56% 0.15 150);
+    --hue-violet: oklch(56% 0.15 300);
+    --hue-pink: oklch(56% 0.15 350);
+    --hue-red: oklch(56% 0.15 25);
+    --hue-orange: oklch(56% 0.15 50);
+    --hue-amber: oklch(56% 0.15 80);
+    --hue-indigo: oklch(56% 0.15 275);
+    --hue-slate: oklch(56% 0.02 255);
     --color-backdrop: oklch(24% 0.02 258 / 0.35);
 
     /* Warna grafik (ApexCharts butuh warna literal; dibaca lewat getComputedStyle). */
@@ -102,6 +113,17 @@
     --color-danger: oklch(70% 0.16 25);
     --color-info: oklch(74% 0.11 230);
     --color-warning-tint: oklch(30% 0.06 80);
+    /* Palet kategori (versi gelap: lebih terang agar terbaca). */
+    --hue-blue: oklch(76% 0.13 250);
+    --hue-teal: oklch(76% 0.13 190);
+    --hue-green: oklch(76% 0.13 150);
+    --hue-violet: oklch(76% 0.13 300);
+    --hue-pink: oklch(76% 0.13 350);
+    --hue-red: oklch(76% 0.13 25);
+    --hue-orange: oklch(76% 0.13 50);
+    --hue-amber: oklch(76% 0.13 80);
+    --hue-indigo: oklch(76% 0.13 275);
+    --hue-slate: oklch(76% 0.02 255);
     --color-backdrop: oklch(0% 0 0 / 0.55);
 
     --chart-primary: #5b9be0;
