@@ -25,6 +25,7 @@ class RoleSeeder extends Seeder
 
             // Master Data
             'karyawan-view-admin', 'karyawan-create-admin', 'karyawan-edit-admin', 'karyawan-delete-admin', 'karyawan-export-excel-admin',
+            'karyawan-import-excel-admin', 'karyawan-download-template-admin',
             'jabatan-view-admin', 'jabatan-create-admin', 'jabatan-edit-admin', 'jabatan-delete-admin',
             'departemen-view-admin', 'departemen-create-admin', 'departemen-edit-admin', 'departemen-delete-admin',
             'cabang-view-admin', 'cabang-create-admin', 'cabang-edit-admin', 'cabang-delete-admin',
@@ -58,6 +59,7 @@ class RoleSeeder extends Seeder
 
             // Master Data
             'karyawan-view-admin', 'karyawan-create-admin', 'karyawan-edit-admin', 'karyawan-delete-admin', 'karyawan-export-excel-admin',
+            'karyawan-import-excel-admin', 'karyawan-download-template-admin',
             'jabatan-view-admin', 'jabatan-create-admin', 'jabatan-edit-admin', 'jabatan-delete-admin',
             'departemen-view-admin', 'departemen-create-admin', 'departemen-edit-admin', 'departemen-delete-admin',
             'cabang-view-admin', 'cabang-create-admin', 'cabang-edit-admin', 'cabang-delete-admin',
@@ -97,6 +99,7 @@ class RoleSeeder extends Seeder
         $adminCabangPermissions = [
             'dashboard-view-admin',
             'karyawan-view-admin', 'karyawan-create-admin', 'karyawan-edit-admin', 'karyawan-delete-admin', 'karyawan-export-excel-admin',
+            'karyawan-import-excel-admin', 'karyawan-download-template-admin',
             'jabatan-view-admin', 'departemen-view-admin', 'cabang-view-admin',
             'cuti-view-admin', 'cuti-create-admin', 'cuti-edit-admin', 'cuti-delete-admin',
             'presensi-monitoring-view-admin', 'pengajuan-izin-view-admin', 'pengajuan-izin-approve-admin',

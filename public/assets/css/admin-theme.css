@@ -1210,7 +1210,359 @@ a:focus-visible,
 }
 
 /* ════════════════════════════════════════════════════════════════════
- * 11. Footer
+ * 11. Halaman daftar (list page): toolbar, filter, tabel, status, menu baris
+ *     Dipakai Data Karyawan; pola untuk halaman master lain.
+ * ════════════════════════════════════════════════════════════════════ */
+.list-card {
+    overflow: visible;
+}
+
+.list-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    border-bottom: 1px solid var(--color-rule);
+}
+
+.list-toolbar-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.search-field {
+    position: relative;
+    display: flex;
+    flex: 1;
+    align-items: center;
+    max-width: 420px;
+    margin: 0;
+}
+
+.search-field .icon {
+    position: absolute;
+    left: 10px;
+    color: var(--color-muted);
+    pointer-events: none;
+}
+
+.search-field input {
+    width: 100%;
+    height: 36px;
+    padding: 0 var(--space-sm) 0 34px;
+    border: 1px solid var(--color-rule-2);
+    border-radius: var(--radius-control);
+    background: var(--tblr-bg-forms);
+    color: var(--color-ink);
+    font-size: 0.875rem;
+}
+
+.search-field input::placeholder {
+    color: var(--color-muted);
+}
+
+.search-field input:focus {
+    border-color: var(--color-focus);
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-focus) 20%, transparent);
+}
+
+.list-search-btn {
+    height: 36px;
+}
+
+.filter-count {
+    min-width: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: var(--color-accent);
+    color: var(--color-accent-ink);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 18px;
+    text-align: center;
+}
+
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--space-xs) var(--space-sm);
+}
+
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 160px;
+    max-width: 240px;
+    flex: 1 1 160px;
+    margin: 0;
+}
+
+.filter-label {
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.filter-reset {
+    align-self: center;
+    padding: 6px 4px;
+    color: var(--color-accent);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Filter selalu tampil di desktop; di mobile dibuka lewat tombol "Filter". */
+@media (min-width: 992px) {
+    .filter-panel.collapse:not(.show) {
+        display: block;
+    }
+}
+
+.list-meta {
+    min-height: 0;
+    padding: var(--space-xs) var(--space-md) 0;
+    color: var(--color-muted);
+    font-size: 0.8125rem;
+}
+
+.list-meta:empty {
+    display: none;
+}
+
+.list-meta strong {
+    color: var(--color-ink-2);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.list-empty {
+    padding: var(--space-xl) var(--space-md);
+    text-align: center;
+}
+
+.list-table {
+    margin: 0;
+}
+
+.list-table > tbody > tr > td {
+    height: 68px;
+    padding-block: var(--space-xs);
+}
+
+.list-table .person {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-width: 0;
+    color: inherit;
+    text-decoration: none;
+}
+
+.list-table .person:hover .person-name {
+    color: var(--color-accent);
+}
+
+.list-table .avatar {
+    flex: 0 0 auto;
+    box-shadow: 0 0 0 1px var(--color-rule);
+}
+
+.person-name {
+    display: block;
+    max-width: 260px;
+    color: var(--color-ink);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.person-sub,
+.cell-sub {
+    display: block;
+    color: var(--color-muted);
+    font-size: 0.8125rem;
+}
+
+.cell-main {
+    color: var(--color-ink);
+}
+
+.cell-num {
+    font-variant-numeric: tabular-nums;
+}
+
+.emp-status {
+    --status: var(--color-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-ink-2);
+    font-size: 0.8125rem;
+    white-space: nowrap;
+}
+
+.emp-status::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--status);
+}
+
+.emp-status--success { --status: var(--color-success); }
+.emp-status--warning { --status: var(--color-warning); }
+.emp-status--danger { --status: var(--color-danger); }
+
+.row-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-control);
+    background: transparent;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out);
+}
+
+.row-menu-btn:hover,
+.row-menu-btn[aria-expanded="true"] {
+    border-color: var(--color-rule);
+    background: var(--color-surface-2);
+    color: var(--color-ink);
+}
+
+.row-menu-btn:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+}
+
+.cell-actions .dropdown-menu form {
+    margin: 0;
+}
+
+.cell-actions .dropdown-item {
+    width: 100%;
+    text-align: left;
+}
+
+.list-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border-top: 1px solid var(--color-rule);
+}
+
+.list-footer nav {
+    margin-left: auto;
+}
+
+/* Paginasi bawaan Laravel punya teks "Showing …" sendiri; ringkasan sudah ada di atas tabel. */
+.list-footer nav .small.text-muted {
+    display: none;
+}
+
+.list-footer .pagination {
+    margin: 0;
+}
+
+.import-guide {
+    margin-bottom: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-control);
+    background: var(--color-surface-2);
+    font-size: 0.8125rem;
+}
+
+.import-guide-title {
+    margin-bottom: var(--space-2xs);
+    color: var(--color-ink);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* Mobile: baris tabel menjadi kartu karyawan. */
+@media (max-width: 767.98px) {
+    .list-toolbar-row .search-field {
+        max-width: none;
+    }
+
+    .filter-field {
+        max-width: none;
+        flex-basis: calc(50% - var(--space-sm));
+    }
+
+    .list-table thead {
+        display: none;
+    }
+
+    .list-table,
+    .list-table tbody,
+    .list-table tr,
+    .list-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .list-table > tbody > tr {
+        position: relative;
+        padding: var(--space-sm) var(--space-md);
+        border-bottom: 1px solid var(--color-rule);
+    }
+
+    .list-table > tbody > tr > td {
+        height: auto;
+        padding: 2px 0;
+        border: 0;
+    }
+
+    .list-table > tbody > tr > td.cell-person {
+        padding: 0 40px var(--space-xs) 0;
+    }
+
+    .list-table > tbody > tr > td[data-label] {
+        display: grid;
+        grid-template-columns: 96px minmax(0, 1fr);
+        gap: 0 var(--space-xs);
+        font-size: 0.8125rem;
+    }
+
+    .list-table > tbody > tr > td[data-label]::before {
+        content: attr(data-label);
+        color: var(--color-muted);
+    }
+
+    .list-table .cell-sub {
+        grid-column: 2;
+    }
+
+    .list-table > tbody > tr > td.cell-actions {
+        position: absolute;
+        top: var(--space-sm);
+        right: var(--space-sm);
+        width: auto;
+        padding: 0;
+    }
+
+    .person-name {
+        max-width: none;
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+ * 12. Footer
  * ════════════════════════════════════════════════════════════════════ */
 .page > .page-wrapper > .footer {
     border-top: 1px solid var(--color-rule);
@@ -1221,7 +1573,7 @@ a:focus-visible,
 }
 
 /* ════════════════════════════════════════════════════════════════════
- * 12. Utilitas yang di-hardcode di view (bg-white, text-dark, dst.)
+ * 13. Utilitas yang di-hardcode di view (bg-white, text-dark, dst.)
  * ════════════════════════════════════════════════════════════════════ */
 /* Dipakai di beberapa view (asal Tailwind), tidak ada di Bootstrap. */
 .min-w-0 {
@@ -1250,7 +1602,7 @@ a:focus-visible,
 }
 
 /* ════════════════════════════════════════════════════════════════════
- * 13. Gerak
+ * 14. Gerak
  * ════════════════════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
     *,

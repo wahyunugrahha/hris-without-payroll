@@ -1,130 +1,64 @@
 @extends('layouts.admin.tabler')
 
+@php
+    $ikon = fn ($path, $ukuran = 18) => '<svg xmlns="http://www.w3.org/2000/svg" class="icon" width="' . $ukuran . '" height="' . $ukuran . '" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $path . '</svg>';
+    $pathUnggah = '<path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 9l5 -5l5 5" /><path d="M12 4l0 12" />';
+    $pathUnduh = '<path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 11l5 5l5 -5" /><path d="M12 4l0 12" />';
+    $pathTambah = '<path d="M12 5l0 14" /><path d="M5 12l14 0" />';
+    $pathCari = '<path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /><path d="M21 21l-6 -6" />';
+    $pathFilter = '<path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z" />';
+
+    // Filter yang sedang aktif (status default = Aktif, jadi status lain dihitung aktif).
+    $filterAktif = collect([
+        request('jabatan_id'),
+        request('kode_dept'),
+        request('kode_cabang'),
+        request('nama_karyawan'),
+        $statusFilter !== \App\Models\Karyawan::STATUS_AKTIF ? $statusFilter : null,
+    ])->filter(fn ($v) => filled($v))->count();
+@endphp
+
 @section('page-header')
     <div class="page-header d-print-none">
         <div class="container-xl">
             <div class="row g-2 align-items-center">
                 <div class="col">
-                    <div class="page-pretitle">
-                        Data Master
-                    </div>
-                    <h2 class="page-title">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-users" width="24"
-                            height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
-                            <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                            <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
-                        </svg>
-                        Data Karyawan
-                    </h2>
+                    <div class="page-pretitle">Data Master</div>
+                    <h2 class="page-title">Data Karyawan</h2>
+                    <p class="page-subtitle">Kelola informasi karyawan perusahaan.</p>
                 </div>
-                <div class="col-auto ms-auto d-print-none">
-                    <div class="btn-list">
-                        {{-- Tombol Template & Import Excel --}}
-                        @can('karyawan-create-admin')
-                            <a href="{{ route('karyawan.template') }}" class="btn btn-secondary d-none d-sm-inline-block">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-download"
-                                    width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                    fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
-                                    <path d="M7 11l5 5l5 -5" />
-                                    <path d="M12 4l0 12" />
-                                </svg>
-                                Download Template
-                            </a>
-                            <a href="{{ route('karyawan.template') }}" class="btn btn-secondary d-sm-none btn-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-download"
-                                    width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                    fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
-                                    <path d="M7 11l5 5l5 -5" />
-                                    <path d="M12 4l0 12" />
-                                </svg>
-                            </a>
+                <div class="col-auto ms-auto">
+                    <div class="btn-list flex-nowrap">
+                        @canany(['karyawan-import-excel-admin', 'karyawan-download-template-admin'])
+                            <div class="dropdown">
+                                <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown"
+                                    aria-expanded="false" aria-label="Import">
+                                    {!! $ikon($pathUnggah) !!}<span class="d-none d-md-inline">Import</span>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    @can('karyawan-import-excel-admin')
+                                        <button type="button" class="dropdown-item" data-bs-toggle="modal"
+                                            data-bs-target="#modal-importkaryawan">Import dari Excel</button>
+                                    @endcan
+                                    @can('karyawan-download-template-admin')
+                                        <a href="{{ route('karyawan.template') }}" class="dropdown-item">Unduh template Excel</a>
+                                    @endcan
+                                </div>
+                            </div>
+                        @endcanany
 
-                            <a href="#" class="btn btn-info d-none d-sm-inline-block" data-bs-toggle="modal"
-                                data-bs-target="#modal-importkaryawan">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-file-upload"
-                                    width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                    fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-                                    <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
-                                    <path d="M12 11v6" />
-                                    <path d="M9.5 13.5l2.5 -2.5l2.5 2.5" />
-                                </svg>
-                                Import Excel
-                            </a>
-                            <a href="#" class="btn btn-info d-sm-none btn-icon" data-bs-toggle="modal"
-                                data-bs-target="#modal-importkaryawan">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-file-upload"
-                                    width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                    fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-                                    <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
-                                    <path d="M12 11v6" />
-                                    <path d="M9.5 13.5l2.5 -2.5l2.5 2.5" />
-                                </svg>
+                        @can('karyawan-export-excel-admin')
+                            <a href="{{ route('karyawan.export', request()->all()) }}" class="btn"
+                                aria-label="Export Excel" title="Export data sesuai filter">
+                                {!! $ikon($pathUnduh) !!}<span class="d-none d-md-inline">Export</span>
                             </a>
                         @endcan
 
-                        {{-- Tombol Export Excel --}}
-                        <a href="{{ route('karyawan.export', request()->all()) }}"
-                            class="btn btn-success d-none d-sm-inline-block">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-file-spreadsheet"
-                                width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-                                <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
-                                <path d="M8 11h8v7h-8z" />
-                                <path d="M8 15h8" />
-                                <path d="M11 11v7" />
-                            </svg>
-                            Export Excel
-                        </a>
-                        <a href="{{ route('karyawan.export', request()->all()) }}"
-                            class="btn btn-success d-sm-none btn-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-file-spreadsheet"
-                                width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-                                <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
-                                <path d="M8 11h8v7h-8z" />
-                                <path d="M8 15h8" />
-                                <path d="M11 11v7" />
-                            </svg>
-                        </a>
-
                         @can('karyawan-create-admin')
-                            <a href="#" class="btn btn-primary d-none d-sm-inline-block" data-bs-toggle="modal"
-                                data-bs-target="#modal-inputkaryawan" id="btnTambahkaryawan">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
-                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M12 5l0 14" />
-                                    <path d="M5 12l14 0" />
-                                </svg>
-                                Tambah Data
-                            </a>
-                            <a href="#" class="btn btn-primary d-sm-none btn-icon" data-bs-toggle="modal"
-                                data-bs-target="#modal-inputkaryawan">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
-                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M12 5l0 14" />
-                                    <path d="M5 12l14 0" />
-                                </svg>
-                            </a>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#modal-inputkaryawan" id="btnTambahkaryawan" aria-label="Tambah karyawan">
+                                {!! $ikon($pathTambah) !!}<span class="d-none d-sm-inline">Tambah Karyawan</span>
+                            </button>
                         @endcan
                     </div>
                 </div>
@@ -134,233 +68,179 @@
 @endsection
 
 @section('content')
-
     <div class="page-body">
         <div class="container-xl">
-            <div class="row row-cards">
-                <div class="col-12">
-                    @if (Session::get('success'))
-                        <div class="alert alert-success alert-important alert-dismissible" role="alert">
-                            {{ Session::get('success') }}
-                            <a class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="close"></a>
-                        </div>
-                    @endif
+            <section class="card list-card" aria-label="Daftar karyawan">
 
-                    @if (Session::get('warning'))
-                        <div class="alert alert-warning alert-important alert-dismissible" role="alert">
-                            {{ Session::get('warning') }}
-                            <a class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="close"></a>
-                        </div>
-                    @endif
+                {{-- Toolbar: pencarian + filter (logika filter tetap di controller) --}}
+                <form action="{{ route('karyawan.index') }}" method="GET" class="list-toolbar" id="filterKaryawan">
+                    <div class="list-toolbar-row">
+                        <label class="search-field">
+                            <span class="visually-hidden">Cari karyawan</span>
+                            {!! $ikon($pathCari, 16) !!}
+                            <input type="search" name="nama_karyawan" value="{{ request('nama_karyawan') }}"
+                                placeholder="Cari nama atau NIK…" autocomplete="off">
+                        </label>
+                        <button type="submit" class="btn btn-primary list-search-btn">Cari</button>
+                        <button type="button" class="btn d-lg-none" data-bs-toggle="collapse"
+                            data-bs-target="#filterPanel" aria-expanded="false" aria-controls="filterPanel">
+                            {!! $ikon($pathFilter, 16) !!} Filter
+                            @if ($filterAktif > 0)
+                                <span class="filter-count">{{ $filterAktif }}</span>
+                            @endif
+                        </button>
+                    </div>
 
-                    @if ($errors->any())
-                        <div class="alert alert-danger alert-important alert-dismissible" role="alert">
-                            <div class="d-flex">
-                                <div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24"
-                                        height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                        fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                        <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-                                        <path
-                                            d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <strong>Gagal Disimpan:</strong>
-                                    <ul class="mb-0 ps-2">
-                                        @foreach ($errors->all() as $error)
-                                            <li>{{ $error }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            </div>
-                            <a class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="close"></a>
-                        </div>
-                    @endif
-
-                    <div class="card">
-                        <div class="card-body border-bottom py-3">
-                            @php
-                                $selectedJabatanId = request('jabatan_id');
-                            @endphp
-                            <form action="{{ route('karyawan.index') }}" method="GET">
-                                <div class="row g-2 align-items-center">
-
-                                    {{-- 2. Dropdown Jabatan --}}
-                                    <div class="col-6 col-xl-2">
-                                        <select name="jabatan_id" class="form-select">
-                                            <option value="">Semua Jabatan</option>
-                                            @foreach ($jabatans as $j)
-                                                <option value="{{ $j->id }}"
-                                                    {{ $selectedJabatanId == $j->id ? 'selected' : '' }}>
-                                                    {{ $j->nama_jabatan }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-
-                                    {{-- 3. Dropdown Departemen --}}
-                                    <div class="col-6 col-xl-2">
-                                        <select name="kode_dept" class="form-select">
-                                            <option value="">Semua Departemen</option>
-                                            @foreach ($departemen as $d)
-                                                <option value="{{ $d->kode_dept }}"
-                                                    {{ request('kode_dept') == $d->kode_dept ? 'selected' : '' }}>
-                                                    {{ $d->nama_dept }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-
-                                    {{-- 4. Dropdown Cabang --}}
-                                    <div class="col-6 col-xl-2">
-                                        <select name="kode_cabang" class="form-select">
-                                            <option value="">Semua Cabang</option>
-                                            @foreach ($cabang as $c)
-                                                <option value="{{ $c->kode_cabang }}"
-                                                    {{ request('kode_cabang') == $c->kode_cabang ? 'selected' : '' }}>
-                                                    {{ $c->nama_cabang }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-
-                                    <div class="col-6 col-xl-2">
-                                        <select name="status_filter" class="form-select">
-                                            @foreach ($statusFilterOptions as $statusOption)
-                                                <option value="{{ $statusOption }}"
-                                                    {{ $statusFilter == $statusOption ? 'selected' : '' }}>
-                                                    {{ $statusOption }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-
-                                    {{-- 5. Search & Tombol Cari (Menyatu) --}}
-                                    <div class="col-12 col-xl-4"> {{-- Lebar disesuaikan agar mengisi sisa ruang --}}
-                                        <div class="input-group">
-                                            {{-- Input Field --}}
-                                            <input type="text" class="form-control" name="nama_karyawan"
-                                                value="{{ request('nama_karyawan') }}"
-                                                placeholder="Cari Nama atau NIK...">
-
-                                            {{-- Tombol Cari Data (Menyatu di Kanan Input) --}}
-                                            <button type="submit" class="btn btn-primary">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                    class="icon icon-tabler icon-tabler-search">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                    <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
-                                                    <path d="M21 21l-6 -6" />
-                                                </svg>
-                                                Cari Data
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </form>
-                        </div>
-
-                        {{-- TABLE --}}
-                        <div class="table-responsive">
-                            <table class="table table-vcenter table-mobile-md card-table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Karyawan</th>
-                                        <th>Jabatan & Dept</th>
-                                        <th>Kontak</th>
-                                        <th>Cabang (PT)</th>
-                                        <th class="w-1">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($karyawan as $data)
-                                        @php
-                                            $fotoUrl = !empty($data->foto)
-                                                ? asset('storage/uploads/karyawan/' . $data->foto)
-                                                : asset('assets/img/nophoto.png');
-                                        @endphp
-                                        <tr>
-                                            <td data-label="Karyawan">
-                                                <div class="d-flex py-1 align-items-center">
-                                                    <span class="avatar me-2"
-                                                        style="background-image: url({{ $fotoUrl }})"></span>
-                                                    <div class="flex-fill">
-                                                        <div class="font-weight-medium">
-                                                            {{ $data->nama_lengkap }}
-                                                            @if ($data->status_aktif == \App\Models\Karyawan::STATUS_MENUNGGU_APPROVAL)
-                                                                <span class="badge bg-warning-lt ms-1">New</span>
-                                                            @endif
-                                                        </div>
-                                                        <div class="text">NIK: {{ $data->nik }}</div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td data-label="Jabatan">
-                                                <div>{{ $data->jabatan_nama ?? '-' }}</div>
-                                                <div class="text-muted text-truncate">
-                                                    {{ $data->departemen->nama_dept ?? '-' }}</div>
-                                            </td>
-                                            <td data-label="Kontak">{{ $data->no_hp ?? '-' }}</td>
-                                            <td data-label="PT">{{ $data->cabang->nama_cabang ?? '-' }}</td>
-                                            <td>
-                                                <div class="btn-list flex-nowrap">
-                                                    {{-- Tombol Lihat Detail --}}
-                                                    <a href="{{ route('karyawan.show', $data->nik) }}"
-                                                        class="btn btn-ghost-secondary btn-icon">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24"
-                                                            height="24" viewBox="0 0 24 24" fill="none"
-                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            class="icon icon-tabler icons-tabler-outline icon-tabler-file-description">
-                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                            <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-                                                            <path
-                                                                d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2" />
-                                                            <path d="M9 17h6" />
-                                                            <path d="M9 13h6" />
-                                                        </svg>
-                                                    </a>
-
-                                                    @can('karyawan-edit-admin')
-                                                    {{-- Tombol Set Jam Kerja --}}
-                                                    <a href="{{ route('konfigurasi.setjamkerja', $data->nik) }}"
-                                                        class="btn btn-ghost-info btn-icon" title="Set Jam Kerja">
-                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                            class="icon icon-tabler icon-tabler-clock-cog" width="24"
-                                                            height="24" viewBox="0 0 24 24" stroke-width="2"
-                                                            stroke="currentColor" fill="none" stroke-linecap="round"
-                                                            stroke-linejoin="round">
-                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                            <path
-                                                                d="M21 12a9 9 0 1 0 -9.972 8.948c.32 .034 .644 .052 .972 .052" />
-                                                            <path d="M12 7v5l2 2" />
-                                                            <path d="M19.001 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                                                            <path d="M19.001 15.5v1.5" />
-                                                            <path d="M19.001 21v1.5" />
-                                                            <path d="M22.032 17.25l-1.299 .75" />
-                                                            <path d="M17.27 20l-1.3 .75" />
-                                                            <path d="M15.97 17.25l1.3 .75" />
-                                                            <path d="M20.733 20l1.3 .75" />
-                                                        </svg>
-                                                    </a>
-                                                    @endcan
-                                                </div>
-                                            </td>
-                                        </tr>
+                    <div class="collapse filter-panel" id="filterPanel">
+                        <div class="filter-bar">
+                            <label class="filter-field">
+                                <span class="filter-label">Jabatan</span>
+                                <select name="jabatan_id" class="form-select form-select-sm" data-auto-submit>
+                                    <option value="">Semua</option>
+                                    @foreach ($jabatans as $j)
+                                        <option value="{{ $j->id }}" @selected(request('jabatan_id') == $j->id)>{{ $j->nama_jabatan }}</option>
                                     @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="card-footer d-flex align-items-center">
-                            {{ $karyawan->withQueryString()->links('pagination::bootstrap-5') }}
+                                </select>
+                            </label>
+                            <label class="filter-field">
+                                <span class="filter-label">Departemen</span>
+                                <select name="kode_dept" class="form-select form-select-sm" data-auto-submit>
+                                    <option value="">Semua</option>
+                                    @foreach ($departemen as $d)
+                                        <option value="{{ $d->kode_dept }}" @selected(request('kode_dept') == $d->kode_dept)>{{ $d->nama_dept }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <label class="filter-field">
+                                <span class="filter-label">Cabang</span>
+                                <select name="kode_cabang" class="form-select form-select-sm" data-auto-submit>
+                                    <option value="">Semua</option>
+                                    @foreach ($cabang as $c)
+                                        <option value="{{ $c->kode_cabang }}" @selected(request('kode_cabang') == $c->kode_cabang)>{{ $c->nama_cabang }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <label class="filter-field">
+                                <span class="filter-label">Status</span>
+                                <select name="status_filter" class="form-select form-select-sm" data-auto-submit>
+                                    @foreach ($statusFilterOptions as $statusOption)
+                                        <option value="{{ $statusOption }}" @selected($statusFilter == $statusOption)>{{ $statusOption }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            @if ($filterAktif > 0)
+                                <a href="{{ route('karyawan.index') }}" class="filter-reset">Reset filter</a>
+                            @endif
                         </div>
                     </div>
+                </form>
+
+                <div class="list-meta">
+                    @if ($karyawan->total() > 0)
+                        Menampilkan <strong>{{ $karyawan->firstItem() }}–{{ $karyawan->lastItem() }}</strong>
+                        dari <strong>{{ $karyawan->total() }}</strong> karyawan
+                    @endif
                 </div>
-            </div>
+
+                @if ($karyawan->isEmpty())
+                    <div class="list-empty">
+                        <p class="mb-1 fw-medium">Tidak ada karyawan yang cocok.</p>
+                        <p class="mb-0 text-secondary small">
+                            Ubah kata kunci atau filter
+                            @if ($filterAktif > 0)
+                                — atau <a href="{{ route('karyawan.index') }}">reset filter</a>
+                            @endif.
+                        </p>
+                    </div>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-vcenter list-table">
+                            <thead>
+                                <tr>
+                                    <th>Karyawan</th>
+                                    <th>Jabatan &amp; Departemen</th>
+                                    <th>Kontak</th>
+                                    <th>Cabang</th>
+                                    <th>Status</th>
+                                    <th class="w-1"><span class="visually-hidden">Aksi</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($karyawan as $data)
+                                    @php
+                                        $fotoUrl = !empty($data->foto) ? asset('storage/uploads/karyawan/' . $data->foto) : asset('assets/img/nophoto.png');
+                                        $status = $data->status_aktif ?: '-';
+                                        $nadaStatus = match ($status) {
+                                            \App\Models\Karyawan::STATUS_AKTIF => 'success',
+                                            \App\Models\Karyawan::STATUS_MENUNGGU_APPROVAL => 'warning',
+                                            \App\Models\Karyawan::STATUS_DIBERHENTIKAN => 'danger',
+                                            default => 'neutral',
+                                        };
+                                    @endphp
+                                    <tr>
+                                        <td class="cell-person">
+                                            <a href="{{ route('karyawan.show', $data->nik) }}" class="person">
+                                                <span class="avatar" style="background-image: url('{{ $fotoUrl }}')"></span>
+                                                <span class="min-w-0">
+                                                    <span class="person-name" title="{{ $data->nama_lengkap }}">{{ $data->nama_lengkap }}</span>
+                                                    <span class="person-sub">NIK {{ $data->nik }}</span>
+                                                </span>
+                                            </a>
+                                        </td>
+                                        <td data-label="Jabatan">
+                                            <div class="cell-main">{{ $data->jabatan_nama ?? '-' }}</div>
+                                            <div class="cell-sub">{{ $data->departemen->nama_dept ?? '-' }}</div>
+                                        </td>
+                                        <td data-label="Kontak" class="cell-num">{{ $data->no_hp ?: '-' }}</td>
+                                        <td data-label="Cabang">{{ $data->cabang->nama_cabang ?? '-' }}</td>
+                                        <td data-label="Status">
+                                            <span class="emp-status emp-status--{{ $nadaStatus }}">{{ $status }}</span>
+                                        </td>
+                                        <td class="cell-actions">
+                                            <div class="dropdown">
+                                                <button type="button" class="row-menu-btn" data-bs-toggle="dropdown"
+                                                    data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false"
+                                                    aria-label="Aksi untuk {{ $data->nama_lengkap }}" title="Aksi">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="18" height="18" viewBox="0 0 24 24"
+                                                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                                                        stroke-linejoin="round" aria-hidden="true">
+                                                        <path d="M5 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+                                                        <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+                                                        <path d="M19 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+                                                    </svg>
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-end">
+                                                    <a href="{{ route('karyawan.show', $data->nik) }}" class="dropdown-item">Lihat detail</a>
+                                                    @can('karyawan-edit-admin')
+                                                        <button type="button" class="dropdown-item edit" data-nik="{{ $data->nik }}">Edit</button>
+                                                        <a href="{{ route('konfigurasi.setjamkerja', $data->nik) }}" class="dropdown-item">Atur jam kerja</a>
+                                                    @endcan
+                                                    @can('karyawan-delete-admin')
+                                                        <div class="dropdown-divider"></div>
+                                                        <form action="{{ route('karyawan.destroy', $data->nik) }}" method="POST">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="dropdown-item text-danger delete-confirm"
+                                                                data-nama="{{ $data->nama_lengkap }}">Hapus</button>
+                                                        </form>
+                                                    @endcan
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+
+                @if ($karyawan->hasPages())
+                    <div class="list-footer">
+                        <span class="text-secondary small">Halaman {{ $karyawan->currentPage() }} dari {{ $karyawan->lastPage() }}</span>
+                        {{ $karyawan->withQueryString()->onEachSide(1)->links('pagination::bootstrap-5') }}
+                    </div>
+                @endif
+            </section>
         </div>
     </div>
 
@@ -480,32 +360,24 @@
     <div class="modal fade" id="modal-importkaryawan" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
-                <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-file-upload me-1"
-                            width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                            fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-                            <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
-                            <path d="M12 11v6" />
-                            <path d="M9.5 13.5l2.5 -2.5l2.5 2.5" />
-                        </svg>
-                        Import Data Karyawan
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
+                <div class="modal-header">
+                    <h5 class="modal-title">Import data karyawan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
                 <form action="{{ route('karyawan.import') }}" method="POST" enctype="multipart/form-data"
                     id="frmImportKaryawan">
                     @csrf
                     <div class="modal-body">
-                        <div class="alert alert-info">
-                            <h4 class="alert-title">Petunjuk Import:</h4>
+                        <div class="import-guide">
+                            <h4 class="import-guide-title">Petunjuk import</h4>
                             <ul class="mb-0">
                                 <li>File harus berformat <strong>.xlsx</strong> atau <strong>.xls</strong></li>
                                 <li>Maksimal ukuran file <strong>5MB</strong></li>
-                                <li>Gunakan template export sebagai acuan format kolom</li>
+                                <li>Gunakan template sebagai acuan format kolom
+                                    @can('karyawan-download-template-admin')
+                                        — <a href="{{ route('karyawan.template') }}">unduh template Excel</a>
+                                    @endcan
+                                </li>
                                 <li>Header kolom yang diperlukan:
                                     <ul>
                                         <li><code>NIK</code>, <code>Nama_Lengkap</code>, <code>Nama_Panggilan</code></li>
@@ -534,8 +406,8 @@
                         @endif
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-info">
+                        <button type="button" class="btn" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-upload"
                                 width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
                                 stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -555,7 +427,6 @@
 @endsection
 
 @push('myscript')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(function() {
             // 1. Reset Form Tambah saat dibuka
@@ -595,15 +466,15 @@
                 })
             });
 
-            // 4. Auto Dismiss Alert Static (3 Detik)
-            setTimeout(function() {
-                var alerts = document.querySelectorAll(
-                    '.alert-success, .alert-warning'); // Hanya success/warning yg auto close
-                alerts.forEach(function(alert) {
-                    var bsAlert = new bootstrap.Alert(alert);
-                    bsAlert.close();
-                });
-            }, 3000);
+            // 4. Filter langsung diterapkan saat pilihan berubah (tetap lewat GET yang sama).
+            $('[data-auto-submit]').on('change', function() {
+                this.form.submit();
+            });
+
+            // 5. Error import ditampilkan di modal import: buka otomatis agar terlihat.
+            @if (Session::get('import_errors'))
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('modal-importkaryawan')).show();
+            @endif
         });
     </script>
 @endpush
