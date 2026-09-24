@@ -72,6 +72,37 @@
         <div class="container-xl">
             <section class="card list-card" aria-label="Daftar karyawan">
 
+                {{-- Ringkasan status: Aktif/Nonaktif bisa diklik untuk memfilter (filter lain tetap). --}}
+                @php
+                    $urlStatus = fn ($status) => route('karyawan.index', array_merge(request()->except(['page', 'status_filter']), ['status_filter' => $status]));
+                @endphp
+                <div class="summary-strip" role="group" aria-label="Ringkasan status karyawan">
+                    <div class="summary-item">
+                        <span class="summary-label">Total karyawan</span>
+                        <span class="summary-value">{{ number_format($ringkasan['total'], 0, ',', '.') }}</span>
+                    </div>
+                    <a href="{{ $urlStatus(\App\Models\Karyawan::STATUS_AKTIF) }}"
+                        class="summary-item summary-item--success {{ $statusFilter === \App\Models\Karyawan::STATUS_AKTIF ? 'is-current' : '' }}"
+                        @if ($statusFilter === \App\Models\Karyawan::STATUS_AKTIF) aria-current="true" @endif>
+                        <span class="summary-label">Aktif</span>
+                        <span class="summary-value">{{ number_format($ringkasan['aktif'], 0, ',', '.') }}</span>
+                    </a>
+                    <a href="{{ $urlStatus(\App\Models\Karyawan::STATUS_NONAKTIF) }}"
+                        class="summary-item summary-item--neutral {{ $statusFilter === \App\Models\Karyawan::STATUS_NONAKTIF ? 'is-current' : '' }}"
+                        @if ($statusFilter === \App\Models\Karyawan::STATUS_NONAKTIF) aria-current="true" @endif>
+                        <span class="summary-label">Nonaktif</span>
+                        <span class="summary-value">{{ number_format($ringkasan['nonaktif'], 0, ',', '.') }}</span>
+                    </a>
+                    @if ($ringkasan['menunggu'] > 0)
+                        <a href="{{ $urlStatus(\App\Models\Karyawan::STATUS_MENUNGGU_APPROVAL) }}"
+                            class="summary-item summary-item--warning {{ $statusFilter === \App\Models\Karyawan::STATUS_MENUNGGU_APPROVAL ? 'is-current' : '' }}"
+                            @if ($statusFilter === \App\Models\Karyawan::STATUS_MENUNGGU_APPROVAL) aria-current="true" @endif>
+                            <span class="summary-label">Menunggu approval</span>
+                            <span class="summary-value">{{ number_format($ringkasan['menunggu'], 0, ',', '.') }}</span>
+                        </a>
+                    @endif
+                </div>
+
                 {{-- Toolbar: pencarian + filter (logika filter tetap di controller) --}}
                 <form action="{{ route('karyawan.index') }}" method="GET" class="list-toolbar" id="filterKaryawan">
                     <div class="list-toolbar-row">

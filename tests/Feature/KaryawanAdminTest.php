@@ -72,6 +72,26 @@ class KaryawanAdminTest extends TestCase
         $this->assertTrue($karyawan->hasRole('staff'));
     }
 
+    public function test_ringkasan_status_sesuai_filter_dan_cakupan_cabang(): void
+    {
+        $buat = fn ($nik, $cabang, $status) => Karyawan::create($this->form([
+            'nik' => $nik, 'kode_cabang' => $cabang, 'password' => 'x', 'status_aktif' => $status,
+        ]));
+        $buat('1001', 'CBG1', Karyawan::STATUS_AKTIF);
+        $buat('1002', 'CBG1', Karyawan::STATUS_NONAKTIF);
+        $buat('1003', 'CBG1', Karyawan::STATUS_MENUNGGU_APPROVAL);
+        $buat('2001', 'CBG2', Karyawan::STATUS_AKTIF);
+
+        Permission::create(['name' => 'karyawan-view-admin', 'guard_name' => 'user']);
+        $lihat = fn (User $u) => $u->givePermissionTo('karyawan-view-admin');
+
+        $this->actingAs($lihat($this->admin()), 'user')->get('/karyawan')
+            ->assertViewHas('ringkasan', ['total' => 4, 'aktif' => 2, 'nonaktif' => 1, 'menunggu' => 1]);
+
+        $this->actingAs($lihat($this->admin('CBG2')), 'user')->get('/karyawan')
+            ->assertViewHas('ringkasan', ['total' => 1, 'aktif' => 1, 'nonaktif' => 0, 'menunggu' => 0]);
+    }
+
     public function test_cabang_harus_valid(): void
     {
         $this->actingAs($this->admin(), 'user')

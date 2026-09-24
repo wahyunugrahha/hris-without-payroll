@@ -1217,6 +1217,85 @@ a:focus-visible,
     overflow: visible;
 }
 
+/* Ringkasan kecil di atas daftar: label + angka, sebaris, dipisah garis tipis. */
+.summary-strip {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0;
+    border-bottom: 1px solid var(--color-rule);
+}
+
+.summary-item {
+    --tone: var(--color-muted);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 120px;
+    padding: var(--space-sm) var(--space-md);
+    border-right: 1px solid var(--color-rule);
+    color: inherit;
+    text-decoration: none;
+}
+
+.summary-item--success { --tone: var(--color-success); }
+.summary-item--warning { --tone: var(--color-warning); }
+
+.summary-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+a.summary-item .summary-label::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--tone);
+}
+
+.summary-value {
+    margin: 0;
+    color: var(--color-ink);
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+}
+
+a.summary-item {
+    transition: background-color var(--dur-short) var(--ease-out);
+}
+
+a.summary-item:hover {
+    background: var(--color-surface-2);
+    text-decoration: none;
+}
+
+a.summary-item.is-current {
+    box-shadow: inset 0 -2px 0 var(--color-accent);
+}
+
+a.summary-item:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: -2px;
+}
+
+@media (max-width: 575.98px) {
+    .summary-strip {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+    }
+
+    .summary-item {
+        min-width: 0;
+        padding-inline: var(--space-sm);
+    }
+}
+
 .list-toolbar {
     display: flex;
     flex-direction: column;
