@@ -7,6 +7,7 @@ use App\Models\Cabang;
 use App\Models\Departemen;
 use App\Models\Jabatan;
 use App\Models\Lembur;
+use App\Support\JumlahPerStatus;
 use App\Support\PeriodeKerja;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -28,10 +29,7 @@ class LemburController extends Controller
         // Menggunakan scoped query dan eager loading untuk performa
         $query = Lembur::visibleTo(Auth::guard('user')->user())->with(['karyawan.departemen', 'karyawan.cabang']);
 
-        // Filter berdasarkan status approval, tanggal, dan departemen
-        if ($request->filled('status')) {
-            $query->where('status_approved', $request->status);
-        }
+        // Filter berdasarkan tanggal dan departemen (status diterapkan setelah jumlah per status dihitung)
         if ($request->filled('tanggal')) {
             $tanggal = $request->tanggal;
 
@@ -70,6 +68,13 @@ class LemburController extends Controller
             });
         }
 
+        // Jumlah per status untuk tab: bulan berjalan, atau tanggal yang difilter.
+        $jumlahStatus = JumlahPerStatus::bulanan($query, 'status_approved', $request->filled('tanggal') ? null : 'tanggal_lembur', now());
+        $periodeJumlah = $request->filled('tanggal') ? 'tanggal terpilih' : now()->translatedFormat('F Y');
+        if ($request->filled('status')) {
+            $query->where('status_approved', $request->status);
+        }
+
         $lemburs = $query->orderBy('status_approved')->orderByDesc('tanggal_lembur')->paginate(25)->withQueryString();
         $departemen = Departemen::orderBy('nama_dept')->get();
 
@@ -83,7 +88,7 @@ class LemburController extends Controller
             $q->where('guard_name', 'karyawan');
         })->orderBy('nama_jabatan')->get();
 
-        return view('admin.lembur.approval', compact('lemburs', 'departemen', 'cabang', 'jabatans'));
+        return view('admin.lembur.approval', compact('lemburs', 'departemen', 'cabang', 'jabatans', 'jumlahStatus', 'periodeJumlah'));
     }
 
     public function approve(Request $request)

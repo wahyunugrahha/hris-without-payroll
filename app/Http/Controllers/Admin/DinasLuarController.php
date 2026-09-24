@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Cabang;
 use App\Models\DinasLuar;
+use App\Support\JumlahPerStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -72,6 +73,11 @@ class DinasLuarController extends Controller
             });
         }
 
+        // Jumlah per status untuk tab: bulan berjalan, atau rentang tanggal bila difilter.
+        $adaRentang = $request->filled('dari') && $request->filled('sampai');
+        $jumlahStatus = JumlahPerStatus::bulanan($query, 'status_acc', $adaRentang ? null : 'tgl_mulai', now());
+        $periodeJumlah = $adaRentang ? 'rentang tanggal terpilih' : now()->translatedFormat('F Y');
+
         // Filter Status
         if (in_array($request->status_acc, ['menunggu', 'acc', 'tolak'], true)) {
             $query->where('status_acc', $request->status_acc);
@@ -85,7 +91,7 @@ class DinasLuarController extends Controller
         $cabangs = Cabang::orderBy('nama_cabang')->get();
 
         // PERBAIKAN: Menambahkan isAdminCabang ke compact
-        return view('admin.dinasluars.approval', compact('dinasluars', 'hasRoleAdminCabang', 'isAdminCabang', 'cabangs'));
+        return view('admin.dinasluars.approval', compact('dinasluars', 'hasRoleAdminCabang', 'isAdminCabang', 'cabangs', 'jumlahStatus', 'periodeJumlah'));
     }
 
     public function processAction(Request $request)

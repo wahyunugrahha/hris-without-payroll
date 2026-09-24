@@ -2944,6 +2944,35 @@ button.summary-item.is-current {
     --status: var(--hue);
 }
 
+/* Jumlah di tab status (dihitung per bulan). */
+.list-tab-count {
+    display: inline-block;
+    min-width: 22px;
+    margin-left: 4px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--color-surface-2);
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 20px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.list-tab.is-current .list-tab-count {
+    background: var(--color-accent);
+    color: var(--color-accent-ink);
+}
+
+.list-tabs-note {
+    align-self: center;
+    margin-left: auto;
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
 /* ════════════════════════════════════════════════════════════════════
  * 15. Footer
  * ════════════════════════════════════════════════════════════════════ */

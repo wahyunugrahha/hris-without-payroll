@@ -27,11 +27,12 @@
         <div class="container-xl">
             <section class="card list-card" aria-label="Daftar lembur">
                 <nav class="list-tabs" aria-label="Status lembur">
-                    <a href="{{ $urlStatus(null) }}" class="list-tab {{ blank($statusKini) ? 'is-current' : '' }}" @if (blank($statusKini)) aria-current="page" @endif>Semua</a>
+                    <a href="{{ $urlStatus(null) }}" class="list-tab {{ blank($statusKini) ? 'is-current' : '' }}" @if (blank($statusKini)) aria-current="page" @endif>Semua <span class="list-tab-count">{{ $jumlahStatus['semua'] ?? 0 }}</span></a>
                     @foreach ($statusLembur as $nilai => [$label])
                         @php $aktif = $statusKini === (string) $nilai; @endphp
-                        <a href="{{ $urlStatus($nilai) }}" class="list-tab {{ $aktif ? 'is-current' : '' }}" @if ($aktif) aria-current="page" @endif>{{ $label }}</a>
+                        <a href="{{ $urlStatus($nilai) }}" class="list-tab {{ $aktif ? 'is-current' : '' }}" @if ($aktif) aria-current="page" @endif>{{ $label }} <span class="list-tab-count">{{ $jumlahStatus[(string) $nilai] ?? 0 }}</span></a>
                     @endforeach
+                    <span class="list-tabs-note">Jumlah {{ $periodeJumlah }}</span>
                 </nav>
 
                 <form action="{{ route('admin.lembur.approval') }}" method="GET" class="list-toolbar" autocomplete="off">

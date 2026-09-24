@@ -30,11 +30,12 @@
                     $urlStatus = fn ($s) => url('/presensi/izinsakit') . '?' . http_build_query(array_merge(request()->except(['page', 'status_approved']), $s === null ? [] : ['status_approved' => $s]));
                 @endphp
                 <nav class="list-tabs" aria-label="Status pengajuan">
-                    <a href="{{ $urlStatus(null) }}" class="list-tab {{ blank($statusKini) ? 'is-current' : '' }}" @if (blank($statusKini)) aria-current="page" @endif>Semua</a>
+                    <a href="{{ $urlStatus(null) }}" class="list-tab {{ blank($statusKini) ? 'is-current' : '' }}" @if (blank($statusKini)) aria-current="page" @endif>Semua <span class="list-tab-count">{{ $jumlahStatus['semua'] ?? 0 }}</span></a>
                     @foreach ($statusApproval as $nilai => [$label])
                         @php $aktif = $statusKini === (string) $nilai; @endphp
-                        <a href="{{ $urlStatus($nilai) }}" class="list-tab {{ $aktif ? 'is-current' : '' }}" @if ($aktif) aria-current="page" @endif>{{ $label }}</a>
+                        <a href="{{ $urlStatus($nilai) }}" class="list-tab {{ $aktif ? 'is-current' : '' }}" @if ($aktif) aria-current="page" @endif>{{ $label }} <span class="list-tab-count">{{ $jumlahStatus[(string) $nilai] ?? 0 }}</span></a>
                     @endforeach
+                    <span class="list-tabs-note">Jumlah {{ $bulan_indo ?: 'periode terpilih' }}</span>
                 </nav>
 
                 <form action="/presensi/izinsakit" method="GET" class="list-toolbar" autocomplete="off">

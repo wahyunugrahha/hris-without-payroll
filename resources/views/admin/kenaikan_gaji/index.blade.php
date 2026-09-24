@@ -26,10 +26,11 @@
         <div class="container-xl">
             <section class="card list-card" aria-label="Daftar pengajuan kenaikan gaji">
                 <nav class="list-tabs" aria-label="Status pengajuan">
-                    <a href="{{ $urlStatus(null) }}" class="list-tab {{ blank($statusKini) ? 'is-current' : '' }}" @if (blank($statusKini)) aria-current="page" @endif>Semua</a>
+                    <a href="{{ $urlStatus(null) }}" class="list-tab {{ blank($statusKini) ? 'is-current' : '' }}" @if (blank($statusKini)) aria-current="page" @endif>Semua <span class="list-tab-count">{{ $jumlahStatus['semua'] ?? 0 }}</span></a>
                     @foreach ($statusGaji as $nilai => [$label])
-                        <a href="{{ $urlStatus($nilai) }}" class="list-tab {{ $statusKini === $nilai ? 'is-current' : '' }}" @if ($statusKini === $nilai) aria-current="page" @endif>{{ $label }}</a>
+                        <a href="{{ $urlStatus($nilai) }}" class="list-tab {{ $statusKini === $nilai ? 'is-current' : '' }}" @if ($statusKini === $nilai) aria-current="page" @endif>{{ $label }} <span class="list-tab-count">{{ $jumlahStatus[(string) $nilai] ?? 0 }}</span></a>
                     @endforeach
+                    <span class="list-tabs-note">Jumlah {{ $periodeJumlah }}</span>
                 </nav>
 
                 <form action="{{ route('admin.kenaikan_gaji.index') }}" method="GET" class="list-toolbar" autocomplete="off">

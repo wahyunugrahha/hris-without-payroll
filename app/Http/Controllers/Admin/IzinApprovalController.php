@@ -11,6 +11,7 @@ use App\Models\Jabatan;
 use App\Services\IzinApprovalService;
 use App\Services\IzinService;
 use App\Support\CutiDatesMeta;
+use App\Support\JumlahPerStatus;
 use App\Support\WarnaJenis;
 use DateInterval;
 use DatePeriod;
@@ -75,9 +76,6 @@ class IzinApprovalController extends Controller
         if (in_array($request->status_pengajuan, ['i', 's', 'c', 'r', 't', 'p'])) {
             $query->where('izin.status', $request->status_pengajuan);
         }
-        if (in_array($request->status_approved, ['0', '1', '2'])) {
-            $query->where('status_approved', $request->status_approved);
-        }
         if ($request->kode_cabang) {
             $query->where('karyawan.kode_cabang', $request->kode_cabang);
         }
@@ -88,6 +86,12 @@ class IzinApprovalController extends Controller
         // Filter Jabatan (single)
         if ($request->filled('jabatan_id')) {
             $query->where('karyawan.jabatan_id', $request->jabatan_id);
+        }
+
+        // Jumlah per status untuk tab (mengikuti periode & filter lain, sebelum filter status).
+        $jumlahStatus = JumlahPerStatus::bulanan($query, 'izin.status_approved', null, now());
+        if (in_array($request->status_approved, ['0', '1', '2'])) {
+            $query->where('status_approved', $request->status_approved);
         }
 
         $izinsakit = $query->orderBy('status_approved', 'asc')
@@ -127,7 +131,7 @@ class IzinApprovalController extends Controller
             $q->where('guard_name', 'karyawan');
         })->orderBy('nama_jabatan')->get();
 
-        return view('admin.presensi.izinsakit', compact('izinsakit', 'isAdminCabang', 'cabang', 'jabatans', 'bulan_indo'));
+        return view('admin.presensi.izinsakit', compact('izinsakit', 'isAdminCabang', 'cabang', 'jabatans', 'bulan_indo', 'jumlahStatus'));
     }
 
     public function show(string $id)
