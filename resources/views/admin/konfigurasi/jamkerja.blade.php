@@ -420,7 +420,6 @@
 @push('myscript')
     {{-- Script JavaScript Anda tetap sama persis, tidak perlu diubah --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         function onlyNumberInput(event) {

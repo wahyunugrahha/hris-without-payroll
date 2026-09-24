@@ -2181,7 +2181,140 @@ a.contact-value {
 }
 
 /* ════════════════════════════════════════════════════════════════════
- * 14. Footer
+ * 14. Konsistensi halaman admin lain (aksi ikon di tabel, kartu filter)
+ * ════════════════════════════════════════════════════════════════════ */
+/* Aksi ikon di baris tabel: netral; makna warna muncul saat hover/fokus. */
+.table td .btn-icon:is([class*="btn-ghost-"], [class*="btn-outline-"]) {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid transparent !important;
+    border-radius: var(--radius-control);
+    background: transparent !important;
+    color: var(--color-muted) !important;
+    box-shadow: none !important;
+}
+
+.table td .btn-icon:is([class*="btn-ghost-"], [class*="btn-outline-"]):hover {
+    border-color: var(--color-rule) !important;
+    background: var(--color-surface-2) !important;
+    color: var(--color-ink) !important;
+}
+
+.table td .btn-icon:is(.btn-ghost-danger, .btn-outline-danger):hover {
+    border-color: color-mix(in oklab, var(--color-danger) 30%, transparent) !important;
+    background: color-mix(in oklab, var(--color-danger) 8%, var(--color-surface)) !important;
+    color: var(--color-danger) !important;
+}
+
+.table td .btn-icon .icon {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    stroke-width: 1.75;
+}
+
+/* Tombol teks kecil di baris tabel (Detail, Publikasi, dll.): netral; aksi berbahaya tetap merah. */
+.table td .btn-sm:not(.btn-icon):is([class*="btn-outline-"], .btn-primary, .btn-info, .btn-success, .btn-secondary, .btn-warning):not(.btn-outline-danger) {
+    --tblr-btn-bg: var(--color-surface);
+    --tblr-btn-border-color: var(--color-rule-2);
+    --tblr-btn-color: var(--color-ink-2);
+    --tblr-btn-hover-bg: var(--color-surface-2);
+    --tblr-btn-hover-border-color: var(--color-rule-2);
+    --tblr-btn-hover-color: var(--color-ink);
+    background: var(--tblr-btn-bg) !important;
+    border-color: var(--tblr-btn-border-color) !important;
+    color: var(--tblr-btn-color) !important;
+}
+
+.table td .btn-sm:not(.btn-icon):is([class*="btn-outline-"], .btn-primary, .btn-info, .btn-success, .btn-secondary, .btn-warning):not(.btn-outline-danger):hover {
+    background: var(--tblr-btn-hover-bg) !important;
+    color: var(--tblr-btn-hover-color) !important;
+}
+
+/* Ikon blok berwarna di kartu ringkasan -> tint lembut (warna tetap membawa makna). */
+.page-body .avatar:is(.bg-primary, .bg-blue, .bg-azure, .bg-success, .bg-green, .bg-warning, .bg-yellow, .bg-orange, .bg-danger, .bg-red, .bg-dark, .bg-secondary) {
+    --tone: var(--color-muted);
+    background: color-mix(in oklab, var(--tone) 14%, var(--color-surface)) !important;
+    color: color-mix(in oklab, var(--tone) 85%, var(--color-ink)) !important;
+    font-weight: 600;
+}
+
+.page-body .avatar:is(.bg-primary, .bg-blue, .bg-azure) { --tone: var(--color-accent); }
+.page-body .avatar:is(.bg-success, .bg-green) { --tone: var(--color-success); }
+.page-body .avatar:is(.bg-warning, .bg-yellow, .bg-orange) { --tone: var(--color-warning); }
+.page-body .avatar:is(.bg-danger, .bg-red) { --tone: var(--color-danger); }
+.page-body .avatar.bg-dark { --tone: var(--color-ink); }
+
+[data-bs-theme=dark] .page-body .avatar.bg-primary {
+    color: var(--tblr-link-color) !important;
+}
+
+/* Daftar pengumuman. */
+.announce-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.announce-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border-top: 1px solid var(--color-rule);
+}
+
+.announce-item:first-child {
+    border-top: 0;
+}
+
+.announce-title {
+    color: var(--color-ink);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.announce-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-xs) var(--space-sm);
+    margin-top: 2px;
+    color: var(--color-muted);
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.announce-body {
+    margin: var(--space-2xs) 0 0;
+    color: var(--color-ink-2);
+    font-size: 0.8125rem;
+}
+
+.announce-preview {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: var(--radius-control);
+    box-shadow: 0 0 0 1px var(--color-rule);
+    object-fit: contain;
+}
+
+/* Kartu daftar: area filter di atas tabel bernuansa toolbar. */
+.page-body .card > .card-body.border-bottom {
+    background: transparent;
+}
+
+/* Tanggal & jam di tabel tidak terlipat di tanda hubung. */
+.table td.text-nowrap,
+.table td time {
+    white-space: nowrap;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+ * 15. Footer
  * ════════════════════════════════════════════════════════════════════ */
 .page > .page-wrapper > .footer {
     border-top: 1px solid var(--color-rule);
@@ -2192,7 +2325,7 @@ a.contact-value {
 }
 
 /* ════════════════════════════════════════════════════════════════════
- * 15. Utilitas yang di-hardcode di view (bg-white, text-dark, dst.)
+ * 16. Utilitas yang di-hardcode di view (bg-white, text-dark, dst.)
  * ════════════════════════════════════════════════════════════════════ */
 /* Dipakai di beberapa view (asal Tailwind), tidak ada di Bootstrap. */
 .min-w-0 {
@@ -2221,7 +2354,7 @@ a.contact-value {
 }
 
 /* ════════════════════════════════════════════════════════════════════
- * 16. Gerak
+ * 17. Gerak
  * ════════════════════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
     *,

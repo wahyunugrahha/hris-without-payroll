@@ -4,6 +4,7 @@
         <div class="container-xl">
             <div class="row g-2 align-items-center">
                 <div class="col">
+                    <div class="page-pretitle">Data Master</div>
                     <h2 class="page-title">Set Jam Kerja Departemen</h2>
                 </div>
             </div>
@@ -15,17 +16,7 @@
 
     <div class="page-body">
         <div class="container-xl">
-            @if (session('success'))
-                <div class="alert alert-success">
-                    {{ session('success') }}
-                </div>
-            @endif
 
-            @if (session('warning'))
-                <div class="alert alert-warning">
-                    {{ session('warning') }}
-                </div>
-            @endif
 
             <form action="{{ route('konfigurasi.storejamkerjadept') }}" method="POST">
                 @csrf
@@ -71,10 +62,12 @@
                         </div>
                     </div>
                 </div>
-        </div>
         <div class="row">
             <div class="col-12 col-lg-6">
-                <h4 class="mb-3">Set Jam Kerja Harian</h4>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Set Jam Kerja Harian</h3>
+                    </div>
 
                 <table class="table card-table table-vcenter">
                     <thead>
@@ -110,7 +103,7 @@
                         @endforeach
                     </tbody>
                 </table>
-                <div class="d-grid mt-3">
+                <div class="card-footer d-grid">
                     <button class="btn btn-primary" type="submit">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -123,12 +116,16 @@
                         Simpan Konfigurasi
                     </button>
                 </div>
+                </div>
             </div>
             <div class="col-12 col-lg-6">
-                <h4 class="mb-3">Daftar Master Jam Kerja (Referensi)</h4>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Daftar Master Jam Kerja (Referensi)</h3>
+                    </div>
                 <div class="table-responsive">
-                    <table class="table card-table table-bordered table-sm">
-                        <thead class="bg-dark text-white">
+                    <table class="table card-table table-sm">
+                        <thead>
                             <tr>
                                 <th>Kode</th>
                                 <th>Nama</th>
@@ -151,6 +148,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                </div>
                 </div>
             </div>
         </div>

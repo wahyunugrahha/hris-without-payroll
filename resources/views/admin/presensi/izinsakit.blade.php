@@ -107,22 +107,6 @@
                 </div>
 
                 {{-- Alert --}}
-                @if (session('success') || session('error'))
-                    <div class="p-3 pb-0">
-                        @if (session('success'))
-                            <div class="alert alert-success d-flex align-items-center mb-2" role="alert">
-                                <div>{{ session('success') }}</div>
-                                <a class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="close"></a>
-                            </div>
-                        @endif
-                        @if (session('error'))
-                            <div class="alert alert-danger d-flex align-items-center mb-2" role="alert">
-                                <div>{{ session('error') }}</div>
-                                <a class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="close"></a>
-                            </div>
-                        @endif
-                    </div>
-                @endif
 
                 {{-- Table --}}
                 <div class="table-responsive">

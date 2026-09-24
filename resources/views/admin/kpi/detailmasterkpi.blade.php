@@ -11,6 +11,7 @@
                             <li class="breadcrumb-item active" aria-current="page">Detail Indikator</li>
                         </ol>
                     </div>
+                    <div class="page-pretitle">KPI Karyawan</div>
                     <h2 class="page-title">
                         <span class="text-primary me-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-report-analytics"
@@ -460,7 +461,6 @@
 @endsection
 
 @push('myscript')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(function() {
             // Auto resize textarea
@@ -504,20 +504,6 @@
                 }
             });
 
-            @if (Session::has('error'))
-                Swal.fire('Gagal!', "{{ Session::get('error') }}", 'error');
-            @endif
-
-            @if (Session::has('warning'))
-                Swal.fire('Perhatian!', "{{ Session::get('warning') }}", 'warning');
-            @endif
-
-            @if (Session::has('success'))
-                Swal.fire('Berhasil!', "{{ Session::get('success') }}", 'success');
-            @endif
-            @if ($errors->any())
-                Swal.fire('Data Tidak Valid!', "{{ implode('\n', $errors->all()) }}", 'error');
-            @endif
 
             $('textarea').on('input', function() {
                 this.style.height = 'auto';

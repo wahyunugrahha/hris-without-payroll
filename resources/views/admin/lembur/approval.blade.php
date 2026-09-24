@@ -18,33 +18,7 @@
     <div class="page-body">
         <div class="container-xl">
 
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-check" width="24"
-                        height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M5 12l5 5l10 -10" />
-                    </svg>
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
 
-            @if (session('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-alert-circle" width="24"
-                        height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
-                        <path d="M12 8v4" />
-                        <path d="M12 16h.01" />
-                    </svg>
-                    {{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
 
             <div class="row mb-3">
                 <div class="col-12">
@@ -212,7 +186,7 @@
                                                 </td>
                                                 <td class="d-none d-md-table-cell">
                                                     {{ $lembur->karyawan->cabang->nama_cabang ?? '-' }}</td>
-                                                <td>{{ \Carbon\Carbon::parse($lembur->tanggal_lembur)->format('d-m-Y') }}
+                                                <td class="text-nowrap">{{ \Carbon\Carbon::parse($lembur->tanggal_lembur)->format('d-m-Y') }}
                                                 </td>
                                                 <td>{{ \Illuminate\Support\Str::limit($lembur->pekerjaan, 30) }}</td>
                                                 <td class="d-none d-lg-table-cell">

@@ -49,6 +49,9 @@
         if (flash.warning) {
             Swal.fire({ title: 'Peringatan!', text: flash.warning, icon: 'warning', confirmButtonText: 'Ok' });
         }
+        if (flash.error) {
+            Swal.fire({ title: 'Gagal!', text: flash.error, icon: 'error', confirmButtonText: 'Ok' });
+        }
         if (flash.errors && flash.errors.length && !document.querySelector('[data-inline-errors]')) {
             var ul = document.createElement('ul');
             ul.className = 'text-start mb-0';

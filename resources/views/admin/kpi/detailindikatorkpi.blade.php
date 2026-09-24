@@ -102,33 +102,7 @@
     <div class="page-body">
         <div class="container-xl">
             {{-- ALERT --}}
-            @if (session('success'))
-                <div class="alert alert-important alert-success alert-dismissible shadow-sm mb-4">
-                    <div class="d-flex">
-                        <div><svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24"
-                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none">
-                                <path d="M5 12l5 5l10 -10" />
-                            </svg></div>
-                        <div>{{ session('success') }}</div>
-                    </div>
-                    <button class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
 
-            @if (session('error'))
-                <div class="alert alert-important alert-danger alert-dismissible shadow-sm mb-4">
-                    <div class="d-flex">
-                        <div><svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24"
-                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none">
-                                <path d="M12 9v2m0 4v.01" />
-                                <path
-                                    d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.84 2.75z" />
-                            </svg></div>
-                        <div>{{ session('error') }}</div>
-                    </div>
-                    <button class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
 
             <div class="row row-cards">
                 <div class="col-12">
@@ -419,7 +393,6 @@
 @endsection
 
 @push('myscript')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 

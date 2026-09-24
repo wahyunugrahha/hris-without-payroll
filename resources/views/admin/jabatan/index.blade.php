@@ -279,7 +279,6 @@
     @endsection
 
     @push('myscript')
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
             $(function() {
                 // Filter Role berdasarkan Guard yang dipilih pada Modal Tambah (Exisiting)

@@ -4,6 +4,7 @@
         <div class="container-xl">
             <div class="row g-2 align-items-center">
                 <div class="col">
+                    <div class="page-pretitle">Data Master</div>
                     <h2 class="page-title">Data Jam Kerja Departemen</h2>
                 </div>
             </div>
@@ -15,17 +16,7 @@
 
     <div class="page-body">
         <div class="container-xl">
-            @if (session('success'))
-                <div class="alert alert-success">
-                    {{ session('success') }}
-                </div>
-            @endif
 
-            @if (session('warning'))
-                <div class="alert alert-warning">
-                    {{ session('warning') }}
-                </div>
-            @endif
             <div class="row mb-3">
                 <div class="col-12">
                     <div class="row">
@@ -66,10 +57,12 @@
                     </div>
                 </div>
             </div>
-        </div>
         <div class="row">
             <div class="col-12 col-lg-6">
-                <h4 class="mb-3">Set Jam Kerja Harian</h4>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Set Jam Kerja Harian</h3>
+                    </div>
 
                 <table class="table card-table table-vcenter">
                     <thead>
@@ -121,12 +114,16 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             </div>
             <div class="col-12 col-lg-6">
-                <h4 class="mb-3">Daftar Master Jam Kerja (Referensi)</h4>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Daftar Master Jam Kerja (Referensi)</h3>
+                    </div>
                 <div class="table-responsive">
-                    <table class="table card-table table-bordered table-sm">
-                        <thead class="bg-dark text-white">
+                    <table class="table card-table table-sm">
+                        <thead>
                             <tr>
                                 <th>Kode</th>
                                 <th>Nama</th>
@@ -149,6 +146,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                </div>
                 </div>
             </div>
         </div>

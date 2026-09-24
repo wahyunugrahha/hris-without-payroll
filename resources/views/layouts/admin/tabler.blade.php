@@ -78,9 +78,17 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    {{-- Data flash untuk assets/js/admin.js --}}
+    {{-- Data flash untuk assets/js/admin.js. @json memecah argumen per koma, jadi kirim satu variabel. --}}
+    @php
+        $flash = [
+            'success' => session('success'),
+            'warning' => session('warning'),
+            'error' => session('error'),
+            'errors' => $errors->all(),
+        ];
+    @endphp
     <script type="application/json" id="admin-flash">
-        @json(['success' => session('success'), 'warning' => session('warning'), 'errors' => $errors->all()])
+        @json($flash)
     </script>
 
     <script src="{{ asset_v('assets/js/admin.js') }}"></script>

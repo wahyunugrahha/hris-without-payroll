@@ -18,24 +18,6 @@
         <div class="container-xl">
 
             {{-- ALERT NOTIFIKASI --}}
-            @if (session('success'))
-                <div class="alert alert-important alert-success alert-dismissible shadow-sm mb-3">
-                    <div class="d-flex">
-                        <div><i class="ti ti-check me-2"></i></div>
-                        <div>{{ session('success') }}</div>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-            @if (session('error'))
-                <div class="alert alert-important alert-danger alert-dismissible shadow-sm mb-3">
-                    <div class="d-flex">
-                        <div><i class="ti ti-alert-circle me-2"></i></div>
-                        <div>{{ session('error') }}</div>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
 
             {{-- CARD PROFIL KARYAWAN --}}
             <div class="card mb-3 shadow-sm border-0" style="background-color: var(--color-surface-2);">
@@ -350,7 +332,6 @@
 @endsection
 
 @push('myscript')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 

@@ -19,22 +19,6 @@
         <div class="container-xl">
 
             {{-- ALERTS --}}
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible shadow-sm mb-3">
-                    {{ session('success') }}
-                    <button class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-            @if ($errors->any())
-                <div class="alert alert-danger alert-dismissible shadow-sm mb-3">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                    <button class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
 
             <div class="row">
                 {{-- BAGIAN FILTER --}}
@@ -135,7 +119,7 @@
 
                                 {{-- Tombol Aksi --}}
                                 <div class="d-flex gap-2">
-                                    <button type="button" class="btn btn-success" id="btn-approve-bulk">
+                                    <button type="button" class="btn btn-primary" id="btn-approve-bulk">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-checks"
                                             width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
                                             stroke="currentColor" fill="none" stroke-linecap="round"
@@ -147,7 +131,7 @@
                                         Approve Checklist
                                     </button>
 
-                                    <button type="button" class="btn btn-primary" onclick="cetakLaporan('pdf')">
+                                    <button type="button" class="btn" onclick="cetakLaporan('pdf')">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-printer"
                                             width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
                                             stroke="currentColor" fill="none" stroke-linecap="round"
@@ -162,7 +146,7 @@
                                         Cetak PDF
                                     </button>
 
-                                    <button type="button" class="btn btn-success" onclick="cetakLaporan('excel')">
+                                    <button type="button" class="btn" onclick="cetakLaporan('excel')">
                                         <svg xmlns="http://www.w3.org/2000/svg"
                                             class="icon icon-tabler icon-tabler-file-spreadsheet" width="24"
                                             height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
@@ -192,8 +176,8 @@
                                             <th>Nama Karyawan</th>
                                             <th>Departemen / Cabang</th>
                                             <th class="text-center">Total Workbook</th>
-                                            <th class="text-center text-success">Approve Atasan</th>
-                                            <th class="text-center text-primary">Approve HR</th>
+                                            <th class="text-center">Approve Atasan</th>
+                                            <th class="text-center">Approve HR</th>
                                             <th class="text-center">Aksi</th>
                                         </tr>
                                     </thead>
@@ -289,7 +273,6 @@
 @endsection
 
 @push('myscript')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         $(document).ready(function() {

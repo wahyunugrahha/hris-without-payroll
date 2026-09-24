@@ -5,7 +5,8 @@
         <div class="container-xl">
             <div class="row g-2 align-items-center">
                 <div class="col">
-                    <h2 class="page-title text-dark">Konfigurasi Role & Hak Akses</h2>
+                    <div class="page-pretitle">Konfigurasi</div>
+                    <h2 class="page-title">Konfigurasi Role & Hak Akses</h2>
                     <div class="text-muted mt-1 small">Atur otoritas pengguna berdasarkan modul sistem</div>
                 </div>
                 <div class="col-auto ms-auto d-flex align-items-center gap-2">

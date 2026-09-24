@@ -35,27 +35,8 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-12">
-                                    @if (Session::get('success'))
-                                        <div class="alert alert-success">
-                                            {{ Session::get('success') }}
-                                        </div>
-                                    @endif
 
-                                    @if (Session::get('warning'))
-                                        <div class="alert alert-warning">
-                                            {{ Session::get('warning') }}
-                                        </div>
-                                    @endif
 
-                                    @if ($errors->any())
-                                        <div class="alert alert-danger">
-                                            <ul>
-                                                @foreach ($errors->all() as $error)
-                                                    <li>{{ $error }}</li>
-                                                @endforeach
-                                            </ul>
-                                        </div>
-                                    @endif
                                 </div>
                             </div>
 
@@ -136,7 +117,7 @@
                                                                 @can('users-edit-admin')
                                                                     <a href="#"
                                                                         class="edit-user btn btn-ghost-primary btn-icon"
-                                                                        data-id="{{ $data->id }}">
+                                                                        data-id="{{ $data->id }}" title="Edit" aria-label="Edit">
                                                                         <svg xmlns="http://www.w3.org/2000/svg"
                                                                             class="icon icon-tabler icon-tabler-pencil"
                                                                             width="24" height="24" viewBox="0 0 24 24"
@@ -156,7 +137,7 @@
                                                                     <a href="#"
                                                                         class="delete-confirm-user btn btn-ghost-danger btn-icon"
                                                                         data-id="{{ $data->id }}"
-                                                                        data-name="{{ $data->name }}">
+                                                                        data-name="{{ $data->name }}" title="Hapus" aria-label="Hapus">
                                                                         <svg xmlns="http://www.w3.org/2000/svg"
                                                                             class="icon icon-tabler icon-tabler-trash"
                                                                             width="24" height="24" viewBox="0 0 24 24"
@@ -339,7 +320,6 @@
 @endsection
 
 @push('myscript')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function onlyNumberInput(event) {
             let key = event.key;

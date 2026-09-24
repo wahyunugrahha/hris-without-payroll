@@ -37,30 +37,7 @@
     <div class="page-body">
         <div class="container-xl">
             {{-- Alert Section --}}
-            @if (Session::get('success'))
-                <div class="alert alert-important alert-success alert-dismissible shadow-sm" role="alert">
-                    <div class="d-flex">
-                        <div><svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24"
-                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M5 12l5 5l10 -10" />
-                            </svg></div>
-                        <div>{{ Session::get('success') }}</div>
-                    </div>
-                    <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
-                </div>
-            @endif
 
-            @if ($errors->any())
-                <div class="alert alert-danger shadow-sm">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
 
             <div class="card shadow-sm border-0">
                 <div class="card-body border-bottom py-3">
@@ -453,7 +430,6 @@
 @endsection
 
 @push('myscript')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         $(function() {

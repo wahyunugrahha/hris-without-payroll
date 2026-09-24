@@ -5,6 +5,7 @@
         <div class="container-xl">
             <div class="row g-2 align-items-center">
                 <div class="col">
+                    <div class="page-pretitle">Konfigurasi</div>
                     <h2 class="page-title">Manajemen Permission</h2>
                     <div class="text-muted mt-1">Kelola hak akses spesifik pengguna dalam sistem</div>
                 </div>

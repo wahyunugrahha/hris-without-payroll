@@ -6,6 +6,7 @@
             <div class="row g-2 align-items-center">
                 {{-- Judul Halaman --}}
                 <div class="col">
+                    <div class="page-pretitle">Monitoring Karyawan</div>
                     <h2 class="page-title">
                         Monitoring Surat Peringatan
                     </h2>
@@ -127,40 +128,7 @@
             </div>
 
             {{-- Global Alerts --}}
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                    <div class="d-flex">
-                        <div>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24"
-                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                <path d="M5 12l5 5l10 -10"></path>
-                            </svg>
-                        </div>
-                        <div>{{ session('success') }}</div>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
 
-            @if (session('error'))
-                <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                    <div class="d-flex">
-                        <div>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24"
-                                height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                <path d="M12 9v4"></path>
-                                <path d="M12 17h.01"></path>
-                            </svg>
-                        </div>
-                        <div>{{ session('error') }}</div>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
 
             {{-- 2. Main Card (Table & Filter) --}}
             <div class="card">
@@ -746,18 +714,4 @@
         }
     </script>
 
-    {{-- Toast Notification --}}
-    @if (session('success'))
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil',
-                text: '{{ session('success') }}',
-                showConfirmButton: false,
-                timer: 2000,
-                toast: true,
-                position: 'top-end'
-            });
-        </script>
-    @endif
 @endpush

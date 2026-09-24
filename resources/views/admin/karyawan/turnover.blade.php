@@ -32,19 +32,7 @@
         <div class="container-xl">
             <div class="row row-cards">
                 <div class="col-12">
-                    @if (Session::get('success'))
-                        <div class="alert alert-success alert-important alert-dismissible" role="alert">
-                            {{ Session::get('success') }}
-                            <a class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="close"></a>
-                        </div>
-                    @endif
 
-                    @if (Session::get('warning'))
-                        <div class="alert alert-warning alert-important alert-dismissible" role="alert">
-                            {{ Session::get('warning') }}
-                            <a class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="close"></a>
-                        </div>
-                    @endif
 
                     <div class="card">
                         <div class="card-body border-bottom py-3">

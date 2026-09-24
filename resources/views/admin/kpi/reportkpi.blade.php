@@ -103,7 +103,7 @@
                                 <div class="row">
                                     <div class="col-6">
                                         <div class="form-group">
-                                            <button type="submit" class="btn btn-warning w-100"
+                                            <button type="submit" class="btn w-100"
                                                 onclick="document.getElementById('frmLaporan').target = '_blank'">
                                                 <svg xmlns="http://www.w3.org/2000/svg"
                                                     class="icon icon-tabler icon-tabler-printer" width="24"

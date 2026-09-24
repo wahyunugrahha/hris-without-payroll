@@ -40,28 +40,9 @@
                             <div class="row">
                                 <div class="col-12">
                                     {{-- Pesan Sukses/Warning dari Controller --}}
-                                    @if (Session::get('success'))
-                                        <div class="alert alert-success">
-                                            {{ Session::get('success') }}
-                                        </div>
-                                    @endif
 
-                                    @if (Session::get('warning'))
-                                        <div class="alert alert-warning">
-                                            {{ Session::get('warning') }}
-                                        </div>
-                                    @endif
 
                                     {{-- Pesan Error Validasi --}}
-                                    @if ($errors->any())
-                                        <div class="alert alert-danger">
-                                            <ul>
-                                                @foreach ($errors->all() as $error)
-                                                    <li>{{ $error }}</li>
-                                                @endforeach
-                                            </ul>
-                                        </div>
-                                    @endif
                                 </div>
                             </div>
 
@@ -310,7 +291,6 @@
 @endsection
 
 @push('myscript')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // FUNGSI INI DIBUTUHKAN DI KEDUA FILE VIEW
         // Membatasi hanya angka
