@@ -193,8 +193,25 @@ class DummyDataSeeder extends Seeder
             ]);
 
             if ($statusApproval === '1') {
+                // Sama seperti IzinApprovalService: izin disetujui tercatat sebagai presensi i/s/c.
                 foreach (CarbonPeriod::create($dari, $sampai) as $tgl) {
                     $tertutup[$k->nik][$tgl->toDateString()] = true;
+                    if (! $tgl->isSunday()) {
+                        DB::table('presensi')->insert([
+                            'nik' => $k->nik,
+                            'tgl_presensi' => $tgl->toDateString(),
+                            'kode_jam_kerja' => self::KODE_JAM_KERJA,
+                            'foto_in' => '-',
+                            'foto_out' => '-',
+                            'lokasi_in' => '-',
+                            'lokasi_out' => '-',
+                            'status' => $jenis,
+                            'jam_in' => '00:00:00',
+                            'jam_out' => '00:00:00',
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
                 }
             }
         }
@@ -208,7 +225,7 @@ class DummyDataSeeder extends Seeder
         $baris = [];
 
         foreach (CarbonPeriod::create(Carbon::today()->subDays(self::HARI_PRESENSI), Carbon::today()) as $tgl) {
-            if ($tgl->isWeekend()) {
+            if ($tgl->isSunday()) { // Sabtu hari kerja (JK04) sesuai jadwal departemen
                 continue;
             }
             $hariIni = $tgl->isToday();

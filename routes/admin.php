@@ -55,9 +55,6 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
         Route::delete('/{nik}/delete', [KaryawanController::class, 'destroy'])
             ->middleware('permission:karyawan-delete-admin,user')
             ->name('karyawan.destroy');
-        Route::get('/search', [KaryawanController::class, 'search'])
-            ->middleware('permission:karyawan-view-admin,user')
-            ->name('karyawan.search');
         Route::get('/{nik}/show', [KaryawanController::class, 'show'])
             ->middleware('permission:karyawan-view-admin,user')
             ->name('karyawan.show');

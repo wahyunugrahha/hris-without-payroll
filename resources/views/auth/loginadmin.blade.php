@@ -13,6 +13,14 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler.min.css" />
     <link rel="stylesheet" href="{{ asset_v('assets/css/admin-tokens.css') }}" />
+    <script>
+        // Halaman yang dipulihkan dari back-forward cache bisa berisi tampilan/data lama: muat ulang.
+        window.addEventListener('pageshow', function(e) {
+            if (e.persisted) {
+                location.reload();
+            }
+        });
+    </script>
 
     <style>
         @import url('https://rsms.me/inter/inter.css');

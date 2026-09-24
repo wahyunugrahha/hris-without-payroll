@@ -26,117 +26,44 @@ class AdminDashboardService
 {
     use FiltersByUserContext;
 
+    public function __construct(private RekapKehadiranHarian $rekapKehadiran) {}
+
     /**
-     * Logic: Statistik Realtime Admin
+     * Statistik kehadiran hari ini + pembanding hari yang sama minggu lalu.
+     * Rumus ada di RekapKehadiranHarian (libur & karyawan non-wajib presensi tidak dihitung alpha).
      */
     public function getRealtimeStats($ctx, $userCtx)
     {
         $today = Carbon::parse($ctx['today']);
+        $prevWeekDate = $today->copy()->subDays(7);
 
-        // Presensi
-        $queryPresensi = Presensi::query()
-            ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
-            ->leftJoin('jam_kerja', 'presensi.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
-            ->where('presensi.tgl_presensi', $ctx['today']);
-        $this->applyCabangFilter($queryPresensi, $userCtx, 'karyawan');
+        $rekap = $this->rekapKehadiran->untuk([$today->toDateString(), $prevWeekDate->toDateString()], $userCtx);
+        $hariIni = $rekap[$today->toDateString()];
+        $mingguLalu = $rekap[$prevWeekDate->toDateString()];
 
-        $rekappresensi = $queryPresensi->selectRaw("
-            COUNT(CASE WHEN presensi.status='h' AND presensi.jam_in!='00:00:00' THEN 1 END) AS jmlhadir,
-            SUM(CASE WHEN presensi.status='h' AND presensi.jam_in!='00:00:00' AND jam_kerja.jam_masuk IS NOT NULL AND presensi.jam_in > jam_kerja.jam_masuk THEN 1 ELSE 0 END) AS jmlterlambat
-        ")->first();
-
-        // Izin/Sakit/Cuti
-        $queryIzin = Presensi::query()->where('tgl_presensi', $ctx['today']);
-        if ($userCtx['isAdminCabang']) {
-            $queryIzin->join('karyawan', 'presensi.nik', '=', 'karyawan.nik');
-            $this->applyCabangFilter($queryIzin, $userCtx, 'karyawan');
-        }
-        $rekapizin = $queryIzin->selectRaw("
-            SUM(CASE WHEN presensi.status = 'i' THEN 1 ELSE 0 END) as jmlizin,
-            SUM(CASE WHEN presensi.status = 's' THEN 1 ELSE 0 END) as jmlsakit,
-            SUM(CASE WHEN presensi.status = 'c' THEN 1 ELSE 0 END) as jmlcuti,
-            SUM(CASE WHEN presensi.status = 'r' THEN 1 ELSE 0 END) as jmlroster
-        ")->first();
-
-        // Karyawan & Alpha
-        $queryKaryawan = Karyawan::where('status_aktif', 'Aktif');
+        // Total karyawan aktif (termasuk yang dikecualikan dari presensi) untuk demografi & turnover.
+        $queryKaryawan = Karyawan::where('status_aktif', Karyawan::STATUS_AKTIF);
         $this->applyCabangFilter($queryKaryawan, $userCtx);
         $jmlkaryawan = $queryKaryawan->count();
 
-        $jmlhadir = $rekappresensi->jmlhadir ?? 0;
-        $jmlterlambat = $rekappresensi->jmlterlambat ?? 0;
-        $jmlizin = $rekapizin->jmlizin ?? 0;
-        $jmlsakit = $rekapizin->jmlsakit ?? 0;
-        $jmlcuti = $rekapizin->jmlcuti ?? 0;
-        $jmlroster = $rekapizin->jmlroster ?? 0;
-
-        $queryDinasLuar = DinasLuar::query()
-            ->join('karyawan', 'dinas_luar.nik', '=', 'karyawan.nik')
-            ->where('dinas_luar.status_acc', 'acc')
-            ->whereDate('dinas_luar.tgl_mulai', '<=', $ctx['today'])
-            ->whereDate('dinas_luar.tgl_selesai', '>=', $ctx['today']);
-        $this->applyCabangFilter($queryDinasLuar, $userCtx, 'karyawan');
-        $jmlDinasLuar = $queryDinasLuar->count();
-
-        $jmltidakabsen = max($jmlkaryawan - ($jmlhadir + $jmlizin + $jmlsakit + $jmlcuti + $jmlroster + $jmlDinasLuar), 0);
-        $jmlTanpaKeterangan = $jmltidakabsen;
-
-        $prevWeekDate = $today->copy()->subDays(7);
-
-        $qPrevPresensi = Presensi::query()
-            ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
-            ->leftJoin('jam_kerja', 'presensi.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
-            ->where('presensi.tgl_presensi', $prevWeekDate->format('Y-m-d'));
-        $this->applyCabangFilter($qPrevPresensi, $userCtx, 'karyawan');
-
-        $prevWeekPresensi = $qPrevPresensi->selectRaw("\n            COUNT(CASE WHEN presensi.status='h' AND presensi.jam_in!='00:00:00' THEN 1 END) AS jmlhadir,\n            SUM(CASE WHEN presensi.status='h' AND presensi.jam_in!='00:00:00' AND jam_kerja.jam_masuk IS NOT NULL AND presensi.jam_in > jam_kerja.jam_masuk THEN 1 ELSE 0 END) AS jmlterlambat,\n            SUM(CASE WHEN presensi.status='i' THEN 1 ELSE 0 END) AS jmlizin,\n            SUM(CASE WHEN presensi.status='s' THEN 1 ELSE 0 END) AS jmlsakit,\n            SUM(CASE WHEN presensi.status='c' THEN 1 ELSE 0 END) AS jmlcuti,\n            SUM(CASE WHEN presensi.status='r' THEN 1 ELSE 0 END) AS jmlroster\n        ")->first();
-
-        $qPrevDinasLuar = DinasLuar::query()
-            ->join('karyawan', 'dinas_luar.nik', '=', 'karyawan.nik')
-            ->where('dinas_luar.status_acc', 'acc')
-            ->whereDate('dinas_luar.tgl_mulai', '<=', $prevWeekDate->format('Y-m-d'))
-            ->whereDate('dinas_luar.tgl_selesai', '>=', $prevWeekDate->format('Y-m-d'));
-        $this->applyCabangFilter($qPrevDinasLuar, $userCtx, 'karyawan');
-        $prevWeekDinasLuar = (int) $qPrevDinasLuar->count();
-
-        $prevValues = [
-            'hadir' => (int) ($prevWeekPresensi->jmlhadir ?? 0),
-            'terlambat' => (int) ($prevWeekPresensi->jmlterlambat ?? 0),
-            'izin' => (int) ($prevWeekPresensi->jmlizin ?? 0),
-            'sakit' => (int) ($prevWeekPresensi->jmlsakit ?? 0),
-            'cuti' => (int) ($prevWeekPresensi->jmlcuti ?? 0),
-            'roster' => (int) ($prevWeekPresensi->jmlroster ?? 0),
-            'dinas_luar' => $prevWeekDinasLuar,
+        $metrik = fn (array $r) => [
+            'hadir' => $r['hadir'],
+            'terlambat' => $r['terlambat'],
+            'izin' => $r['izin'],
+            'sakit' => $r['sakit'],
+            'cuti' => $r['cuti'],
+            'roster' => $r['roster'],
+            'dinas_luar' => $r['dinas_luar'],
+            'tanpa_keterangan' => $r['alpha'],
         ];
-        $prevValues['tanpa_keterangan'] = max(
-            $jmlkaryawan - (
-                $prevValues['hadir'] +
-                $prevValues['izin'] +
-                $prevValues['sakit'] +
-                $prevValues['cuti'] +
-                $prevValues['roster'] +
-                $prevValues['dinas_luar']
-            ),
-            0
-        );
-
-        $currentValues = [
-            'hadir' => $jmlhadir,
-            'terlambat' => $jmlterlambat,
-            'izin' => $jmlizin,
-            'sakit' => $jmlsakit,
-            'cuti' => $jmlcuti,
-            'roster' => $jmlroster,
-            'dinas_luar' => $jmlDinasLuar,
-            'tanpa_keterangan' => $jmlTanpaKeterangan,
-        ];
+        $prevValues = $metrik($mingguLalu);
 
         $realtimeComparison = [];
-        foreach ($currentValues as $metric => $currentValue) {
-            $prevWeekValue = (float) ($prevValues[$metric] ?? 0);
+        foreach ($metrik($hariIni) as $key => $currentValue) {
+            $prevWeekValue = (float) $prevValues[$key];
             $delta = round($currentValue - $prevWeekValue, 1);
 
-            $realtimeComparison[$metric] = [
+            $realtimeComparison[$key] = [
                 'prev_week' => $prevWeekValue,
                 'prev_week_date' => $prevWeekDate->format('Y-m-d'),
                 'delta' => $delta,
@@ -144,60 +71,40 @@ class AdminDashboardService
             ];
         }
 
-        return compact(
-            'rekappresensi',
-            'rekapizin',
-            'jmlhadir',
-            'jmlterlambat',
-            'jmlizin',
-            'jmlsakit',
-            'jmlcuti',
-            'jmlroster',
-            'jmlDinasLuar',
-            'jmlTanpaKeterangan',
-            'jmlkaryawan',
-            'jmltidakabsen',
-            'realtimeComparison'
-        );
+        return [
+            'jmlhadir' => $hariIni['hadir'],
+            'jmlterlambat' => $hariIni['terlambat'],
+            'jmlizin' => $hariIni['izin'],
+            'jmlsakit' => $hariIni['sakit'],
+            'jmlcuti' => $hariIni['cuti'],
+            'jmlroster' => $hariIni['roster'],
+            'jmlDinasLuar' => $hariIni['dinas_luar'],
+            'jmlTanpaKeterangan' => $hariIni['alpha'],
+            'jmltidakabsen' => $hariIni['alpha'],
+            'jmlBelumAbsen' => $hariIni['belum_absen'],
+            'jmlDijadwalkan' => $hariIni['dijadwalkan'],
+            'jmlLibur' => $hariIni['libur'],
+            'jmlkaryawan' => $jmlkaryawan,
+            'realtimeComparison' => $realtimeComparison,
+        ];
     }
 
     /**
-     * Logic: Trend 7 hari untuk cards realtime
+     * Tren 7 hari terakhir (hadir, terlambat, izin/sakit/cuti/roster, alpha).
      */
     public function getRealtimeTrends($ctx, $userCtx)
     {
-        $trendHadir = [];
-        $trendTerlambat = [];
-        $trendIzin = [];
-        $trendAlpha = [];
+        $tanggal = collect(range(6, 0))
+            ->map(fn ($i) => Carbon::parse($ctx['today'])->subDays($i)->toDateString())
+            ->all();
+        $rekap = collect($this->rekapKehadiran->untuk($tanggal, $userCtx));
 
-        for ($i = 6; $i >= 0; $i--) {
-            $date = Carbon::parse($ctx['today'])->subDays($i)->format('Y-m-d');
-
-            $qPresensi = Presensi::query()
-                ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
-                ->leftJoin('jam_kerja', 'presensi.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
-                ->where('presensi.tgl_presensi', $date);
-            $this->applyCabangFilter($qPresensi, $userCtx, 'karyawan');
-
-            $daily = $qPresensi->selectRaw("\n                COUNT(CASE WHEN presensi.status='h' AND presensi.jam_in!='00:00:00' THEN 1 END) AS hadir,\n                SUM(CASE WHEN presensi.status='h' AND presensi.jam_in!='00:00:00' AND jam_kerja.jam_masuk IS NOT NULL AND presensi.jam_in > jam_kerja.jam_masuk THEN 1 ELSE 0 END) AS terlambat,\n                SUM(CASE WHEN presensi.status IN ('i','s','c','r') THEN 1 ELSE 0 END) AS izin_total\n            ")->first();
-
-            $qKaryawan = Karyawan::query()->where('status_aktif', 'Aktif');
-            $this->applyCabangFilter($qKaryawan, $userCtx);
-            $karyawanAktif = $qKaryawan->count();
-
-            $hadir = (int) ($daily->hadir ?? 0);
-            $terlambat = (int) ($daily->terlambat ?? 0);
-            $izin = (int) ($daily->izin_total ?? 0);
-            $alpha = max($karyawanAktif - ($hadir + $izin), 0);
-
-            $trendHadir[] = $hadir;
-            $trendTerlambat[] = $terlambat;
-            $trendIzin[] = $izin;
-            $trendAlpha[] = $alpha;
-        }
-
-        return compact('trendHadir', 'trendTerlambat', 'trendIzin', 'trendAlpha');
+        return [
+            'trendHadir' => $rekap->pluck('hadir')->values()->all(),
+            'trendTerlambat' => $rekap->pluck('terlambat')->values()->all(),
+            'trendIzin' => $rekap->map(fn ($r) => $r['izin'] + $r['sakit'] + $r['cuti'] + $r['roster'])->values()->all(),
+            'trendAlpha' => $rekap->pluck('alpha')->values()->all(),
+        ];
     }
 
     /**

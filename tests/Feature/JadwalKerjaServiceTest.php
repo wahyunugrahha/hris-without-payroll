@@ -67,6 +67,25 @@ class JadwalKerjaServiceTest extends TestCase
         $this->assertTrue($libur);
     }
 
+    public function test_versi_batch_sama_persis_dengan_untuk_hari(): void
+    {
+        DB::table('konfigurasi_jamkerja')->insert(['nik' => '1002', 'hari' => 'Senin', 'kode_jam_kerja' => 'JK02']);
+        $karyawan = DB::table('karyawan')->get(['nik', 'kode_dept', 'kode_cabang'])
+            ->push((object) ['nik' => '9999', 'kode_dept' => null, 'kode_cabang' => null]);
+
+        foreach (['Senin', 'Minggu', 'Selasa'] as $hari) {
+            $batch = $this->jadwal->untukHariBanyak($karyawan, $hari);
+            foreach ($karyawan as $k) {
+                [$jamKerja, $libur, $sumber] = $this->jadwal->untukHari($k->nik, $k->kode_dept, $k->kode_cabang, $hari);
+                $this->assertSame(
+                    [$jamKerja?->kode_jam_kerja, $libur, $sumber],
+                    [$batch[$k->nik][0]?->kode_jam_kerja, $batch[$k->nik][1], $batch[$k->nik][2]],
+                    "{$k->nik} {$hari}",
+                );
+            }
+        }
+    }
+
     public function test_karyawan_tanpa_departemen_tetap_dapat_jadwal_personal(): void
     {
         DB::table('konfigurasi_jamkerja')->insert(['nik' => '1002', 'hari' => 'Senin', 'kode_jam_kerja' => 'JK01']);

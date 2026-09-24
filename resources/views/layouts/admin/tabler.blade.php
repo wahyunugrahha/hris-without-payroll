@@ -33,6 +33,13 @@
                 document.documentElement.classList.add('sidebar-collapsed');
             }
         } catch (e) {}
+
+        // Halaman yang dipulihkan dari back-forward cache bisa berisi tampilan/data lama: muat ulang.
+        window.addEventListener('pageshow', function(e) {
+            if (e.persisted) {
+                location.reload();
+            }
+        });
     </script>
 
     <style>

@@ -16,60 +16,32 @@ use Illuminate\Support\Facades\DB;
  */
 class MonitoringDashboardService
 {
-    public function __construct(private LeaderboardService $leaderboard) {}
+    public function __construct(
+        private LeaderboardService $leaderboard,
+        private RekapKehadiranHarian $rekapKehadiran,
+    ) {}
 
     /**
-     * Logic: Header Stats untuk Overview & TV
+     * Statistik header Overview & TV (semua cabang), rumus sama dengan dashboard admin.
      */
     public function getDailyHeaderStats($date)
     {
-        // Presensi untuk Hadir & Terlambat
-        $rekappresensi = DB::table('presensi')
-            ->leftJoin('jam_kerja', 'presensi.kode_jam_kerja', '=', 'jam_kerja.kode_jam_kerja')
-            ->where('tgl_presensi', $date)
-            ->selectRaw("
-                COUNT(CASE WHEN presensi.status = 'h' THEN 1 END) as jmlhadir,
-                SUM(CASE WHEN presensi.status = 'h' AND presensi.jam_in != '00:00:00' AND jam_kerja.jam_masuk IS NOT NULL AND presensi.jam_in > jam_kerja.jam_masuk THEN 1 ELSE 0 END) as jmlterlambat
-            ")
-            ->first();
-
-        // Izin/Sakit/Cuti - gunakan izin table (konsisten dengan cards)
-        $rekapizinsakit = DB::table('izin')
-            ->where(function ($query) use ($date) {
-                $query->where('izin.status_approved', '0')  // Pending
-                    ->orWhere(function ($q) use ($date) {
-                        $q->where('izin.status_approved', '1')->whereRaw('? BETWEEN izin.tgl_izin_dari AND izin.tgl_izin_sampai', [$date]);  // Approved & berlangsung
-                    })
-                    ->orWhere(function ($q) use ($date) {
-                        $q->where('izin.status_approved', '2')->whereDate('izin.created_at', '=', $date);  // Rejected hari ini
-                    });
-            })
-            ->selectRaw("
-                SUM(CASE WHEN izin.status = 'i' THEN 1 ELSE 0 END) as jmlizin,
-                SUM(CASE WHEN izin.status = 's' THEN 1 ELSE 0 END) as jmlsakit,
-                SUM(CASE WHEN izin.status = 'c' THEN 1 ELSE 0 END) as jmlcuti
-            ")
-            ->first();
+        $semuaCabang = ['isAdminCabang' => false, 'kodeCabang' => null, 'filterCabang' => '', 'filterDept' => ''];
+        $r = $this->rekapKehadiran->untuk([Carbon::parse($date)->toDateString()], $semuaCabang)[Carbon::parse($date)->toDateString()];
 
         return [
-            'jmlhadir' => $rekappresensi->jmlhadir ?? 0,
-            'jmlterlambat' => $rekappresensi->jmlterlambat ?? 0,
-            'jmlizin' => $rekapizinsakit->jmlizin ?? 0,
-            'jmlsakit' => $rekapizinsakit->jmlsakit ?? 0,
-            'jmlcuti' => $rekapizinsakit->jmlcuti ?? 0,
+            'jmlhadir' => $r['hadir'],
+            'jmlterlambat' => $r['terlambat'],
+            'jmlizin' => $r['izin'],
+            'jmlsakit' => $r['sakit'],
+            'jmlcuti' => $r['cuti'],
             'rekapizin' => (object) [
-                'jmlizin' => $rekapizinsakit->jmlizin ?? 0,
-                'jmlsakit' => $rekapizinsakit->jmlsakit ?? 0,
-                'jmlcuti' => $rekapizinsakit->jmlcuti ?? 0,
+                'jmlizin' => $r['izin'],
+                'jmlsakit' => $r['sakit'],
+                'jmlcuti' => $r['cuti'],
             ],
-            // Hitung Belum Absen
-            'jmltidakabsen' => DB::table('karyawan')
-                ->leftJoin('presensi', function ($join) use ($date) {
-                    $join->on('karyawan.nik', '=', 'presensi.nik')->where('presensi.tgl_presensi', '=', $date);
-                })
-                ->where('karyawan.status_aktif', 'Aktif')
-                ->whereNull('presensi.nik')
-                ->count(),
+            'jmltidakabsen' => $r['alpha'],
+            'jmlBelumAbsen' => $r['belum_absen'],
         ];
     }
 

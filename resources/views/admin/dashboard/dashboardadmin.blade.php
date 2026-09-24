@@ -1122,7 +1122,10 @@
     @php
         $avatarKaryawan = fn ($foto) => $foto ? asset('storage/uploads/karyawan/' . $foto) : asset('assets/img/nophoto.png');
         $totalAktif = (int) ($jmlkaryawan ?? 0);
-        $persen = fn ($n) => $totalAktif > 0 ? number_format($n / $totalAktif * 100, 1, ',', '.') . '%' : null;
+        // Rasio kehadiran dibanding karyawan yang terjadwal kerja hari ini (bukan yang libur).
+        $terjadwal = (int) ($jmlDijadwalkan ?? 0);
+        $belumAbsen = (int) ($jmlBelumAbsen ?? 0);
+        $persen = fn ($n) => $terjadwal > 0 ? number_format($n / $terjadwal * 100, 1, ',', '.') . '%' : null;
 
         // Ikon (Tabler Icons, path statis).
         $ikon = [
@@ -1233,7 +1236,7 @@
                             <div class="min-w-0">
                                 <h2 class="dash-card-title" id="judul-kehadiran">Kehadiran hari ini</h2>
                                 <p class="dash-card-sub">
-                                    {{ now()->locale('id')->translatedFormat('l, d F Y') }} ·
+                                    {{ now()->locale('id')->translatedFormat('l, d F Y') }} · {{ $terjadwal }} terjadwal kerja ·
                                     <button type="button" class="dash-inline-link" data-bs-toggle="modal"
                                         data-bs-target="#modal-karyawan-aktif">{{ $totalAktif }} karyawan aktif</button>
                                 </p>
@@ -1257,15 +1260,17 @@
                                     </div>
                                     <div class="stat-value">
                                         {{ $m['value'] }}
-                                        @if ($m['rasio'] && $totalAktif > 0)
-                                            <span class="stat-of">/ {{ $totalAktif }}</span>
+                                        @if ($m['rasio'] && $terjadwal > 0)
+                                            <span class="stat-of" title="Karyawan terjadwal kerja hari ini">/ {{ $terjadwal }}</span>
                                         @endif
                                     </div>
                                     <div class="stat-meta">
                                         @if ($m['rasio'] && $persen($m['value']))
                                             <span class="stat-pct">{{ $persen($m['value']) }}</span>
                                         @endif
-                                        @if ($delta !== 0)
+                                        @if ($m['key'] === 'tanpa_keterangan' && $belumAbsen > 0)
+                                            <span class="stat-delta" title="Batas jam masuk belum lewat">{{ $belumAbsen }} belum absen</span>
+                                        @elseif ($delta !== 0)
                                             <span class="stat-delta {{ $baik ? 'is-good' : 'is-bad' }}"
                                                 title="Dibanding minggu lalu ({{ number_format((float) ($cmp['prev_week'] ?? 0), 0) }})">
                                                 {{ $delta > 0 ? '▲' : '▼' }} {{ abs($delta) }}

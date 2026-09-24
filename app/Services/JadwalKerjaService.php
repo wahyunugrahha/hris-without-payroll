@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\JamKerja;
 use App\Models\KonfigurasiJkDeptDetail;
 use App\Models\Setjamkerja;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -64,6 +65,45 @@ class JadwalKerjaService
         }
 
         return [null, false, 'none'];
+    }
+
+    /**
+     * Versi batch untukHari() untuk banyak karyawan sekaligus (2 query), aturan prioritas sama.
+     *
+     * @param  Collection<int, object{nik: string, kode_dept: ?string, kode_cabang: ?string}>  $karyawan
+     * @return array<string, array{0: ?JamKerja, 1: bool, 2: string}> nik => [jam kerja, apakah libur, sumber]
+     */
+    public function untukHariBanyak(Collection $karyawan, string $hari): array
+    {
+        $hariNormal = strtolower(trim($hari));
+
+        $personal = Setjamkerja::with('jamKerja')
+            ->whereIn('nik', $karyawan->pluck('nik'))
+            ->where(DB::raw('LOWER(hari)'), $hariNormal)
+            ->get()
+            ->groupBy('nik')
+            ->map->first();
+
+        $kunci = fn ($dept, $cabang) => trim((string) $dept).'|'.trim((string) $cabang);
+        $dept = KonfigurasiJkDeptDetail::with(['jamKerja', 'konfigurasi'])
+            ->where(DB::raw('LOWER(hari)'), $hariNormal)
+            ->whereHas('konfigurasi', fn ($q) => $q->whereIn('kode_cabang', $karyawan->pluck('kode_cabang')->filter()->unique()))
+            ->get()
+            ->groupBy(fn ($d) => $kunci($d->konfigurasi->kode_dept, $d->konfigurasi->kode_cabang))
+            ->map->first();
+
+        $hasil = [];
+        foreach ($karyawan as $k) {
+            if ($p = $personal->get($k->nik)) {
+                $hasil[$k->nik] = [$p->jamKerja, $this->isLibur($p->kode_jam_kerja), 'personal'];
+            } elseif ($k->kode_dept && $k->kode_cabang && ($d = $dept->get($kunci($k->kode_dept, $k->kode_cabang)))) {
+                $hasil[$k->nik] = [$d->jamKerja, $this->isLibur($d->kode_jam_kerja), 'dept'];
+            } else {
+                $hasil[$k->nik] = [null, false, 'none'];
+            }
+        }
+
+        return $hasil;
     }
 
     private function isLibur(?string $kodeJamKerja): bool
