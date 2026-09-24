@@ -36,9 +36,9 @@ class AdminAuthController extends Controller
     public function logout(Request $request)
     {
         Auth::guard('user')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        $this->akhiriSesi($request, 'karyawan');
 
-        return redirect()->route('loginadmin');
+        // Halaman admin yang tersimpan di cache browser tidak boleh bisa dibuka lagi setelah logout.
+        return redirect()->route('loginadmin')->header('Clear-Site-Data', '"cache"');
     }
 }

@@ -48,7 +48,7 @@ class AppServiceProvider extends ServiceProvider
                 });
         });
 
-        $targetViews = ['layouts.admin.header', 'layouts.admin.tabler', 'layouts.master'];
+        $targetViews = ['layouts.admin.tabler', 'layouts.master'];
 
         View::composer($targetViews, function ($view) {
 
@@ -60,7 +60,7 @@ class AppServiceProvider extends ServiceProvider
                 'recentItems' => collect([]),
                 'authUser' => $authUser,
                 'userDept' => null,
-                'avatarUrl' => asset('assets/img/nophoto.png'),
+                'avatarUrl' => asset_v('assets/img/nophoto.png'),
             ];
 
             // Jika user belum login, kirim data default saja
@@ -76,7 +76,7 @@ class AppServiceProvider extends ServiceProvider
                 ?? 'Karyawan';
 
             if ($authUser->foto) {
-                $notifData['avatarUrl'] = asset('storage/uploads/karyawan/'.$authUser->foto);
+                $notifData['avatarUrl'] = asset_v('storage/uploads/karyawan/'.$authUser->foto);
             }
 
             // 2. Cek Role & Cabang untuk filtering query

@@ -224,7 +224,7 @@
                                                             style="font-size: 10px; font-weight: 600; color: #6b7280; text-transform: uppercase;">Absen
                                                             Masuk</small>
                                                     </div>
-                                                    <img src="{{ asset('storage/uploads/absensi/' . $l->foto_masuk) }}"
+                                                    <img src="{{ asset_v('storage/uploads/absensi/' . $l->foto_masuk) }}"
                                                         alt="Foto Masuk"
                                                         style="width: 100%; aspect-ratio: 4/3; object-fit: cover; cursor: pointer;"
                                                         onclick="viewImage(this)"
@@ -242,7 +242,7 @@
                                                             style="font-size: 10px; font-weight: 600; color: #6b7280; text-transform: uppercase;">Absen
                                                             Keluar</small>
                                                     </div>
-                                                    <img src="{{ asset('storage/uploads/absensi/' . $l->foto_keluar) }}"
+                                                    <img src="{{ asset_v('storage/uploads/absensi/' . $l->foto_keluar) }}"
                                                         alt="Foto Keluar"
                                                         style="width: 100%; aspect-ratio: 4/3; object-fit: cover; cursor: pointer;"
                                                         onclick="viewImage(this)"

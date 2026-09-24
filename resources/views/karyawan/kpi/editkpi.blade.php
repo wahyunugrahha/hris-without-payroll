@@ -170,11 +170,11 @@
                             @if ($buktiFoto)
                                 <div class="photo-area mt-3">
                                     <div class="existing-photo-card mb-0">
-                                        <img src="{{ asset('storage/' . $buktiFoto) }}" class="existing-img"
-                                            onerror="this.onerror=null;this.src='{{ asset('assets/img/nophoto.png') }}';">
+                                        <img src="{{ asset_v('storage/' . $buktiFoto) }}" class="existing-img"
+                                            onerror="this.onerror=null;this.src='{{ asset_v('assets/img/nophoto.png') }}';">
                                         <div class="photo-badge"><ion-icon name="image"></ion-icon> Tersimpan</div>
                                         <div class="photo-overlay">
-                                            <a href="{{ asset('storage/' . $buktiFoto) }}" target="_blank"
+                                            <a href="{{ asset_v('storage/' . $buktiFoto) }}" target="_blank"
                                                 class="btn-view">Lihat</a>
                                         </div>
                                     </div>
@@ -191,11 +191,11 @@
                             <div class="photo-area mt-3">
                                 @if ($buktiFoto)
                                     <div id="existing-foto-box-{{ $item->id }}" class="existing-photo-card mb-2">
-                                        <img src="{{ asset('storage/' . $buktiFoto) }}" class="existing-img"
-                                            onerror="this.onerror=null;this.src='{{ asset('assets/img/nophoto.png') }}';">
+                                        <img src="{{ asset_v('storage/' . $buktiFoto) }}" class="existing-img"
+                                            onerror="this.onerror=null;this.src='{{ asset_v('assets/img/nophoto.png') }}';">
                                         <div class="photo-badge"><ion-icon name="image"></ion-icon> Tersimpan</div>
                                         <div class="photo-overlay">
-                                            <a href="{{ asset('storage/' . $buktiFoto) }}" target="_blank"
+                                            <a href="{{ asset_v('storage/' . $buktiFoto) }}" target="_blank"
                                                 class="btn-view">Lihat</a>
                                         </div>
                                     </div>

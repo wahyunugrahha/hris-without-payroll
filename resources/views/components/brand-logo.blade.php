@@ -16,14 +16,14 @@
     ];
 
     $sourceMap = [
-        'sidebar' => asset('assets/img/logo-horizontal.png'),
-        'square' => asset('assets/img/logo.png'),
-        'print-square' => asset('assets/img/logo.png'),
-        'icon' => asset('assets/img/logo.png'),
-        'vertical' => asset('assets/img/logo.png'),
-        'landscape' => asset('assets/img/logo.png'),
-        'horizontal' => asset('assets/img/logo.png'),
-        'compact' => asset('assets/img/logo.png'),
+        'sidebar' => asset_v('assets/img/logo-horizontal.png'),
+        'square' => asset_v('assets/img/logo.png'),
+        'print-square' => asset_v('assets/img/logo.png'),
+        'icon' => asset_v('assets/img/logo.png'),
+        'vertical' => asset_v('assets/img/logo.png'),
+        'landscape' => asset_v('assets/img/logo.png'),
+        'horizontal' => asset_v('assets/img/logo.png'),
+        'compact' => asset_v('assets/img/logo.png'),
     ];
 
     $inlineStyle = ($sizeMap[$variant] ?? $sizeMap['horizontal']) . ' height:auto; display:block;';

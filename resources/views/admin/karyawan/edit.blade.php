@@ -49,8 +49,8 @@
                         <label class="form-label">Foto Profil</label>
                         @php
                             $fotoPath = !empty($karyawan->foto)
-                                ? asset('storage/uploads/karyawan/' . $karyawan->foto)
-                                : asset('assets/img/nophoto.png');
+                                ? asset_v('storage/uploads/karyawan/' . $karyawan->foto)
+                                : asset_v('assets/img/nophoto.png');
                         @endphp
                         <div class="mb-3">
                             <span class="avatar avatar-xl rounded"

@@ -78,9 +78,34 @@ class KaryawanRequest extends FormRequest
         return $rules;
     }
 
+    public function attributes(): array
+    {
+        return [
+            'nik' => 'NIK',
+            'nama_lengkap' => 'Nama lengkap',
+            'nama_panggilan' => 'Nama panggilan',
+            'jabatan_id' => 'Jabatan',
+            'no_hp' => 'No. HP',
+            'kode_dept' => 'Departemen',
+            'kode_cabang' => 'PT',
+            'tmt' => 'TMT',
+            'tanggal_awal_kontrak' => 'Awal kontrak',
+            'status_ptkp' => 'Status PTKP',
+            'foto' => 'Foto',
+        ];
+    }
+
     public function messages(): array
     {
         return [
+            'required' => ':attribute wajib diisi.',
+            'exists' => ':attribute yang dipilih tidak valid.',
+            'date' => ':attribute harus berupa tanggal yang valid.',
+            'email' => ':attribute harus berupa alamat email yang valid.',
+            'max.string' => ':attribute maksimal :max karakter.',
+            'image' => ':attribute harus berupa gambar.',
+            'mimes' => ':attribute harus berformat :values.',
+            'max.file' => 'Ukuran :attribute maksimal 3 MB.',
             'nik.unique' => 'NIK sudah terdaftar pada karyawan lain.',
             'nik.regex' => 'NIK hanya boleh berisi angka.',
             'no_hp.regex' => 'No. HP hanya boleh berisi angka.',

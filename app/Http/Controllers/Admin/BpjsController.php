@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BpjsRequest;
 use App\Models\Karyawan;
 use App\Services\FotoKaryawanService;
+use App\Support\JumlahPerStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -36,8 +37,16 @@ class BpjsController extends Controller
         }
 
         if (! empty($request->nama_lengkap)) {
-            $query->where('karyawan.nama_lengkap', 'like', '%'.$request->nama_lengkap.'%');
+            // Satu kolom cari untuk nama atau NIK (tidak peka huruf besar/kecil).
+            $cari = '%'.$request->nama_lengkap.'%';
+            $query->where(fn ($q) => $q->where('karyawan.nama_lengkap', 'ilike', $cari)
+                ->orWhere('bpjs_tk_requests.nik', 'ilike', $cari));
         }
+
+        // Jumlah per status untuk tab: rentang yang difilter, atau bulan berjalan.
+        $adaRentang = ! empty($request->dari) && ! empty($request->sampai);
+        $jumlahStatus = JumlahPerStatus::bulanan($query, 'bpjs_tk_requests.status', $adaRentang ? null : 'bpjs_tk_requests.created_at', now());
+        $periodeJumlah = $adaRentang ? 'rentang tanggal terpilih' : now()->translatedFormat('F Y');
 
         if (! empty($request->status)) {
             $query->where('bpjs_tk_requests.status', $request->status);
@@ -46,7 +55,7 @@ class BpjsController extends Controller
         $pengajuan = $query->paginate(15);
         $pengajuan->appends($request->all());
 
-        return view('admin.bpjs.index', compact('pengajuan'));
+        return view('admin.bpjs.index', compact('pengajuan', 'jumlahStatus', 'periodeJumlah'));
     }
 
     public function show($id)

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -50,5 +51,21 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Token form kedaluwarsa (halaman lama terbuka / sesi berakhir): jangan tampilkan halaman 419,
+        // kembalikan ke form dengan isian tetap supaya pengguna cukup menekan tombol sekali lagi.
+        // (Laravel sudah mengubah TokenMismatchException menjadi HttpException 419 sebelum callback ini.)
+        $exceptions->render(function (HttpException $e, Request $request) {
+            if ($e->getStatusCode() !== 419) {
+                return null;
+            }
+            $pesan = 'Sesi halaman sudah kedaluwarsa. Silakan ulangi sekali lagi.';
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['message' => $pesan, 'token' => csrf_token()], 419);
+            }
+
+            return redirect()->back()
+                ->withInput($request->except(['_token', 'password', 'password_confirmation', 'current_password']))
+                ->with('warning', $pesan);
+        });
     })->create();

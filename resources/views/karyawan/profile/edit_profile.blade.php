@@ -22,8 +22,8 @@
                     @php
                         $fotoPath =
                             isset($karyawan->foto) && $karyawan->foto
-                                ? asset('storage/uploads/karyawan/' . $karyawan->foto)
-                                : asset('assets/img/nophoto.png');
+                                ? asset_v('storage/uploads/karyawan/' . $karyawan->foto)
+                                : asset_v('assets/img/nophoto.png');
                     @endphp
                     <div id="imagePreview" style="background-image: url('{{ $fotoPath }}');"></div>
                 </div>

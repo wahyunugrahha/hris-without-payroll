@@ -2,7 +2,8 @@
     $authUser = Auth::guard('user')->user();
 @endphp
 
-<aside class="navbar navbar-vertical navbar-expand-lg navbar-light bg-white border-end">
+<aside class="navbar navbar-vertical navbar-expand-lg navbar-light bg-white border-end" id="admin-sidebar"
+    aria-label="Menu utama">
     <div class="container-fluid">
         <button class="navbar-toggler d-xl-none" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu"
             aria-controls="sidebar-menu" aria-expanded="false" aria-label="Toggle navigation">
@@ -18,24 +19,6 @@
 
         <div class="collapse navbar-collapse" id="sidebar-menu">
             <ul class="navbar-nav pt-lg-3">
-                <li class="nav-item dropdown mt-3 d-xl-none">
-                    <a href="#" class="nav-link dropdown-toggle d-flex align-items-center"
-                        data-bs-toggle="dropdown" aria-label="Open user menu">
-                        <span class="avatar avatar-sm me-2"
-                            style="background-image: url({{ asset('assets/img/nophoto.png') }})">
-                        </span>
-                        <span>{{ $authUser->name ?? 'Administrator' }}</span>
-                    </a>
-                    <div class="dropdown-menu">
-                        <a href="{{ route('users.account') }}" class="dropdown-item">Profile & Account Settings</a>
-                        @can('users-view-admin')
-                            <a href="{{ route('users.index') }}" class="dropdown-item">Manage Users</a>
-                        @endcan
-                        <div class="dropdown-divider"></div>
-                        <a href="{{ route('proseslogoutadmin') }}" class="dropdown-item text-danger">Logout</a>
-                    </div>
-                </li>
-
                 {{-- Dashboard --}}
                 <li class="nav-item mt-2">
                     <a class="nav-link {{ request()->routeIs('dashboard.admin') ? 'active' : '' }}"

@@ -11,6 +11,8 @@ use App\Models\Jabatan;
 use App\Services\IzinApprovalService;
 use App\Services\IzinService;
 use App\Support\CutiDatesMeta;
+use App\Support\JumlahPerStatus;
+use App\Support\WarnaJenis;
 use DateInterval;
 use DatePeriod;
 use Exception;
@@ -74,9 +76,6 @@ class IzinApprovalController extends Controller
         if (in_array($request->status_pengajuan, ['i', 's', 'c', 'r', 't', 'p'])) {
             $query->where('izin.status', $request->status_pengajuan);
         }
-        if (in_array($request->status_approved, ['0', '1', '2'])) {
-            $query->where('status_approved', $request->status_approved);
-        }
         if ($request->kode_cabang) {
             $query->where('karyawan.kode_cabang', $request->kode_cabang);
         }
@@ -87,6 +86,12 @@ class IzinApprovalController extends Controller
         // Filter Jabatan (single)
         if ($request->filled('jabatan_id')) {
             $query->where('karyawan.jabatan_id', $request->jabatan_id);
+        }
+
+        // Jumlah per status untuk tab (mengikuti periode & filter lain, sebelum filter status).
+        $jumlahStatus = JumlahPerStatus::bulanan($query, 'izin.status_approved', null, now());
+        if (in_array($request->status_approved, ['0', '1', '2'])) {
+            $query->where('status_approved', $request->status_approved);
         }
 
         $izinsakit = $query->orderBy('status_approved', 'asc')
@@ -126,7 +131,7 @@ class IzinApprovalController extends Controller
             $q->where('guard_name', 'karyawan');
         })->orderBy('nama_jabatan')->get();
 
-        return view('admin.presensi.izinsakit', compact('izinsakit', 'isAdminCabang', 'cabang', 'jabatans', 'bulan_indo'));
+        return view('admin.presensi.izinsakit', compact('izinsakit', 'isAdminCabang', 'cabang', 'jabatans', 'bulan_indo', 'jumlahStatus'));
     }
 
     public function show(string $id)
@@ -166,20 +171,12 @@ class IzinApprovalController extends Controller
             // Fix: Null Coalescing & Optional Helper for Master Cuti
             $nama_cuti = optional($izin->masterCuti)->nama_cuti ?? 'Cuti';
 
-            $jenis_badge = '';
-            if ($izin->status == 'i') {
-                $jenis_badge = '<span class="badge bg-blue-lt">Izin</span>';
-            } elseif ($izin->status == 's') {
-                $jenis_badge = '<span class="badge bg-pink-lt">Sakit</span>';
-            } elseif ($izin->status == 'r') {
-                $jenis_badge = '<span class="badge bg-cyan-lt">Roster</span>';
-            } elseif ($izin->status == 't') {
-                $jenis_badge = '<span class="badge bg-orange-lt">Izin Terlambat</span>';
-            } elseif ($izin->status == 'p') {
-                $jenis_badge = '<span class="badge bg-indigo-lt">Pulang Cepat</span>';
-            } elseif (! empty($izin->kode_cuti)) {
-                $jenis_badge = '<span class="badge bg-teal-lt">'.e($nama_cuti).'</span>';
-            }
+            $labelJenis = $izin->status === 'c' && ! empty($izin->kode_cuti)
+                ? $nama_cuti
+                : (['i' => 'Izin', 's' => 'Sakit', 'r' => 'Roster', 't' => 'Izin Terlambat', 'p' => 'Pulang Cepat', 'c' => 'Cuti'][$izin->status] ?? '');
+            $jenis_badge = $labelJenis === ''
+                ? ''
+                : '<span class="tag hue-'.WarnaJenis::ketidakhadiran($izin->status).'">'.e($labelJenis).'</span>';
 
             $status_badge = '';
             if ($izin->status_approved == 1) {
@@ -196,9 +193,9 @@ class IzinApprovalController extends Controller
             if (! empty($izin->doc_sid)) {
                 $sidPath = null;
                 if (Storage::disk('public')->exists('uploads/sid/'.$izin->doc_sid)) {
-                    $sidPath = asset('storage/uploads/sid/'.$izin->doc_sid);
+                    $sidPath = asset_v('storage/uploads/sid/'.$izin->doc_sid);
                 } elseif (Storage::disk('public')->exists('public/uploads/sid/'.$izin->doc_sid)) {
-                    $sidPath = asset('storage/public/uploads/sid/'.$izin->doc_sid);
+                    $sidPath = asset_v('storage/public/uploads/sid/'.$izin->doc_sid);
                 }
 
                 if ($sidPath) {

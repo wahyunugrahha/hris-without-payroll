@@ -85,8 +85,27 @@ class KaryawanController extends Controller
             : Cabang::orderBy('nama_cabang', 'asc')->get();
 
         $statusFilterOptions = $this->getStatusFilterOptions();
+        $ringkasan = $this->ringkasanStatus($forcedKodeCabang);
 
-        return view('admin.karyawan.index', compact('karyawan', 'departemen', 'cabang', 'jabatans', 'statusFilterOptions', 'statusFilter'));
+        return view('admin.karyawan.index', compact('karyawan', 'departemen', 'cabang', 'jabatans', 'statusFilterOptions', 'statusFilter', 'ringkasan'));
+    }
+
+    /**
+     * Jumlah karyawan per status (dalam cakupan cabang admin), memakai scope yang sama dengan filter status
+     * agar angka ringkasan selalu cocok dengan hasil saat filter tersebut dipilih.
+     *
+     * @return array{total: int, aktif: int, nonaktif: int, menunggu: int}
+     */
+    private function ringkasanStatus(?string $kodeCabang): array
+    {
+        $dasar = fn () => Karyawan::query()->when($kodeCabang, fn ($q) => $q->where('kode_cabang', $kodeCabang));
+
+        return [
+            'total' => $dasar()->count(),
+            'aktif' => $dasar()->filterStatus(Karyawan::STATUS_AKTIF)->count(),
+            'nonaktif' => $dasar()->filterStatus(Karyawan::STATUS_NONAKTIF)->count(),
+            'menunggu' => $dasar()->filterStatus(Karyawan::STATUS_MENUNGGU_APPROVAL)->count(),
+        ];
     }
 
     public function store(KaryawanRequest $request)

@@ -5,31 +5,18 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Cabang;
 use App\Models\DinasLuar;
+use App\Support\JumlahPerStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DinasLuarController extends Controller
 {
-    public function dashboard()
+    /**
+     * Daftar dinas luar admin ada di halaman approval (dengan filter status).
+     */
+    public function index()
     {
-        $baseQuery = DinasLuar::visibleTo(Auth::guard('user')->user());
-
-        $menunggu = (clone $baseQuery)->where('status_acc', 'menunggu')->count();
-        $acc = (clone $baseQuery)->where('status_acc', 'acc')->count();
-        $tolak = (clone $baseQuery)->where('status_acc', 'tolak')->count();
-
-        return view('admin.dinasluars.dashboard', compact('menunggu', 'acc', 'tolak'));
-    }
-
-    public function index(Request $request)
-    {
-        $dinasluars = DinasLuar::visibleTo(Auth::guard('user')->user())
-            ->with(['karyawan.cabang', 'approver'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(25)
-            ->appends($request->all()); // PERBAIKAN: Agar filter tidak hilang saat ganti halaman
-
-        return view('admin.dinasluars.index', compact('dinasluars'));
+        return redirect()->route('dinasluars.approval');
     }
 
     public function approval(Request $request)
@@ -86,6 +73,11 @@ class DinasLuarController extends Controller
             });
         }
 
+        // Jumlah per status untuk tab: bulan berjalan, atau rentang tanggal bila difilter.
+        $adaRentang = $request->filled('dari') && $request->filled('sampai');
+        $jumlahStatus = JumlahPerStatus::bulanan($query, 'status_acc', $adaRentang ? null : 'tgl_mulai', now());
+        $periodeJumlah = $adaRentang ? 'rentang tanggal terpilih' : now()->translatedFormat('F Y');
+
         // Filter Status
         if (in_array($request->status_acc, ['menunggu', 'acc', 'tolak'], true)) {
             $query->where('status_acc', $request->status_acc);
@@ -99,7 +91,7 @@ class DinasLuarController extends Controller
         $cabangs = Cabang::orderBy('nama_cabang')->get();
 
         // PERBAIKAN: Menambahkan isAdminCabang ke compact
-        return view('admin.dinasluars.approval', compact('dinasluars', 'hasRoleAdminCabang', 'isAdminCabang', 'cabangs'));
+        return view('admin.dinasluars.approval', compact('dinasluars', 'hasRoleAdminCabang', 'isAdminCabang', 'cabangs', 'jumlahStatus', 'periodeJumlah'));
     }
 
     public function processAction(Request $request)

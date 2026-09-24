@@ -647,11 +647,11 @@
                     <div class="header-avatar">
                         @if (!empty($user?->foto))
                             @php
-                                $path = asset('storage/uploads/karyawan/' . $user->foto);
+                                $path = asset_v('storage/uploads/karyawan/' . $user->foto);
                             @endphp
                             <img src="{{ $path }}" alt="avatar">
                         @else
-                            <img src="{{ asset('assets/img/nophoto.png') }}" alt="avatar">
+                            <img src="{{ asset_v('assets/img/nophoto.png') }}" alt="avatar">
                         @endif
                     </div>
                     <div class="header-info">
@@ -868,7 +868,7 @@
                         @if ($hasPhotoIn)
                             <div class="presence-img presence-img-disabled">
                                 @php
-                                    $path = asset('storage/uploads/absensi/' . $presensihariini->foto_in);
+                                    $path = asset_v('storage/uploads/absensi/' . $presensihariini->foto_in);
                                 @endphp
                                 <img src="{{ $path }}" alt="Presensi Masuk">
                             </div>
@@ -908,7 +908,7 @@
                         @if ($hasPhotoOut)
                             <div class="presence-img presence-img-disabled">
                                 @php
-                                    $path = asset('storage/uploads/absensi/' . $presensihariini->foto_out);
+                                    $path = asset_v('storage/uploads/absensi/' . $presensihariini->foto_out);
                                 @endphp
                                 <img src="{{ $path }}" alt="Presensi Pulang">
                             </div>
@@ -1252,10 +1252,10 @@
                             <div class="leaderboard-item">
                                 <div class="leaderboard-avatar">
                                     @if (!empty($karyawan->foto))
-                                        <img src="{{ asset('storage/uploads/karyawan/' . $karyawan->foto) }}"
+                                        <img src="{{ asset_v('storage/uploads/karyawan/' . $karyawan->foto) }}"
                                             alt="avatar">
                                     @else
-                                        <img src="{{ asset('assets/img/nophoto.png') }}" alt="avatar">
+                                        <img src="{{ asset_v('assets/img/nophoto.png') }}" alt="avatar">
                                     @endif
                                 </div>
                                 <div class="leaderboard-info">
@@ -1283,10 +1283,10 @@
                             <div class="leaderboard-item">
                                 <div class="leaderboard-avatar">
                                     @if (!empty($karyawan->foto))
-                                        <img src="{{ asset('storage/uploads/karyawan/' . $karyawan->foto) }}"
+                                        <img src="{{ asset_v('storage/uploads/karyawan/' . $karyawan->foto) }}"
                                             alt="avatar">
                                     @else
-                                        <img src="{{ asset('assets/img/nophoto.png') }}" alt="avatar">
+                                        <img src="{{ asset_v('assets/img/nophoto.png') }}" alt="avatar">
                                     @endif
                                 </div>
                                 <div class="leaderboard-info">
@@ -1663,7 +1663,7 @@
                 @foreach ($pengumuman as $key => $p)
                     <div class="banner-slide" data-index="{{ $key }}">
                         @if (!empty($p->gambar))
-                            <img src="{{ asset('storage/' . $p->gambar) }}" class="banner-img" alt="Pengumuman">
+                            <img src="{{ asset_v('storage/' . $p->gambar) }}" class="banner-img" alt="Pengumuman">
                         @endif
                         @if (!empty($p->judul) || !empty($p->isi))
                             <div class="banner-content">

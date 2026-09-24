@@ -41,7 +41,8 @@ Route::middleware('guest:user')->group(function () {
             return redirect()->route('dashboard.karyawan');
         }
 
-        return view('auth.loginadmin');
+        // Buang sisa cache browser (tampilan/aset versi lama) setiap kali membuka halaman login.
+        return response()->view('auth.loginadmin')->header('Clear-Site-Data', '"cache"');
     })->name('loginadmin');
 
     Route::post('/panel/login', [AdminAuthController::class, 'login'])

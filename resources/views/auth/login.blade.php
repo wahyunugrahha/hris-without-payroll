@@ -12,11 +12,11 @@
     <title>Login Karyawan | Sistem Absensi wndev</title>
     <meta name="description" content="Sistem Absensi Karyawan wndev">
     <meta name="keywords" content="absensi, login, wndev" />
-    <link rel="icon" type="image/png" href="{{ asset('assets/img/logo.png') }}?v=20260618" sizes="32x32">
-    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/img/logo.png') }}?v=20260618">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/img/logo.png') }}?v=20260618">
+    <link rel="icon" type="image/png" href="{{ asset_v('assets/img/logo.png') }}" sizes="32x32">
+    <link rel="shortcut icon" type="image/png" href="{{ asset_v('assets/img/logo.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset_v('assets/img/logo.png') }}">
     <link rel="stylesheet" href="{{ asset_v('assets/css/style.css') }}">
-    <link rel="manifest" href="{{ asset('__manifest.json') }}?v=20260618">
+    <link rel="manifest" href="{{ asset_v('__manifest.json') }}">
     <style>
         .register-row {
             text-align: center;
@@ -187,6 +187,7 @@
             }
         });
     </script>
+    @include('layouts.sesi')
 </body>
 
 </html>

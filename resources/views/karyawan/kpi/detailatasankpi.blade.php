@@ -149,13 +149,13 @@
                     @if ($detail->bukti_foto)
                         <div class="photo-area mt-3">
                             <div class="existing-photo-card">
-                                <img src="{{ asset('storage/' . $detail->bukti_foto) }}" class="existing-img"
-                                    onerror="this.onerror=null;this.src='{{ asset('assets/img/nophoto.png') }}';">
+                                <img src="{{ asset_v('storage/' . $detail->bukti_foto) }}" class="existing-img"
+                                    onerror="this.onerror=null;this.src='{{ asset_v('assets/img/nophoto.png') }}';">
                                 <div class="photo-badge">
                                     <ion-icon name="image"></ion-icon> Bukti Foto
                                 </div>
                                 <div class="photo-overlay">
-                                    <a href="{{ asset('storage/' . $detail->bukti_foto) }}" target="_blank"
+                                    <a href="{{ asset_v('storage/' . $detail->bukti_foto) }}" target="_blank"
                                         class="btn-view">Lihat Foto</a>
                                 </div>
                             </div>
@@ -275,8 +275,8 @@
                                 @if ($buktiFoto)
                                     <div class="photo-area mt-3">
                                         <div class="existing-photo-card mb-2">
-                                            <img src="{{ asset('storage/' . $buktiFoto) }}" class="existing-img"
-                                                onerror="this.onerror=null;this.src='{{ asset('assets/img/nophoto.png') }}';">
+                                            <img src="{{ asset_v('storage/' . $buktiFoto) }}" class="existing-img"
+                                                onerror="this.onerror=null;this.src='{{ asset_v('assets/img/nophoto.png') }}';">
                                             <div class="photo-badge"><ion-icon name="image"></ion-icon> Tersimpan</div>
                                         </div>
                                     </div>
@@ -291,8 +291,8 @@
                                 <div class="photo-area mt-3">
                                     @if ($buktiFoto)
                                         <div id="existing-foto-box-{{ $item->id }}" class="existing-photo-card mb-2">
-                                            <img src="{{ asset('storage/' . $buktiFoto) }}" class="existing-img"
-                                                onerror="this.onerror=null;this.src='{{ asset('assets/img/nophoto.png') }}';">
+                                            <img src="{{ asset_v('storage/' . $buktiFoto) }}" class="existing-img"
+                                                onerror="this.onerror=null;this.src='{{ asset_v('assets/img/nophoto.png') }}';">
                                             <div class="photo-badge"><ion-icon name="image"></ion-icon> Tersimpan</div>
                                         </div>
                                     @endif

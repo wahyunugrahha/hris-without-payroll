@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Cabang;
 use App\Models\SalaryIncrease;
+use App\Support\JumlahPerStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -32,11 +33,6 @@ class KenaikanGajiController extends Controller
             $query->whereYear('tanggal_pengajuan', $request->tahun);
         }
 
-        // Filter Status
-        if ($request->filled('status')) {
-            $query->where('salary_increases.status', $request->status);
-        }
-
         // Filter Nama atau NIK
         if ($request->filled('nama_karyawan')) {
             $query->where(function ($q) use ($request) {
@@ -45,10 +41,20 @@ class KenaikanGajiController extends Controller
             });
         }
 
+        // Jumlah per status untuk tab: periode yang difilter, atau bulan berjalan.
+        $adaPeriode = $request->filled('bulan') || $request->filled('tahun');
+        $jumlahStatus = JumlahPerStatus::bulanan($query, 'salary_increases.status', $adaPeriode ? null : 'tanggal_pengajuan', now());
+        $periodeJumlah = $adaPeriode ? 'periode terpilih' : now()->translatedFormat('F Y');
+
+        // Filter Status
+        if ($request->filled('status')) {
+            $query->where('salary_increases.status', $request->status);
+        }
+
         $pengajuan = $query->paginate(50);
         $pengajuan->appends($request->all());
 
-        return view('admin.kenaikan_gaji.index', compact('pengajuan'));
+        return view('admin.kenaikan_gaji.index', compact('pengajuan', 'jumlahStatus', 'periodeJumlah'));
     }
 
     public function approve($id)

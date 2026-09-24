@@ -1,0 +1,156 @@
+/* Token desain panel admin (lihat design.md).
+ * Dipakai oleh admin-theme.css (layout admin) dan halaman admin mandiri
+ * (Dashboard Overview & TV). Ubah warna di sini, jangan di view.
+ */
+
+/* ════════════════════════════════════════════════════════════════════
+ * 1. Token
+ * ════════════════════════════════════════════════════════════════════ */
+:root,
+[data-bs-theme=light] {
+    --color-paper: oklch(98.4% 0.004 250);
+    --color-surface: oklch(100% 0 0);
+    --color-surface-2: oklch(97% 0.006 252);
+    --color-sidebar: oklch(96.6% 0.007 252);
+    --color-ink: oklch(24% 0.02 258);
+    --color-ink-2: oklch(34% 0.018 257);
+    --color-muted: oklch(52% 0.018 257);
+    --color-rule: oklch(92% 0.008 255);
+    --color-rule-2: oklch(86% 0.01 255);
+    --color-accent: oklch(41% 0.12 254);          /* #094b87 brand */
+    --color-accent-rgb: 9, 75, 135;
+    --color-accent-hover: oklch(35% 0.11 254);
+    --color-accent-tint: oklch(94.5% 0.025 254);
+    --color-accent-ink: oklch(99% 0 0);
+    --color-focus: oklch(58% 0.16 254);
+    --color-success: oklch(55% 0.14 150);
+    --color-warning: oklch(68% 0.15 70);
+    --color-danger: oklch(55% 0.19 27);
+    --color-info: oklch(58% 0.12 230);
+    --color-warning-tint: oklch(96% 0.05 90);
+    /* Palet kategori untuk membedakan jenis (izin, sakit, cuti, jenis libur, dll.). */
+    --hue-blue: oklch(56% 0.15 250);
+    --hue-teal: oklch(56% 0.15 190);
+    --hue-green: oklch(56% 0.15 150);
+    --hue-violet: oklch(56% 0.15 300);
+    --hue-pink: oklch(56% 0.15 350);
+    --hue-red: oklch(56% 0.15 25);
+    --hue-orange: oklch(56% 0.15 50);
+    --hue-amber: oklch(56% 0.15 80);
+    --hue-indigo: oklch(56% 0.15 275);
+    --hue-slate: oklch(56% 0.02 255);
+    --color-backdrop: oklch(24% 0.02 258 / 0.35);
+
+    /* Warna grafik (ApexCharts butuh warna literal; dibaca lewat getComputedStyle). */
+    --chart-primary: #094b87;
+    --chart-success: #2f9e57;
+    --chart-warning: #d98a0b;
+    --chart-danger: #d6453d;
+    --chart-neutral: #8a94a6;
+    --chart-soft: #c5d3e6;
+    --chart-grid: #e6eaf0;
+    --chart-text: #6b7488;
+    --shadow-lift: 0 1px 2px oklch(24% 0.02 258 / 0.05);
+    --shadow-menu: 0 12px 32px oklch(24% 0.02 258 / 0.12), 0 1px 3px oklch(24% 0.02 258 / 0.08);
+
+    --radius-control: 6px;
+    --radius-card: 10px;
+    --space-2xs: 0.25rem;
+    --space-xs: 0.5rem;
+    --space-sm: 0.75rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --dur-short: 150ms;
+
+    --admin-header-height: 56px;
+    --admin-sidebar-width: 256px;
+
+    /* Petakan ke variabel Tabler supaya seluruh komponen ikut. */
+    --tblr-primary: var(--color-accent);
+    --tblr-primary-rgb: var(--color-accent-rgb);
+    --tblr-primary-fg: var(--color-accent-ink);
+    --tblr-primary-darken: var(--color-accent-hover);
+    --tblr-primary-lt: var(--color-accent-tint);
+    --tblr-link-color: var(--color-accent);
+    --tblr-link-color-rgb: var(--color-accent-rgb);
+    --tblr-body-bg: var(--color-paper);
+    --tblr-body-color: var(--color-ink-2);
+    --tblr-emphasis-color: var(--color-ink);
+    --tblr-secondary: var(--color-muted);
+    --tblr-muted: var(--color-muted);
+    --tblr-bg-surface: var(--color-surface);
+    --tblr-bg-surface-secondary: var(--color-paper);
+    --tblr-bg-surface-tertiary: var(--color-surface-2);
+    --tblr-bg-forms: var(--color-surface);
+    --tblr-border-color: var(--color-rule);
+    --tblr-border-color-translucent: var(--color-rule);
+    --tblr-border-radius: var(--radius-control);
+    --tblr-border-radius-lg: var(--radius-card);
+    --tblr-shadow-card: var(--shadow-lift);
+    --tblr-focus-ring-color: color-mix(in oklab, var(--color-focus) 35%, transparent);
+}
+
+[data-bs-theme=dark] {
+    --color-paper: oklch(16.5% 0.014 258);
+    --color-surface: oklch(20.5% 0.016 258);
+    --color-surface-2: oklch(24% 0.017 258);
+    --color-sidebar: oklch(13.5% 0.013 258);
+    --color-ink: oklch(96% 0.005 255);
+    --color-ink-2: oklch(87% 0.01 255);
+    --color-muted: oklch(70% 0.015 255);
+    --color-rule: oklch(29% 0.018 258);
+    --color-rule-2: oklch(35% 0.02 258);
+    --color-accent: oklch(58% 0.14 254);
+    --color-accent-rgb: 45, 125, 205;
+    --color-accent-hover: oklch(64% 0.14 254);
+    --color-accent-tint: oklch(28% 0.05 254);
+    --color-accent-ink: oklch(99% 0 0);
+    --color-focus: oklch(70% 0.14 254);
+    --color-success: oklch(72% 0.14 150);
+    --color-warning: oklch(80% 0.14 75);
+    --color-danger: oklch(70% 0.16 25);
+    --color-info: oklch(74% 0.11 230);
+    --color-warning-tint: oklch(30% 0.06 80);
+    /* Palet kategori (versi gelap: lebih terang agar terbaca). */
+    --hue-blue: oklch(76% 0.13 250);
+    --hue-teal: oklch(76% 0.13 190);
+    --hue-green: oklch(76% 0.13 150);
+    --hue-violet: oklch(76% 0.13 300);
+    --hue-pink: oklch(76% 0.13 350);
+    --hue-red: oklch(76% 0.13 25);
+    --hue-orange: oklch(76% 0.13 50);
+    --hue-amber: oklch(76% 0.13 80);
+    --hue-indigo: oklch(76% 0.13 275);
+    --hue-slate: oklch(76% 0.02 255);
+    --color-backdrop: oklch(0% 0 0 / 0.55);
+
+    --chart-primary: #5b9be0;
+    --chart-success: #4cc27a;
+    --chart-warning: #f0a93a;
+    --chart-danger: #f07167;
+    --chart-neutral: #8f9bb0;
+    --chart-soft: #3a4a63;
+    --chart-grid: #2a3446;
+    --chart-text: #9aa5b8;
+    --shadow-lift: none;
+    --shadow-menu: 0 12px 32px oklch(0% 0 0 / 0.45);
+
+    --tblr-primary: var(--color-accent);
+    --tblr-primary-rgb: var(--color-accent-rgb);
+    --tblr-primary-darken: var(--color-accent-hover);
+    --tblr-primary-lt: var(--color-accent-tint);
+    --tblr-link-color: oklch(74% 0.11 254);
+    --tblr-body-bg: var(--color-paper);
+    --tblr-body-color: var(--color-ink-2);
+    --tblr-emphasis-color: var(--color-ink);
+    --tblr-secondary: var(--color-muted);
+    --tblr-muted: var(--color-muted);
+    --tblr-bg-surface: var(--color-surface);
+    --tblr-bg-surface-secondary: var(--color-paper);
+    --tblr-bg-surface-tertiary: var(--color-surface-2);
+    --tblr-bg-forms: var(--color-paper);
+    --tblr-border-color: var(--color-rule);
+    --tblr-border-color-translucent: var(--color-rule);
+}

@@ -1,271 +1,172 @@
 @extends('layouts.admin.tabler')
 
-@section('content')
+@php
+    $statusGaji = ['pending' => ['Menunggu', 'warning'], 'approved' => ['Disetujui', 'success'], 'rejected' => ['Ditolak', 'danger']];
+    $statusKini = request('status');
+    $urlStatus = fn ($s) => route('admin.kenaikan_gaji.index', array_merge(request()->except(['page', 'status']), $s === null ? [] : ['status' => $s]));
+    $filterAktif = collect([request('bulan'), request('tahun'), request('nama_karyawan')])->filter(fn ($v) => filled($v))->count();
+@endphp
+
+@section('page-header')
     <div class="page-header d-print-none">
         <div class="container-xl">
             <div class="row g-2 align-items-center">
                 <div class="col">
                     <div class="page-pretitle">Permintaan Karyawan</div>
-                    <h2 class="page-title">Data Pengajuan Kenaikan Gaji</h2>
+                    <h2 class="page-title">Pengajuan Kenaikan Gaji</h2>
+                    <p class="page-subtitle">Persentase kenaikan yang diajukan karyawan lewat aplikasi.</p>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="page-body">
-        <div class="container-xl">
-            <div class="card shadow-sm border-0">
-                {{-- Filter Section --}}
-                <div class="card-header bg-transparent border-bottom-1 py-3">
-                    <form action="{{ route('admin.kenaikan_gaji.index') }}" method="GET" autocomplete="off"
-                        class="w-100">
-                        <div class="row g-2 mb-2">
-                            {{-- Filter Bulan --}}
-                            <div class="col-12 col-md-4 col-xl-4">
-                                <select name="bulan" class="form-select">
-                                    <option value="">Semua Bulan</option>
-                                    @php
-                                        $namaBulan = [
-                                            1 => 'Januari',
-                                            2 => 'Februari',
-                                            3 => 'Maret',
-                                            4 => 'April',
-                                            5 => 'Mei',
-                                            6 => 'Juni',
-                                            7 => 'Juli',
-                                            8 => 'Agustus',
-                                            9 => 'September',
-                                            10 => 'Oktober',
-                                            11 => 'November',
-                                            12 => 'Desember',
-                                        ];
-                                    @endphp
-                                    @foreach ($namaBulan as $m => $nama)
-                                        <option value="{{ $m }}" {{ request('bulan') == $m ? 'selected' : '' }}>
-                                            {{ $nama }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            {{-- Filter Tahun --}}
-                            <div class="col-12 col-md-4 col-xl-4">
-                                <select name="tahun" class="form-select">
-                                    <option value="">Semua Tahun</option>
-                                    @php
-                                        $tahunSekarang = date('Y');
-                                        $tahunMulai = 2022; // Sesuaikan dengan awal data
-                                    @endphp
-                                    @for ($t = $tahunSekarang; $t >= $tahunMulai; $t--)
-                                        <option value="{{ $t }}" {{ request('tahun') == $t ? 'selected' : '' }}>
-                                            {{ $t }}
-                                        </option>
-                                    @endfor
-                                </select>
-                            </div>
-
-                            {{-- Filter Status --}}
-                            <div class="col-12 col-md-4 col-xl-4">
-                                <select name="status" class="form-select">
-                                    <option value="">Semua Status</option>
-                                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending
-                                    </option>
-                                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>
-                                        Approved</option>
-                                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>
-                                        Rejected</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="row g-2">
-                            {{-- Search & Tombol Cari --}}
-                            <div class="col-12">
-                                <div class="input-group">
-                                    <input type="text" class="form-control" name="nama_karyawan"
-                                        placeholder="Cari Nama / NIK Karyawan" value="{{ request('nama_karyawan') }}">
-                                    <button class="btn btn-success" type="submit">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
-                                            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <circle cx="10" cy="10" r="7" />
-                                            <line x1="21" y1="21" x2="15" y2="15" />
-                                        </svg>
-                                        Cari Data
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-                {{-- Alert --}}
-                @if (session('success') || session('error'))
-                    <div class="p-3 pb-0">
-                        @if (session('success'))
-                            <div class="alert alert-success d-flex align-items-center mb-2" role="alert">
-                                <div>{{ session('success') }}</div>
-                                <a class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="close"></a>
-                            </div>
-                        @endif
-                        @if (session('error'))
-                            <div class="alert alert-danger d-flex align-items-center mb-2" role="alert">
-                                <div>{{ session('error') }}</div>
-                                <a class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="close"></a>
-                            </div>
-                        @endif
-                    </div>
-                @endif
-
-                {{-- Table --}}
-                <div class="table-responsive">
-                    <table class="table table-vcenter card-table table-hover">
-                        <thead>
-                            <tr>
-                                <th class="w-1">No</th>
-                                <th>Karyawan</th>
-                                <th>Tgl Pengajuan</th>
-                                <th>Persentase</th>
-                                <th>Catatan Karyawan</th>
-                                <th>Persetujuan</th>
-                                <th class="text-center">Status</th>
-                                <th class="w-1">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($pengajuan as $p)
-                                <tr>
-                                    <td>{{ $loop->iteration + $pengajuan->firstItem() - 1 }}</td>
-                                    <td>
-                                        <div class="d-flex py-1 align-items-center">
-                                            <div class="flex-fill">
-                                                <div class="font-weight-medium">{{ $p->nama_lengkap }}</div>
-                                                <div class="text-muted small">{{ $p->nik }}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="text-dark">{{ date('d M Y', strtotime($p->tanggal_pengajuan)) }}</div>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-sm bg-blue-lt">{{ $p->persentase }}%</span>
-                                    </td>
-                                    <td class="text-muted">
-                                        <div>{{ $p->catatan ?? '-' }}</div>
-                                    </td>
-                                    <td>
-                                        @if ($p->approved_at)
-                                            <div class="text-dark small">By: {{ $p->approved_by }}</div>
-                                            <div class="text-muted small">
-                                                {{ date('d M Y H:i', strtotime($p->approved_at)) }}</div>
-                                        @else
-                                            <div class="text-muted">-</div>
-                                        @endif
-                                    </td>
-                                    <td class="text-center">
-                                        @if ($p->status == 'pending')
-                                            <span class="badge bg-warning-lt">Pending</span>
-                                        @elseif($p->status == 'approved')
-                                            <span class="badge bg-success-lt">Approved</span>
-                                        @elseif($p->status == 'rejected')
-                                            <span class="badge bg-danger-lt">Rejected</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="btn-list flex-nowrap">
-                                            @if ($p->status == 'pending')
-                                                {{-- Tombol Setujui --}}
-                                                <form action="{{ route('admin.kenaikan_gaji.approve', $p->id) }}"
-                                                    method="POST" style="margin: 0; padding: 0;">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-icon btn-outline-success"
-                                                        title="Setujui Pengajuan">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon"
-                                                            width="24" height="24" viewBox="0 0 24 24"
-                                                            stroke-width="2" stroke="currentColor" fill="none"
-                                                            stroke-linecap="round" stroke-linejoin="round">
-                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                            <path d="M5 12l5 5l10 -10" />
-                                                        </svg>
-                                                    </button>
-                                                </form>
-
-                                                {{-- Tombol Tolak --}}
-                                                <a href="#" class="btn btn-icon btn-outline-danger btn-reject"
-                                                    data-id="{{ $p->id }}" data-bs-toggle="modal"
-                                                    data-bs-target="#modal-reject" title="Tolak Pengajuan">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24"
-                                                        height="24" viewBox="0 0 24 24" stroke-width="2"
-                                                        stroke="currentColor" fill="none" stroke-linecap="round"
-                                                        stroke-linejoin="round">
-                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                        <path d="M18 6l-12 12" />
-                                                        <path d="M6 6l12 12" />
-                                                    </svg>
-                                                </a>
-                                            @else
-                                                <span class="text-muted small">Selesai</span>
-                                            @endif
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="8" class="text-center py-5 text-muted">Tidak ada data pengajuan
-                                        ditemukan</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
-                {{-- Pagination --}}
-                <div class="card-footer d-flex align-items-center">
-                    {{ $pengajuan->links('pagination::bootstrap-5') }}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Reject -->
-    <div class="modal modal-blur fade" id="modal-reject" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Tolak Pengajuan Kenaikan Gaji</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="" method="POST" id="form-reject">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Alasan Penolakan <span class="text-danger">*</span></label>
-                            <textarea class="form-control" name="catatan" rows="4" placeholder="Jelaskan alasan pengajuan ditolak..."
-                                required></textarea>
-                            <small class="text-muted">Komentar ini akan tersimpan pada detail pengajuan karyawan.</small>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-link link-secondary me-auto"
-                            data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-danger">Tolak Pengajuan</button>
-                    </div>
-                </form>
             </div>
         </div>
     </div>
 @endsection
 
+@section('content')
+    <div class="page-body">
+        <div class="container-xl">
+            <section class="card list-card" aria-label="Daftar pengajuan kenaikan gaji">
+                <nav class="list-tabs" aria-label="Status pengajuan">
+                    <a href="{{ $urlStatus(null) }}" class="list-tab {{ blank($statusKini) ? 'is-current' : '' }}" @if (blank($statusKini)) aria-current="page" @endif>Semua <span class="list-tab-count">{{ $jumlahStatus['semua'] ?? 0 }}</span></a>
+                    @foreach ($statusGaji as $nilai => [$label, $nada])
+                        <a href="{{ $urlStatus($nilai) }}" class="list-tab {{ $statusKini === $nilai ? 'is-current' : '' }}" @if ($statusKini === $nilai) aria-current="page" @endif>{{ $label }} <span class="list-tab-count list-tab-count--{{ $nada }}">{{ $jumlahStatus[(string) $nilai] ?? 0 }}</span></a>
+                    @endforeach
+                    <span class="list-tabs-note">Jumlah {{ $periodeJumlah }}</span>
+                </nav>
+
+                <form action="{{ route('admin.kenaikan_gaji.index') }}" method="GET" class="list-toolbar" autocomplete="off">
+                    @if (filled($statusKini))
+                        <input type="hidden" name="status" value="{{ $statusKini }}">
+                    @endif
+                    <div class="list-toolbar-row">
+                        <x-admin.search name="nama_karyawan" placeholder="Cari nama atau NIK…" label="Cari karyawan" />
+                    </div>
+                    <div class="filter-bar">
+                        <label class="filter-field">
+                            <span class="filter-label">Bulan</span>
+                            <select name="bulan" class="form-select form-select-sm" data-auto-submit>
+                                <option value="">Semua</option>
+                                @foreach (range(1, 12) as $m)
+                                    <option value="{{ $m }}" @selected(request('bulan') == $m)>{{ \Carbon\Carbon::create(null, $m, 1)->translatedFormat('F') }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label class="filter-field">
+                            <span class="filter-label">Tahun</span>
+                            <select name="tahun" class="form-select form-select-sm" data-auto-submit>
+                                <option value="">Semua</option>
+                                @for ($t = (int) date('Y'); $t >= 2022; $t--)
+                                    <option value="{{ $t }}" @selected(request('tahun') == $t)>{{ $t }}</option>
+                                @endfor
+                            </select>
+                        </label>
+                        @if ($filterAktif > 0)
+                            <a href="{{ $urlStatus($statusKini ?: null) }}" class="filter-reset">Reset filter</a>
+                        @endif
+                    </div>
+                </form>
+
+                <div class="list-meta">
+                    @if ($pengajuan->total() > 0)
+                        Menampilkan <strong>{{ $pengajuan->firstItem() }}–{{ $pengajuan->lastItem() }}</strong>
+                        dari <strong>{{ $pengajuan->total() }}</strong> pengajuan
+                    @endif
+                </div>
+
+                @if ($pengajuan->isEmpty())
+                    <div class="list-empty">
+                        <p class="mb-1 fw-medium">Belum ada pengajuan kenaikan gaji.</p>
+                        <p class="mb-0 text-secondary small">Pengajuan dari aplikasi karyawan akan tampil di sini.</p>
+                    </div>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-vcenter list-table">
+                            <thead>
+                                <tr>
+                                    <th>Karyawan</th>
+                                    <th>Diajukan</th>
+                                    <th class="text-end">Kenaikan</th>
+                                    <th>Catatan</th>
+                                    <th>Status</th>
+                                    <th class="w-1"><span class="visually-hidden">Aksi</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($pengajuan as $p)
+                                    @php [$labelStatus, $nadaStatus] = $statusGaji[$p->status] ?? [$p->status, 'neutral']; @endphp
+                                    <tr>
+                                        <td class="cell-person">
+                                            <span class="person-name" title="{{ $p->nama_lengkap }}">{{ $p->nama_lengkap }}</span>
+                                            <span class="person-sub">NIK {{ $p->nik }}</span>
+                                        </td>
+                                        <td data-label="Diajukan" class="cell-num">{{ \Carbon\Carbon::parse($p->tanggal_pengajuan)->translatedFormat('d M Y') }}</td>
+                                        <td data-label="Kenaikan" class="cell-num text-lg-end fw-medium">{{ $p->persentase }}%</td>
+                                        <td data-label="Catatan">
+                                            <div class="cell-clamp" title="{{ $p->catatan }}">{{ $p->catatan ?: '-' }}</div>
+                                        </td>
+                                        <td data-label="Status">
+                                            <span class="emp-status emp-status--{{ $nadaStatus }}">{{ $labelStatus }}</span>
+                                            @if ($p->approved_at)
+                                                <div class="cell-sub">{{ $p->approved_by }} · {{ \Carbon\Carbon::parse($p->approved_at)->format('d M Y H:i') }}</div>
+                                            @endif
+                                        </td>
+                                        <td class="cell-actions">
+                                            @if ($p->status == 'pending')
+                                                <div class="d-flex gap-1 justify-content-end">
+                                                    <button type="button" class="btn btn-sm btn-reject" data-id="{{ $p->id }}" data-nama="{{ $p->nama_lengkap }}">Tolak</button>
+                                                    <form action="{{ route('admin.kenaikan_gaji.approve', $p->id) }}" method="POST" class="m-0">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-primary"
+                                                            data-confirm="Kenaikan {{ $p->persentase }}% untuk {{ $p->nama_lengkap }} akan disetujui."
+                                                            data-confirm-title="Setujui pengajuan?" data-confirm-ok="Ya, setujui">Setujui</button>
+                                                    </form>
+                                                </div>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+
+                @if ($pengajuan->hasPages())
+                    <div class="list-footer">
+                        <span class="text-secondary small">Halaman {{ $pengajuan->currentPage() }} dari {{ $pengajuan->lastPage() }}</span>
+                        {{ $pengajuan->withQueryString()->onEachSide(1)->links('pagination::bootstrap-5') }}
+                    </div>
+                @endif
+            </section>
+        </div>
+    </div>
+
+    <form action="" method="POST" id="form-reject" hidden>
+        @csrf
+        <input type="hidden" name="catatan" id="catatan-reject">
+    </form>
+@endsection
+
 @push('myscript')
     <script>
         $(function() {
-            $('.btn-reject').click(function() {
-                var id = $(this).attr('data-id');
-                // Pastikan base url route-nya sudah sesuai dengan routing di web.php Anda. 
-                // Jika route name tersedia, sangat disarankan mengubah string dinamis ini ke route helper bila memungkinkan.
-                var actionUrl = "{{ url('panel/kenaikan-gaji') }}/" + id + "/reject";
-                $('#form-reject').attr('action', actionUrl);
+            $('.btn-reject').on('click', function() {
+                const id = $(this).data('id');
+                Swal.fire({
+                    title: 'Tolak pengajuan?',
+                    text: $(this).data('nama'),
+                    input: 'textarea',
+                    inputLabel: 'Alasan penolakan',
+                    inputPlaceholder: 'Terlihat oleh karyawan di detail pengajuan…',
+                    inputValidator: (v) => !v.trim() && 'Alasan penolakan wajib diisi.',
+                    showCancelButton: true,
+                    confirmButtonColor: 'var(--color-danger)',
+                    confirmButtonText: 'Tolak pengajuan',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true
+                }).then((r) => {
+                    if (!r.isConfirmed) return;
+                    $('#catatan-reject').val(r.value.trim());
+                    $('#form-reject').attr('action', "{{ url('panel/kenaikan-gaji') }}/" + id + '/reject').trigger('submit');
+                });
             });
         });
     </script>

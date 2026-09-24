@@ -58,7 +58,7 @@
                                 @if (!empty($karyawan->foto_bpjs_kesehatan))
                                     <div class="photo-preview mt-3 text-center">
                                         <div class="small text-muted mb-2">Foto Saat Ini</div>
-                                        <img src="{{ asset('storage/uploads/karyawan/bpjs/' . $karyawan->foto_bpjs_kesehatan) }}"
+                                        <img src="{{ asset_v('storage/uploads/karyawan/bpjs/' . $karyawan->foto_bpjs_kesehatan) }}"
                                             alt="BPJS Kesehatan"
                                             style="max-width: 100%; border-radius: 6px; max-height: 150px;">
                                     </div>
@@ -84,7 +84,7 @@
 
                                 @if (!empty($karyawan->foto_bpjs_ketenagakerjaan))
                                     <div class="photo-preview mt-2 text-center">
-                                        <img src="{{ asset('storage/uploads/karyawan/bpjs/' . $karyawan->foto_bpjs_ketenagakerjaan) }}"
+                                        <img src="{{ asset_v('storage/uploads/karyawan/bpjs/' . $karyawan->foto_bpjs_ketenagakerjaan) }}"
                                             alt="BPJS Ketenagakerjaan"
                                             style="max-width: 100%; border-radius: 6px; max-height: 150px;">
                                     </div>
