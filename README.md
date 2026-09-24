@@ -67,7 +67,7 @@ Atur koneksi database di `.env`:
 DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
 DB_PORT=5432
-DB_DATABASE=absen_sjp
+DB_DATABASE=hris_wndev
 DB_USERNAME=postgres
 DB_PASSWORD=
 ```
@@ -85,12 +85,26 @@ Buka `http://127.0.0.1:8000/panel` untuk panel admin dan `http://127.0.0.1:8000`
 
 ### Akun bawaan (dari seeder)
 
-| Peran | Email | Password |
-| --- | --- | --- |
-| Administrator | `admin@wndev.com` | `Admin12345` |
-| HRD | `hrd@wndev.com` | `123456` |
+**Panel admin** — login dengan email di `http://127.0.0.1:8000/panel`:
 
-Karyawan login memakai NIK. Password bawaan karyawan baru adalah `123456`.
+| Peran | Email | Password | Cakupan data |
+| --- | --- | --- | --- |
+| Administrator | `admin@wndev.com` | `Admin12345` | Semua cabang |
+| HRD | `hrd@wndev.com` | `123456` | Semua cabang |
+| HRD | `karina@wndev.com` | `123456` | Semua cabang |
+| BOD / Owner | `owner@wndev.com` | `123456` | Semua cabang (lihat saja) |
+| HRD Cabang | `hrdketahun@wndev.com` | `123456` | Cabang CBNG0003 |
+| HRD Cabang | `hrdjambi@wndev.com` | `123456` | Cabang CBNG0002 |
+| HRD Cabang | `hrdsas@wndev.com` | `123456` | Cabang CBNG0004 |
+| HRD Cabang | `hrdrbj@wndev.com` | `123456` | Cabang RBJ |
+
+**Aplikasi karyawan** — login dengan NIK di `http://127.0.0.1:8000`:
+
+| NIK | Nama | Password |
+| --- | --- | --- |
+| `123456` | Akun Testing (Project Manager) | `123456` |
+
+Password bawaan karyawan baru adalah `123456`.
 
 > Ganti password akun bawaan sebelum dipakai di server produksi.
 
@@ -103,6 +117,17 @@ php artisan db:seed --class=DummyDataSeeder
 ```
 
 Aman dijalankan berulang — data dummy lama dihapus dulu, data asli tidak tersentuh. Tidak bisa dijalankan di environment `production`.
+
+**Akun karyawan dummy** — login di aplikasi karyawan dengan NIK berikut, password `123456`:
+
+| NIK | Kondisi untuk dicoba |
+| --- | --- |
+| `900001` – `900003` | Karyawan baru masuk (kurang dari 3 bulan) |
+| `900004` – `900006` | Kontrak habis dalam 45 hari |
+| `900007` – `900028` | Karyawan aktif biasa dengan presensi, pengajuan, dan KPI |
+| `900029` – `900030` | Sudah keluar (nonaktif), tidak bisa login |
+
+Jabatan karyawan dummy (Staff, Crew Mekanik, Staff HR, Supervisor, Inventory Auditor) dan cabangnya (CBNG0001, CBNG0002, HOJKT01) diacak setiap seeder dijalankan. Nama & jabatan tiap NIK bisa dilihat di menu **Data Karyawan**.
 
 ### Tugas terjadwal
 
@@ -139,8 +164,8 @@ php artisan optimize:clear && php artisan optimize
 Backup & restore database:
 
 ```bash
-pg_dump -U postgres -h 127.0.0.1 -p 5432 absen_sjp > backup.sql
-psql -U postgres -d absen_sjp -f backup.sql
+pg_dump -U postgres -h 127.0.0.1 -p 5432 hris_wndev > backup.sql
+psql -U postgres -d hris_wndev -f backup.sql
 ```
 
 ### Catatan
@@ -201,7 +226,7 @@ Configure the database connection in `.env`:
 DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
 DB_PORT=5432
-DB_DATABASE=absen_sjp
+DB_DATABASE=hris_wndev
 DB_USERNAME=postgres
 DB_PASSWORD=
 ```
@@ -219,12 +244,26 @@ Open `http://127.0.0.1:8000/panel` for the admin panel and `http://127.0.0.1:800
 
 ### Default accounts (from the seeder)
 
-| Role | Email | Password |
-| --- | --- | --- |
-| Administrator | `admin@wndev.com` | `Admin12345` |
-| HR | `hrd@wndev.com` | `123456` |
+**Admin panel** — sign in with email at `http://127.0.0.1:8000/panel`:
 
-Employees sign in with their employee ID (NIK). The default password for new employees is `123456`.
+| Role | Email | Password | Data scope |
+| --- | --- | --- | --- |
+| Administrator | `admin@wndev.com` | `Admin12345` | All branches |
+| HR | `hrd@wndev.com` | `123456` | All branches |
+| HR | `karina@wndev.com` | `123456` | All branches |
+| Board / Owner | `owner@wndev.com` | `123456` | All branches (read-only) |
+| Branch HR | `hrdketahun@wndev.com` | `123456` | Branch CBNG0003 |
+| Branch HR | `hrdjambi@wndev.com` | `123456` | Branch CBNG0002 |
+| Branch HR | `hrdsas@wndev.com` | `123456` | Branch CBNG0004 |
+| Branch HR | `hrdrbj@wndev.com` | `123456` | Branch RBJ |
+
+**Employee app** — sign in with the employee ID (NIK) at `http://127.0.0.1:8000`:
+
+| NIK | Name | Password |
+| --- | --- | --- |
+| `123456` | Akun Testing (Project Manager) | `123456` |
+
+The default password for new employees is `123456`.
 
 > Change the default account passwords before using the app in production.
 
@@ -237,6 +276,17 @@ php artisan db:seed --class=DummyDataSeeder
 ```
 
 Safe to run repeatedly — previous dummy data is removed first and real data is left untouched. It refuses to run in the `production` environment.
+
+**Dummy employee accounts** — sign in to the employee app with these NIKs, password `123456`:
+
+| NIK | Scenario to try |
+| --- | --- |
+| `900001` – `900003` | Newly joined employees (less than 3 months) |
+| `900004` – `900006` | Contract ends within 45 days |
+| `900007` – `900028` | Regular active employees with attendance, requests, and KPI |
+| `900029` – `900030` | Former employees (inactive), cannot sign in |
+
+Dummy employees' positions (Staff, Crew Mekanik, Staff HR, Supervisor, Inventory Auditor) and branches (CBNG0001, CBNG0002, HOJKT01) are randomised on every run. Each NIK's name and position is listed under **Data Karyawan**.
 
 ### Scheduled tasks
 
@@ -273,8 +323,8 @@ php artisan optimize:clear && php artisan optimize
 Database backup & restore:
 
 ```bash
-pg_dump -U postgres -h 127.0.0.1 -p 5432 absen_sjp > backup.sql
-psql -U postgres -d absen_sjp -f backup.sql
+pg_dump -U postgres -h 127.0.0.1 -p 5432 hris_wndev > backup.sql
+psql -U postgres -d hris_wndev -f backup.sql
 ```
 
 ### Notes
