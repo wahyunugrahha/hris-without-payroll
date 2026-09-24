@@ -170,8 +170,7 @@
                 </form>
             </section>
 
-            <form id="frmCetak" action="{{ route('kpi.rekap.karyawan.cetak') }}" method="POST" target="_blank" hidden>
-                @csrf
+            <form id="frmCetak" action="{{ route('kpi.rekap.karyawan.cetak') }}" method="GET" target="_blank" hidden>
                 <input type="hidden" name="bulan" value="{{ $bulan_terpilih }}">
                 <input type="hidden" name="tahun" value="{{ $tahun_terpilih }}">
                 <input type="hidden" name="kode_dept" value="{{ $kode_dept_terpilih }}">

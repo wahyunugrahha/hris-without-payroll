@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\CheckWajibPresensi;
 use App\Http\Middleware\DisableHtmlCache;
+use App\Http\Middleware\LaporanPerluPeriode;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -48,6 +49,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'wajib_presensi' => CheckWajibPresensi::class,
+            'laporan_periode' => LaporanPerluPeriode::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

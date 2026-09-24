@@ -199,11 +199,11 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
         Route::get('/laporan', [LaporanPresensiController::class, 'laporan'])
             ->middleware('permission:laporan-view-admin,user')
             ->name('presensi.laporan');
-        Route::post('/cetaklaporan', [LaporanPresensiController::class, 'cetaklaporan'])->middleware('permission:laporan-view-admin,user')->name('presensi.cetaklaporan');
+        Route::match(['get', 'post'], '/cetaklaporan', [LaporanPresensiController::class, 'cetaklaporan'])->middleware(['permission:laporan-view-admin,user', 'laporan_periode:presensi.laporan'])->name('presensi.cetaklaporan');
         Route::get('/rekap', [LaporanPresensiController::class, 'rekap'])
             ->middleware('permission:laporan-view-admin,user')
             ->name('presensi.rekap');
-        Route::post('/cetakrekap', [LaporanPresensiController::class, 'cetakrekap'])->middleware('permission:laporan-view-admin,user')->name('presensi.cetakrekap');
+        Route::match(['get', 'post'], '/cetakrekap', [LaporanPresensiController::class, 'cetakrekap'])->middleware(['permission:laporan-view-admin,user', 'laporan_periode:presensi.rekap'])->name('presensi.cetakrekap');
 
         // Izin Sakit (Halaman List Utama)
         Route::get('/izinsakit', [IzinApprovalController::class, 'index'])
@@ -254,7 +254,7 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
             Route::get('/rekap', 'rekap')
                 ->middleware('permission:laporan-view-admin,user')
                 ->name('admin.lembur.rekap');
-            Route::post('/cetakrekap', 'cetakrekap')->middleware('permission:laporan-view-admin,user')->name('admin.lembur.cetakrekap');
+            Route::match(['get', 'post'], '/cetakrekap', 'cetakrekap')->middleware(['permission:laporan-view-admin,user', 'laporan_periode:admin.lembur.rekap'])->name('admin.lembur.cetakrekap');
 
             // Approval via Form (POST)
             Route::get('/approval', 'approval')
@@ -355,9 +355,9 @@ Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(
 
         Route::controller(LaporanKpiController::class)->middleware('permission:laporan-view-admin,user')->group(function () {
             Route::get('/rekap/karyawan', 'rekapKPIKaryawan')->name('kpi.rekap.karyawan');
-            Route::post('/rekap/cetakKPI/karyawan', 'cetakRekapKPIKaryawan')->name('kpi.rekap.karyawan.cetak');
+            Route::match(['get', 'post'], '/rekap/cetakKPI/karyawan', 'cetakRekapKPIKaryawan')->middleware('laporan_periode:kpi.rekap.karyawan')->name('kpi.rekap.karyawan.cetak');
             Route::get('/report', 'reportKPI')->name('kpi.report');
-            Route::post('/report/cetakKPI/', 'cetakReportKPI')->name('kpi.report.cetak');
+            Route::match(['get', 'post'], '/report/cetakKPI/', 'cetakReportKPI')->middleware('laporan_periode:kpi.report')->name('kpi.report.cetak');
         });
     });
 
