@@ -4,6 +4,7 @@
  *  2. Notifikasi flash dari server (SweetAlert).
  *  3. Popover notifikasi & akun di topbar.
  *  4. Sidebar ringkas (desktop) / drawer (mobile).
+ *  5. Form daftar: filter auto-submit & konfirmasi aksi berbahaya.
  */
 (function () {
     'use strict';
@@ -166,7 +167,100 @@
         sinkron();
     }
 
+    // ── 5. Form daftar ──────────────────────────────────────────────────
+    // <select data-auto-submit> mengirim form filternya saat berubah.
+    // <button type="submit" data-confirm="Teks"> meminta konfirmasi sebelum form dikirim.
+    function initFormDaftar() {
+        document.addEventListener('change', function (e) {
+            if (e.target.matches('[data-auto-submit]') && e.target.form) {
+                e.target.form.submit();
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-confirm]');
+            if (!btn || !btn.form || typeof Swal === 'undefined') {
+                return;
+            }
+            e.preventDefault();
+            Swal.fire({
+                title: btn.dataset.confirmTitle || 'Hapus data?',
+                text: btn.dataset.confirm,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: 'var(--color-danger)',
+                confirmButtonText: btn.dataset.confirmOk || 'Ya, hapus',
+                cancelButtonText: 'Batal',
+                reverseButtons: true
+            }).then(function (hasil) {
+                if (hasil.isConfirmed) {
+                    btn.form.submit();
+                }
+            });
+        });
+    }
+
+    // Hapus data master yang punya relasi: GET {url} → {success, relations:{kunci: jumlah}},
+    // tampilkan dampaknya, lalu kirim form hapus bila dikonfirmasi.
+    //   opsi = { url, jenis: 'cabang', nama, form: HTMLFormElement,
+    //            kosongkan: {karyawan: 'karyawan'}, ikutTerhapus: {kpi: 'data KPI'} }
+    window.hapusDenganRelasi = function (opsi) {
+        var esc = function (t) {
+            var d = document.createElement('div');
+            d.textContent = t;
+            return d.innerHTML;
+        };
+        var daftar = function (rels, label) {
+            return Object.keys(label || {}).filter(function (k) { return rels[k] > 0; })
+                .map(function (k) { return '<li>' + rels[k] + ' ' + label[k] + '</li>'; }).join('');
+        };
+
+        Swal.fire({
+            title: 'Memeriksa data…',
+            text: 'Menganalisis data yang terkait dengan ' + opsi.jenis + ' ini.',
+            allowOutsideClick: false,
+            didOpen: function () { Swal.showLoading(); }
+        });
+
+        fetch(opsi.url, { headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' } })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                if (!res.success) {
+                    Swal.fire('Gagal', 'Keterkaitan data tidak dapat diperiksa.', 'error');
+                    return;
+                }
+                var kosong = daftar(res.relations, opsi.kosongkan);
+                var hapus = daftar(res.relations, opsi.ikutTerhapus);
+                var html = '<p class="mb-3">Hapus ' + opsi.jenis + ' <b>' + esc(opsi.nama) + '</b>?</p>';
+                if (kosong || hapus) {
+                    html += '<div class="text-start small">';
+                    if (kosong) html += '<p class="mb-1">Akan <b>dikosongkan</b> dan perlu diatur ulang:</p><ul class="mb-2">' + kosong + '</ul>';
+                    if (hapus) html += '<p class="mb-1 text-danger">Ikut <b>terhapus permanen</b>:</p><ul class="mb-0 text-danger">' + hapus + '</ul>';
+                    html += '</div>';
+                } else {
+                    html += '<p class="text-secondary small mb-0">Tidak ada data lain yang bergantung pada ' + opsi.jenis + ' ini.</p>';
+                }
+
+                Swal.fire({
+                    title: 'Hapus ' + opsi.jenis + '?',
+                    html: html,
+                    icon: kosong || hapus ? 'warning' : 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: 'var(--color-danger)',
+                    confirmButtonText: 'Ya, hapus',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true
+                }).then(function (hasil) {
+                    if (hasil.isConfirmed) opsi.form.submit();
+                });
+            })
+            .catch(function () {
+                Swal.fire('Gagal', 'Tidak dapat menghubungi server.', 'error');
+            });
+    };
+
     document.addEventListener('DOMContentLoaded', function () {
+        initFormDaftar();
         initTema();
         initFlash();
         initPopover();

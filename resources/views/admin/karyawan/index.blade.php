@@ -778,11 +778,6 @@
                 })
             });
 
-            // 4. Filter langsung diterapkan saat pilihan berubah (tetap lewat GET yang sama).
-            $('[data-auto-submit]').on('change', function() {
-                this.form.submit();
-            });
-
             // 5. Error import ditampilkan di modal import: buka otomatis agar terlihat.
             @if (Session::get('import_errors'))
                 bootstrap.Modal.getOrCreateInstance(document.getElementById('modal-importkaryawan')).show();

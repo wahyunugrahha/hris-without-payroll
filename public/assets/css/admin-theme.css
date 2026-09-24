@@ -1662,6 +1662,11 @@ a.summary-item:focus-visible {
     --tblr-modal-width: 800px;
 }
 
+/* Form pendek (1 kolom): modal lebih sempit. */
+.modal-form.modal-form-sm {
+    --tblr-modal-width: 520px;
+}
+
 .modal-form .modal-content {
     border-radius: 14px;
     overflow: hidden;
@@ -2312,6 +2317,342 @@ a.contact-value {
 .table td time {
     white-space: nowrap;
 }
+
+/* Peta titik lokasi cabang. */
+.lokasi-map {
+    height: 380px;
+    border-radius: var(--radius-control);
+    box-shadow: 0 0 0 1px var(--color-rule);
+}
+
+/* Halaman form penuh (create/edit): lebar baca nyaman. */
+.container-narrow-lg {
+    max-width: 960px;
+}
+
+/* Daftar centang (cakupan cabang/departemen) dengan "pilih semua". */
+.check-list {
+    border: 1px solid var(--color-rule);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.check-list-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
+    border-bottom: 1px solid var(--color-rule);
+    background: var(--color-surface-2);
+}
+
+.check-list-count {
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.check-list-body {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 2px var(--space-sm);
+    max-height: 260px;
+    padding: var(--space-xs) var(--space-sm);
+    overflow-y: auto;
+}
+
+.check-list-body .form-check {
+    min-width: 0;
+    margin: 0;
+    padding-block: 4px;
+}
+
+/* Baris grup di tabel daftar (mis. per cabang). */
+.list-table .row-group > th {
+    padding: var(--space-xs) var(--space-md);
+    border-bottom: 1px solid var(--color-rule);
+    background: var(--color-surface-2);
+    color: var(--color-ink);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.row-group-meta {
+    margin-left: var(--space-xs);
+    color: var(--color-muted);
+    font-weight: 400;
+}
+
+@media (max-width: 767.98px) {
+    .list-table .row-group > th {
+        display: block;
+    }
+}
+
+/* Jadwal mingguan: hari + pilihan jam kerja per baris. */
+.schedule-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.schedule-row {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) 0;
+    border-top: 1px solid var(--color-rule);
+}
+
+.schedule-row:first-child {
+    border-top: 0;
+}
+
+.schedule-day {
+    margin: 0;
+    color: var(--color-ink);
+    font-weight: 500;
+}
+
+.schedule-value {
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+}
+
+/* Tabel referensi di samping form: tinggi dibatasi. */
+.reference-scroll {
+    max-height: 520px;
+    overflow-y: auto;
+}
+
+/* Status informatif (izin, sakit, cuti, dinas): nada aksen. */
+.emp-status--info { --status: var(--color-accent); }
+
+/* Baris kosong / footer paginasi yang dirender di dalam tbody (muat via AJAX). */
+.list-table > tbody > tr.row-empty > td,
+.list-table > tbody > tr.row-footer > td {
+    height: auto;
+    padding: 0;
+}
+
+.list-table > tbody > tr.row-footer > td .list-footer {
+    border-top: 0;
+}
+
+/* Thumbnail foto absen di tabel. */
+.photo-pair {
+    display: flex;
+    gap: 4px;
+}
+
+.photo-thumb {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    overflow: hidden;
+    border-radius: 6px;
+    box-shadow: 0 0 0 1px var(--color-rule);
+    color: var(--color-muted);
+    font-size: 0.75rem;
+}
+
+.photo-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.photo-thumb.is-empty {
+    background: var(--color-surface-2);
+}
+
+/* Modal detail: foto & dokumen, peta. */
+.detail-media {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-sm);
+}
+
+.detail-media figure {
+    margin: 0;
+}
+
+.detail-media img {
+    display: block;
+    width: 100%;
+    height: 150px;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 0 0 1px var(--color-rule);
+}
+
+.detail-media figcaption {
+    margin-top: 4px;
+    color: var(--color-muted);
+    font-size: 0.75rem;
+}
+
+.detail-media-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px;
+    height: 100%;
+    border: 1px dashed var(--color-rule-2);
+    border-radius: 8px;
+    color: var(--color-muted);
+    font-size: 0.8125rem;
+}
+
+.detail-map {
+    height: 350px;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 0 0 1px var(--color-rule);
+}
+
+@media (max-width: 575.98px) {
+    .detail-media {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* Tab status di atas daftar (Semua / Menunggu / Disetujui / Ditolak). */
+.list-tabs {
+    display: flex;
+    gap: var(--space-md);
+    padding: 0 var(--space-md);
+    overflow-x: auto;
+    border-bottom: 1px solid var(--color-rule);
+}
+
+.list-tab {
+    padding: var(--space-sm) 0;
+    color: var(--color-muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    text-decoration: none;
+    box-shadow: inset 0 -2px 0 transparent;
+}
+
+.list-tab:hover {
+    color: var(--color-ink);
+    text-decoration: none;
+}
+
+.list-tab.is-current {
+    color: var(--color-ink);
+    box-shadow: inset 0 -2px 0 var(--color-accent);
+}
+
+/* Teks panjang di sel tabel: maksimal 2 baris. */
+.cell-clamp {
+    display: -webkit-box;
+    max-width: 320px;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    color: var(--color-ink-2);
+    font-size: 0.8125rem;
+}
+
+.list-table td.cell-num .cell-main {
+    white-space: nowrap;
+}
+
+/* Modal proses: kalender kiri, keputusan kanan. */
+@media (min-width: 992px) {
+    .modal-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+        gap: var(--space-lg);
+        align-items: start;
+    }
+}
+
+.decision-options {
+    display: grid;
+    gap: var(--space-xs);
+}
+
+.decision-option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin: 0;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-rule);
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.decision-option:hover {
+    background: var(--color-surface-2);
+}
+
+.decision-option:has(input:checked) {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.decision-option input {
+    accent-color: var(--color-accent);
+}
+
+.date-legend {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-md);
+    margin-top: var(--space-sm);
+}
+
+/* Penanda status tanggal di kalender pengajuan (bootstrap-datepicker). */
+.datepicker tbody td.day.day-approved {
+    background: var(--color-success) !important;
+    color: var(--color-accent-ink) !important;
+}
+
+.datepicker tbody td.day.day-rejected {
+    background: var(--color-danger) !important;
+    color: var(--color-accent-ink) !important;
+    opacity: 0.7;
+    text-decoration: line-through;
+}
+
+.datepicker tbody td.day.day-pending {
+    background: var(--color-accent) !important;
+    color: var(--color-accent-ink) !important;
+}
+
+/* Kalender detail hanya-baca; navigasi bulan tetap bisa diklik. */
+#detail-calendar-view .datepicker-days tbody {
+    pointer-events: none;
+}
+
+/* Varian: media 2 kolom, opsi keputusan sebaris. */
+.detail-media--2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.decision-options--row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 575.98px) {
+    .detail-media--2 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.summary-item--danger { --tone: var(--color-danger); }
 
 /* ════════════════════════════════════════════════════════════════════
  * 15. Footer

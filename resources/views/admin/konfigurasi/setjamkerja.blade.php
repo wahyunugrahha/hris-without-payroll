@@ -1,11 +1,25 @@
 @extends('layouts.admin.tabler')
+
+@php
+    // Mode edit bila karyawan sudah punya jadwal personal ($setjamkerja dari controller).
+    $edit = isset($setjamkerja);
+    // Tanpa baris = ikut departemen (''), baris tanpa kode = libur personal.
+    $terpilih = $edit
+        ? collect($setjamkerja)->mapWithKeys(fn ($s) => [ucfirst(strtolower(trim($s->hari))) => $s->kode_jam_kerja ?: 'LIBUR'])->all()
+        : [];
+@endphp
+
 @section('page-header')
-    <div class="page-header d-print-none" aria-label="Page header">
+    <div class="page-header d-print-none">
         <div class="container-xl">
             <div class="row g-2 align-items-center">
                 <div class="col">
-                    <div class="page-pretitle">Data Karyawan</div>
-                    <h2 class="page-title">Set Jam Kerja Karyawan</h2>
+                    <div class="page-pretitle">Data Master / Data Karyawan</div>
+                    <h2 class="page-title">Jadwal Kerja · {{ $karyawan->nama_lengkap }}</h2>
+                    <p class="page-subtitle">NIK {{ $karyawan->nik }} · Jadwal personal menggantikan jadwal departemen.</p>
+                </div>
+                <div class="col-auto ms-auto">
+                    <a href="{{ route('karyawan.show', $karyawan->nik) }}" class="btn">Lihat profil</a>
                 </div>
             </div>
         </div>
@@ -13,120 +27,29 @@
 @endsection
 
 @section('content')
-
     <div class="page-body">
         <div class="container-xl">
-            <div class="row mb-3">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <table class="table table-borderless table-sm">
-                                <tr>
-                                    <th style="width: 150px">NIK</th>
-                                    <td>: {{ $karyawan->nik }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Nama Karyawan</th>
-                                    <td>: {{ $karyawan->nama_lengkap }}</td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12 col-lg-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Set Jam Kerja Harian</h3>
-                        </div>
-                    <form action="{{ route('konfigurasi.setstorejamkerja') }}" method="POST">
+            <div class="row g-3">
+                <div class="col-lg-7">
+                    <form action="{{ $edit ? route('konfigurasi.updatesetjamkerja') : route('konfigurasi.setstorejamkerja') }}"
+                        method="POST" class="card">
                         @csrf
                         <input type="hidden" name="nik" value="{{ $karyawan->nik }}">
-                        <table class="table card-table table-vcenter">
-                            <thead>
-                                <tr>
-                                    <th style="width: 150px;">Hari</th>
-                                    <th>Pilihan Jam Kerja</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @php
-                                    $hari_kerja = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
-                                @endphp
-                                @foreach ($hari_kerja as $hari)
-                                    <tr>
-                                        <td>
-                                            {{ $hari }}
-                                            <input type="hidden" name="hari[]" value="{{ $hari }}">
-                                        </td>
-                                        <td>
-                                            <select name="kode_jam_kerja[]" class="form-select">
-                                                <option value="">-- Ikut Jadwal Departemen --</option>
-                                                <option value="LIBUR"
-                                                    style="background-color: var(--color-warning-tint); font-weight: bold;">🏖️ LIBUR</option>
-                                                @foreach ($jamkerja as $d)
-                                                    <option value="{{ $d->kode_jam_kerja }}">
-                                                        {{ $d->nama_jam_kerja }} ({{ substr($d->jam_masuk, 0, 5) }} -
-                                                        {{ substr($d->jam_pulang, 0, 5) }})
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                        <div class="card-footer d-grid">
-                            <button class="btn btn-primary" type="submit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    class="icon icon-tabler icons-tabler-outline icon-tabler-device-floppy">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M6 4h10l4 4v10a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2" />
-                                    <path d="M12 10m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                                    <path d="M14 15h-4" />
-                                </svg>
-                                Simpan Konfigurasi
-                            </button>
+                        <div class="card-header">
+                            <h3 class="card-title">Jadwal mingguan</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-secondary small mb-3">Pilih “Ikut jadwal departemen” untuk hari yang tidak perlu diatur khusus.</p>
+                            @include('admin.konfigurasi._jadwal-mingguan', ['opsiKosong' => 'Ikut jadwal departemen'])
+                        </div>
+                        <div class="card-footer d-flex justify-content-end gap-2">
+                            <a href="{{ route('karyawan.index') }}" class="btn">Batal</a>
+                            <button class="btn btn-primary" type="submit">{{ $edit ? 'Simpan perubahan' : 'Simpan jadwal' }}</button>
                         </div>
                     </form>
-                    </div>
                 </div>
-
-                <div class="col-12 col-lg-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Daftar Master Jam Kerja</h3>
-                        </div>
-                    <div class="table-responsive">
-                        <table class="table card-table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Kode</th>
-                                    <th>Nama</th>
-                                    <th>Awal Masuk</th>
-                                    <th>Jam Masuk</th>
-                                    <th>Akhir Masuk</th>
-                                    <th>Jam Pulang</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($jamkerja as $d)
-                                    <tr>
-                                        <td>{{ $d->kode_jam_kerja }}</td>
-                                        <td>{{ $d->nama_jam_kerja }}</td>
-                                        <td>{{ substr($d->awal_jam_masuk, 0, 5) }}</td>
-                                        <td>{{ substr($d->jam_masuk, 0, 5) }}</td>
-                                        <td>{{ substr($d->akhir_jam_masuk, 0, 5) }}</td>
-                                        <td>{{ substr($d->jam_pulang, 0, 5) }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    </div>
+                <div class="col-lg-5">
+                    @include('admin.konfigurasi._referensi-jamkerja')
                 </div>
             </div>
         </div>

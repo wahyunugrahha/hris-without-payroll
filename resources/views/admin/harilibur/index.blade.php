@@ -1,5 +1,15 @@
 @extends('layouts.admin.tabler')
 
+@php
+    $jenisLibur = [
+        'nasional' => ['Nasional', 'danger'],
+        'cuti_bersama' => ['Cuti bersama', 'warning'],
+        'lokal' => ['Lokal', 'neutral'],
+    ];
+    $filterAktif = collect([request('dari'), request('sampai'), request('kode_dept'), request('kode_cabang'), request('jenis_libur'), request('q')])
+        ->filter(fn ($v) => filled($v))->count();
+@endphp
+
 @section('page-header')
     <div class="page-header d-print-none">
         <div class="container-xl">
@@ -7,341 +17,169 @@
                 <div class="col">
                     <div class="page-pretitle">Data Master</div>
                     <h2 class="page-title">Data Hari Libur</h2>
+                    <p class="page-subtitle">Hari libur tidak dihitung sebagai alpha di rekap kehadiran.</p>
                 </div>
-                <div class="col-auto ms-auto d-print-none">
-                    @can('hari-libur-create-admin')
-                        <a href="{{ route('harilibur.create') }}" class="btn btn-primary d-none d-sm-inline-block">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
-                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <line x1="12" y1="5" x2="12" y2="19" />
-                                <line x1="5" y1="12" x2="19" y2="12" />
-                            </svg>
-                            Tambah Data
+                @can('hari-libur-create-admin')
+                    <div class="col-auto ms-auto">
+                        <a href="{{ route('harilibur.create') }}" class="btn btn-primary" aria-label="Tambah hari libur">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="18" height="18" viewBox="0 0 24 24"
+                                stroke-width="1.75" stroke="currentColor" fill="none" stroke-linecap="round"
+                                stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 5l0 14" />
+                                <path d="M5 12l14 0" />
+                            </svg><span class="d-none d-sm-inline">Tambah Hari Libur</span>
                         </a>
-                        <a href="{{ route('harilibur.create') }}" class="btn btn-primary d-sm-none btn-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
-                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <line x1="12" y1="5" x2="12" y2="19" />
-                                <line x1="5" y1="12" x2="19" y2="12" />
-                            </svg>
-                        </a>
-                    @endcan
-                </div>
+                    </div>
+                @endcan
             </div>
         </div>
     </div>
 @endsection
 
 @section('content')
-
-    {{-- Header Halaman (Sama seperti sebelumnya) --}}
-
     <div class="page-body">
         <div class="container-xl">
-            <div class="card shadow-sm border-0">
-
-                {{-- FILTER SECTION --}}
-                <div class="card-header">
-                    <form action="{{ route('harilibur.index') }}" method="GET" autocomplete="off" class="w-100">
-                        {{-- Row 1: Tanggal, Departemen, Cabang --}}
-                        <div class="row g-2 mb-2">
-                            {{-- 1. Filter Tanggal --}}
-                            <div class="col-12 col-md-4">
-                                <div class="input-group">
-                                    <span class="input-group-text date-filter-addon">
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                            class="icon icon-tabler icon-tabler-calendar-event" width="24"
-                                            height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                            fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path
-                                                d="M4 5m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z" />
-                                            <path d="M16 3l0 4" />
-                                            <path d="M8 3l0 4" />
-                                            <path d="M4 11l16 0" />
-                                            <path d="M15 15h.01" />
-                                        </svg>
-                                    </span>
-                                    <input type="text" id="dari" class="form-control" name="dari"
-                                        placeholder="Dari" value="{{ request('dari') }}">
-                                    <input type="text" id="sampai" class="form-control" name="sampai"
-                                        placeholder="Sampai" value="{{ request('sampai') }}">
-                                </div>
-                            </div>
-
-                            {{-- 2. Filter Departemen --}}
-                            <div class="col-6 col-md-4">
-                                <select name="kode_dept" class="form-select">
-                                    <option value="">Semua Departemen</option>
-                                    @foreach ($departemen as $d)
-                                        <option value="{{ $d->kode_dept }}"
-                                            {{ request('kode_dept') == $d->kode_dept ? 'selected' : '' }}>
-                                            {{ $d->nama_dept }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            {{-- 3. Filter Cabang --}}
-                            <div class="col-6 col-md-4">
-                                <select name="kode_cabang" class="form-select">
-                                    <option value="">Semua Cabang</option>
-                                    @foreach ($cabang as $c)
-                                        <option value="{{ $c->kode_cabang }}"
-                                            {{ request('kode_cabang') == $c->kode_cabang ? 'selected' : '' }}>
-                                            {{ $c->nama_cabang }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-
-                        {{-- Row 2: Jenis Libur & Pencarian --}}
-                        <div class="row g-2">
-                            {{-- 4. Filter Jenis Libur --}}
-                            <div class="col-12 col-md-4">
-                                <select name="jenis_libur" class="form-select">
-                                    <option value="">Semua Jenis Libur</option>
-                                    <option value="nasional"
-                                        {{ request('jenis_libur') === 'nasional' ? 'selected' : '' }}>
-                                        Nasional</option>
-                                    <option value="cuti_bersama"
-                                        {{ request('jenis_libur') === 'cuti_bersama' ? 'selected' : '' }}>Cuti Bersama
-                                    </option>
-                                    <option value="lokal" {{ request('jenis_libur') === 'lokal' ? 'selected' : '' }}>
-                                        Lokal
-                                    </option>
-                                </select>
-                            </div>
-
-                            {{-- 5. Pencarian & Tombol Submit --}}
-                            <div class="col-12 col-md-8">
-                                <div class="input-group">
-                                    <input type="text" class="form-control" name="q"
-                                        placeholder="Cari keterangan hari libur..." value="{{ request('q') }}">
-                                    <button class="btn btn-primary" type="submit">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24"
-                                            height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                            fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <circle cx="10" cy="10" r="7" />
-                                            <line x1="21" y1="21" x2="15" y2="15" />
-                                        </svg>
-                                        Cari Data
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-                {{-- Alert Sukses/Gagal --}}
-
-                {{-- Tabel Data --}}
-                <div class="table-responsive">
-                    <table class="table table-vcenter card-table table-hover table-striped">
-                        <thead>
-                            <tr>
-                                <th class="w-1">No.</th>
-                                <th>Tanggal</th>
-                                <th>Keterangan</th>
-                                <th>Kategori</th>
-                                <th>Departemen</th>
-                                <th>Cabang</th>
-                                <th class="text-end">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($hari_libur as $index => $item)
-                                @php
-                                    $listKodeCabang = $item->kode_cabang
-                                        ? array_unique(array_filter(explode(',', $item->kode_cabang)))
-                                        : [];
-                                    $listKodeDept = $item->kode_dept
-                                        ? array_unique(array_filter(explode(',', $item->kode_dept)))
-                                        : [];
-
-                                    $namaCabang = collect($listKodeCabang)
-                                        ->map(function ($kode) use ($cabang) {
-                                            $c = $cabang->where('kode_cabang', $kode)->first();
-                                            return $c ? $c->nama_cabang : $kode;
-                                        })
-                                        ->toArray();
-
-                                    // 3. Terjemahkan Kode Departemen menjadi Nama Departemen
-                                    $namaDept = collect($listKodeDept)
-                                        ->map(function ($kode) use ($departemen) {
-                                            // Cari data departemen berdasarkan kodenya
-                                            $d = $departemen->where('kode_dept', $kode)->first();
-                                            return $d ? $d->nama_dept : $kode;
-                                        })
-                                        ->toArray();
-
-                                    $jmlCabang = count($listKodeCabang);
-                                    $jmlDept = count($listKodeDept);
-                                @endphp
-                                <tr>
-                                    <td>{{ $hari_libur->firstItem() + $index }}</td>
-                                    <td>
-                                        <div class="fw-bold">
-                                            {{ \Carbon\Carbon::parse($item->tanggal_libur)->translatedFormat('d M Y') }}
-                                        </div>
-                                        <div class="text-muted small">
-                                            {{ \Carbon\Carbon::parse($item->tanggal_libur)->translatedFormat('l') }}</div>
-                                    </td>
-                                    <td>{{ $item->keterangan }}</td>
-                                    <td>
-                                        @if ($item->jenis_libur == 'nasional')
-                                            <span class="badge bg-red-lt">Nasional</span>
-                                        @elseif($item->jenis_libur == 'cuti_bersama')
-                                            <span class="badge bg-orange-lt">Cuti Bersama</span>
-                                        @else
-                                            <span class="badge bg-blue-lt">Lokal</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if ($jmlDept > 0)
-                                            <span class="badge badge-outline text-azure" data-bs-toggle="tooltip"
-                                                title="{{ implode(', ', $namaDept) }}">{{ $jmlDept }} Dept</span>
-                                        @else
-                                            <span class="badge badge-outline text-muted border-0 ps-0">Semua</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if ($jmlCabang > 0)
-                                            <span class="badge badge-outline text-purple" data-bs-toggle="tooltip"
-                                                title="{{ implode(', ', $namaCabang) }}">{{ $jmlCabang }}
-                                                Cabang</span>
-                                        @else
-                                            <span class="badge badge-outline text-muted border-0 ps-0">Semua</span>
-                                        @endif
-                                    </td>
-                                    <td class="text-end">
-                                        <div class="btn-list flex-nowrap text-nowrap justify-content-end">
-                                            <a href="{{ route('harilibur.edit', $item->id) }}"
-                                                class="btn btn-ghost-primary btn-icon" title="Edit Data">
-                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                    class="icon icon-tabler icon-tabler-pencil" width="24"
-                                                    height="24" viewBox="0 0 24 24" stroke-width="2"
-                                                    stroke="currentColor" fill="none" stroke-linecap="round"
-                                                    stroke-linejoin="round">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                    <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
-                                                    <path d="M13.5 6.5l4 4" />
-                                                </svg>
-                                            </a>
-                                            <button type="button" class="btn btn-ghost-danger btn-icon btn-hapus"
-                                                data-url="{{ route('harilibur.destroy', $item->id) }}"
-                                                data-keterangan="{{ $item->keterangan }}" title="Hapus Data">
-                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                    class="icon icon-tabler icon-tabler-trash" width="24"
-                                                    height="24" viewBox="0 0 24 24" stroke-width="2"
-                                                    stroke="currentColor" fill="none" stroke-linecap="round"
-                                                    stroke-linejoin="round">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                    <path d="M4 7l16 0" />
-                                                    <path d="M10 11l0 6" />
-                                                    <path d="M14 11l0 6" />
-                                                    <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
-                                                    <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="text-center py-5">
-                                        <div class="empty">
-                                            <div class="empty-img"><img
-                                                    src="{{ asset('assets/static/illustrations/undraw_printing_invoices_5r4r.svg') }}"
-                                                    height="128" alt=""></div>
-                                            <p class="empty-title">Data tidak ditemukan</p>
-                                            <p class="empty-subtitle text-muted">Coba sesuaikan pencarian atau filter Anda.
-                                            </p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                <div class="card-footer d-flex align-items-center">
-                    {{ $hari_libur->links('pagination::bootstrap-5') }}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Modal Hapus (Tetap Sama) --}}
-    <div class="modal modal-blur fade" id="modal-hapus" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <form id="form-hapus-modal" action="" method="POST">
-                    @csrf
-                    @method('DELETE')
-                    <div class="modal-body text-center py-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24"
-                            height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M12 9v2m0 4v.01" />
-                            <path
-                                d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.84 2.75z" />
-                        </svg>
-                        <h3>Apakah Anda yakin?</h3>
-                        <div class="text-muted">Anda akan menghapus data libur: <br><span class="fw-bold text-dark"
-                                id="nama-hapus">...</span></div>
+            <section class="card list-card" aria-label="Daftar hari libur">
+                <form action="{{ route('harilibur.index') }}" method="GET" class="list-toolbar" autocomplete="off">
+                    <div class="list-toolbar-row">
+                        <x-admin.search name="q" placeholder="Cari keterangan…" label="Cari hari libur" />
+                        <button type="button" class="btn d-lg-none" data-bs-toggle="collapse" data-bs-target="#filterPanel"
+                            aria-expanded="false" aria-controls="filterPanel">
+                            Filter
+                            @if ($filterAktif > 0)
+                                <span class="filter-count">{{ $filterAktif }}</span>
+                            @endif
+                        </button>
                     </div>
-                    <div class="modal-footer">
-                        <div class="w-100">
-                            <div class="row">
-                                <div class="col"><a href="#" class="btn w-100"
-                                        data-bs-dismiss="modal">Batal</a></div>
-                                <div class="col"><button type="submit" class="btn btn-danger w-100">Hapus
-                                        Data</button></div>
-                            </div>
+                    <div class="collapse filter-panel" id="filterPanel">
+                        <div class="filter-bar">
+                            <label class="filter-field">
+                                <span class="filter-label">Dari tanggal</span>
+                                <input type="date" name="dari" class="form-control form-control-sm" value="{{ request('dari') }}">
+                            </label>
+                            <label class="filter-field">
+                                <span class="filter-label">Sampai tanggal</span>
+                                <input type="date" name="sampai" class="form-control form-control-sm" value="{{ request('sampai') }}">
+                            </label>
+                            <label class="filter-field">
+                                <span class="filter-label">Jenis</span>
+                                <select name="jenis_libur" class="form-select form-select-sm" data-auto-submit>
+                                    <option value="">Semua</option>
+                                    @foreach ($jenisLibur as $nilai => [$label])
+                                        <option value="{{ $nilai }}" @selected(request('jenis_libur') === $nilai)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <label class="filter-field">
+                                <span class="filter-label">Departemen</span>
+                                <select name="kode_dept" class="form-select form-select-sm" data-auto-submit>
+                                    <option value="">Semua</option>
+                                    @foreach ($departemen as $d)
+                                        <option value="{{ $d->kode_dept }}" @selected(request('kode_dept') == $d->kode_dept)>{{ $d->nama_dept }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <label class="filter-field">
+                                <span class="filter-label">Cabang</span>
+                                <select name="kode_cabang" class="form-select form-select-sm" data-auto-submit>
+                                    <option value="">Semua</option>
+                                    @foreach ($cabang as $c)
+                                        <option value="{{ $c->kode_cabang }}" @selected(request('kode_cabang') == $c->kode_cabang)>{{ $c->nama_cabang }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            @if ($filterAktif > 0)
+                                <a href="{{ route('harilibur.index') }}" class="filter-reset">Reset filter</a>
+                            @endif
                         </div>
                     </div>
                 </form>
-            </div>
+
+                <div class="list-meta">
+                    @if ($hari_libur->total() > 0)
+                        Menampilkan <strong>{{ $hari_libur->firstItem() }}–{{ $hari_libur->lastItem() }}</strong>
+                        dari <strong>{{ $hari_libur->total() }}</strong> hari libur
+                    @endif
+                </div>
+
+                @if ($hari_libur->isEmpty())
+                    <div class="list-empty">
+                        <p class="mb-1 fw-medium">Tidak ada hari libur yang cocok.</p>
+                        <p class="mb-0 text-secondary small">
+                            @if ($filterAktif > 0)
+                                Ubah kata kunci atau filter — atau <a href="{{ route('harilibur.index') }}">reset filter</a>.
+                            @else
+                                Tambahkan hari libur nasional, cuti bersama, atau libur lokal.
+                            @endif
+                        </p>
+                    </div>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-vcenter list-table">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Keterangan</th>
+                                    <th>Jenis</th>
+                                    <th>Berlaku untuk</th>
+                                    <th class="w-1"><span class="visually-hidden">Aksi</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($hari_libur as $item)
+                                    @php
+                                        $namaDari = fn ($daftarKode, $koleksi, $kolomKode, $kolomNama) => collect(array_unique(array_filter(explode(',', (string) $daftarKode))))
+                                            ->map(fn ($kode) => optional($koleksi->firstWhere($kolomKode, $kode))->{$kolomNama} ?? $kode)
+                                            ->values();
+                                        $namaDept = $namaDari($item->kode_dept, $departemen, 'kode_dept', 'nama_dept');
+                                        $namaCabang = $namaDari($item->kode_cabang, $cabang, 'kode_cabang', 'nama_cabang');
+                                        $tanggal = \Carbon\Carbon::parse($item->tanggal_libur);
+                                        [$labelJenis, $nadaJenis] = $jenisLibur[$item->jenis_libur] ?? [$item->jenis_libur, 'neutral'];
+                                    @endphp
+                                    <tr>
+                                        <td class="cell-person">
+                                            <span class="person-name cell-num">{{ $tanggal->translatedFormat('d M Y') }}</span>
+                                            <span class="person-sub">{{ $tanggal->translatedFormat('l') }}</span>
+                                        </td>
+                                        <td data-label="Keterangan">{{ $item->keterangan }}</td>
+                                        <td data-label="Jenis">
+                                            <span class="emp-status emp-status--{{ $nadaJenis }}">{{ $labelJenis }}</span>
+                                        </td>
+                                        <td data-label="Berlaku">
+                                            <div class="cell-main" @if ($namaDept->isNotEmpty()) title="{{ $namaDept->implode(', ') }}" @endif>
+                                                {{ $namaDept->isEmpty() ? 'Semua departemen' : $namaDept->count() . ' departemen' }}
+                                            </div>
+                                            <div class="cell-sub" @if ($namaCabang->isNotEmpty()) title="{{ $namaCabang->implode(', ') }}" @endif>
+                                                {{ $namaCabang->isEmpty() ? 'Semua cabang' : $namaCabang->count() . ' cabang' }}
+                                            </div>
+                                        </td>
+                                        <td class="cell-actions">
+                                            <x-admin.row-menu :label="$item->keterangan">
+                                                <a href="{{ route('harilibur.edit', $item->id) }}" class="dropdown-item">Edit</a>
+                                                <div class="dropdown-divider"></div>
+                                                <form action="{{ route('harilibur.destroy', $item->id) }}" method="POST">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="dropdown-item text-danger"
+                                                        data-confirm="Hari libur “{{ $item->keterangan }}” akan dihapus."
+                                                        data-confirm-title="Hapus hari libur?">Hapus</button>
+                                                </form>
+                                            </x-admin.row-menu>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+
+                @if ($hari_libur->hasPages())
+                    <div class="list-footer">
+                        <span class="text-secondary small">Halaman {{ $hari_libur->currentPage() }} dari {{ $hari_libur->lastPage() }}</span>
+                        {{ $hari_libur->withQueryString()->onEachSide(1)->links('pagination::bootstrap-5') }}
+                    </div>
+                @endif
+            </section>
         </div>
     </div>
 @endsection
-
-@push('myscript')
-    {{-- LOAD FLATPICKR UNTUK DATEPICKER YANG CANTIK & WORK --}}
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-
-    <script>
-        $(function() {
-            // 1. Inisialisasi Datepicker (Flatpickr)
-            // Ini akan memastikan format tanggal yang dikirim ke controller adalah YYYY-MM-DD
-            flatpickr("#dari", {
-                dateFormat: "Y-m-d", // Format Database
-                allowInput: true // User bisa ketik manual
-            });
-
-            flatpickr("#sampai", {
-                dateFormat: "Y-m-d",
-                allowInput: true
-            });
-
-            // 2. Binding Tombol Hapus
-            $(document).on('click', '.btn-hapus', function(e) {
-                e.preventDefault();
-                let url = $(this).data('url');
-                let keterangan = $(this).data('keterangan');
-
-                $('#form-hapus-modal').attr('action', url);
-                $('#nama-hapus').text('"' + keterangan + '"');
-                $('#modal-hapus').modal('show');
-            });
-        });
-    </script>
-@endpush

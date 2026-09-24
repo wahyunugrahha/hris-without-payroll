@@ -1,41 +1,29 @@
 @extends('layouts.admin.tabler')
 
+@php
+    $jenisPelanggaran = ['late' => 'Keterlambatan', 'absent' => 'Mangkir / alpha', 'discipline' => 'Pelanggaran disiplin', 'other' => 'Lainnya'];
+    $filterAktif = collect([request('jabatan_id'), request('kode_cabang'), request('level'), request('status'), request('q')])->filter(fn ($v) => filled($v))->count();
+    $urlLevel = fn ($level) => route('suratperingatan.index', array_filter(['level' => $level, 'status' => 'active']));
+@endphp
+
 @section('page-header')
     <div class="page-header d-print-none">
         <div class="container-xl">
             <div class="row g-2 align-items-center">
-                {{-- Judul Halaman --}}
                 <div class="col">
                     <div class="page-pretitle">Monitoring Karyawan</div>
-                    <h2 class="page-title">
-                        Monitoring Surat Peringatan
-                    </h2>
+                    <h2 class="page-title">Surat Peringatan</h2>
+                    <p class="page-subtitle">SP otomatis & manual beserta masa berlakunya.</p>
                 </div>
-                <div class="col-auto ms-auto d-print-none">
-                    <div class="btn-list">
-                        <a href="#" class="btn btn-primary d-none d-sm-inline-block" data-bs-toggle="modal"
-                            data-bs-target="#modal-tambah-sp">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
-                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M12 5l0 14" />
-                                <path d="M5 12l14 0" />
-                            </svg>
-                            Tambah SP Baru
-                        </a>
-                        {{-- Tombol Mobile (Icon Only) --}}
-                        <a href="#" class="btn btn-primary d-sm-none btn-icon" data-bs-toggle="modal"
-                            data-bs-target="#modal-tambah-sp" aria-label="Tambah SP Baru">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
-                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M12 5l0 14" />
-                                <path d="M5 12l14 0" />
-                            </svg>
-                        </a>
-                    </div>
+                <div class="col-auto ms-auto">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-tambah-sp" aria-label="Tambah SP">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="18" height="18" viewBox="0 0 24 24"
+                            stroke-width="1.75" stroke="currentColor" fill="none" stroke-linecap="round"
+                            stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 5l0 14" />
+                            <path d="M5 12l14 0" />
+                        </svg><span class="d-none d-sm-inline">Tambah SP</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -43,500 +31,275 @@
 @endsection
 
 @section('content')
-    {{-- PAGE HEADER: Judul & Tombol Action Utama --}}
-
     <div class="page-body">
         <div class="container-xl">
-
-            {{-- 1. Statistik Cards --}}
-            <div class="row row-cards mb-4">
-                {{-- Total Aktif --}}
-                <div class="col-sm-6 col-lg-3">
-                    <div class="card card-sm">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col-auto">
-                                    <span class="bg-danger text-white avatar">
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                            class="icon icon-tabler icon-tabler-alert-triangle" width="24"
-                                            height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                            fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path d="M12 9v4" />
-                                            <path
-                                                d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z" />
-                                            <path d="M12 16h.01" />
-                                        </svg>
-                                    </span>
-                                </div>
-                                <div class="col">
-                                    <div class="font-weight-medium">Total SP Aktif</div>
-                                    <div class="text-muted">{{ $stats['total_aktif'] }} Karyawan</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <section class="card list-card" aria-label="Daftar surat peringatan">
+                <div class="summary-strip" role="group" aria-label="Ringkasan SP aktif">
+                    <a href="{{ $urlLevel(null) }}" class="summary-item summary-item--danger {{ request('status') === 'active' && blank(request('level')) ? 'is-current' : '' }}">
+                        <span class="summary-label">Karyawan dengan SP aktif</span>
+                        <span class="summary-value">{{ $stats['total_aktif'] }}</span>
+                    </a>
+                    @foreach ([1, 2, 3] as $lv)
+                        <a href="{{ $urlLevel($lv) }}" class="summary-item summary-item--warning {{ request('status') === 'active' && request('level') == $lv ? 'is-current' : '' }}">
+                            <span class="summary-label">SP {{ $lv }} aktif</span>
+                            <span class="summary-value">{{ $stats['sp' . $lv . '_aktif'] }}</span>
+                        </a>
+                    @endforeach
                 </div>
-                {{-- SP 1 --}}
-                <div class="col-sm-6 col-lg-3">
-                    <div class="card card-sm">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col-auto">
-                                    <span class="bg-warning text-white avatar">SP1</span>
-                                </div>
-                                <div class="col">
-                                    <div class="font-weight-medium">SP 1 Aktif</div>
-                                    <div class="text-muted">{{ $stats['sp1_aktif'] }} Kasus</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {{-- SP 2 --}}
-                <div class="col-sm-6 col-lg-3">
-                    <div class="card card-sm">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col-auto">
-                                    <span class="bg-orange text-white avatar">SP2</span>
-                                </div>
-                                <div class="col">
-                                    <div class="font-weight-medium">SP 2 Aktif</div>
-                                    <div class="text-muted">{{ $stats['sp2_aktif'] }} Kasus</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {{-- SP 3 --}}
-                <div class="col-sm-6 col-lg-3">
-                    <div class="card card-sm">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col-auto">
-                                    <span class="bg-dark text-white avatar">SP3</span>
-                                </div>
-                                <div class="col">
-                                    <div class="font-weight-medium">SP 3 Aktif</div>
-                                    <div class="text-muted">{{ $stats['sp3_aktif'] }} Kasus</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            {{-- Global Alerts --}}
-
-
-            {{-- 2. Main Card (Table & Filter) --}}
-            <div class="card">
-                <div class="card-header bg-transparent border-bottom-1 py-3">
-                    <form action="{{ route('suratperingatan.index') }}" method="GET" class="w-100">
-                        @php
-                            $selectedJabatanId = request('jabatan_id');
-                        @endphp
-                        <div class="row g-2">
-                            {{-- 2. Jabatan --}}
-                            <div class="col-12 col-md-6 col-xl-2">
-                                <select name="jabatan_id" class="form-select">
-                                    <option value="">Semua Jabatan</option>
+                <form action="{{ route('suratperingatan.index') }}" method="GET" class="list-toolbar">
+                    <div class="list-toolbar-row">
+                        <x-admin.search name="q" placeholder="Cari nama atau NIK…" label="Cari karyawan" />
+                        <button type="button" class="btn d-lg-none" data-bs-toggle="collapse" data-bs-target="#filterPanel"
+                            aria-expanded="false" aria-controls="filterPanel">
+                            Filter
+                            @if ($filterAktif > 0)
+                                <span class="filter-count">{{ $filterAktif }}</span>
+                            @endif
+                        </button>
+                    </div>
+                    <div class="collapse filter-panel" id="filterPanel">
+                        <div class="filter-bar">
+                            <label class="filter-field">
+                                <span class="filter-label">Tingkat</span>
+                                <select name="level" class="form-select form-select-sm" data-auto-submit>
+                                    <option value="">Semua</option>
+                                    @foreach ([1, 2, 3] as $lv)
+                                        <option value="{{ $lv }}" @selected(request('level') == $lv)>SP {{ $lv }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <label class="filter-field">
+                                <span class="filter-label">Status</span>
+                                <select name="status" class="form-select form-select-sm" data-auto-submit>
+                                    <option value="">Semua</option>
+                                    <option value="active" @selected(request('status') == 'active')>Aktif</option>
+                                    <option value="expired" @selected(request('status') == 'expired')>Berakhir</option>
+                                </select>
+                            </label>
+                            <label class="filter-field">
+                                <span class="filter-label">Jabatan</span>
+                                <select name="jabatan_id" class="form-select form-select-sm" data-auto-submit>
+                                    <option value="">Semua</option>
                                     @foreach ($jabatans as $j)
-                                        <option value="{{ $j->id }}"
-                                            {{ $selectedJabatanId == $j->id ? 'selected' : '' }}>
-                                            {{ $j->nama_jabatan }}
-                                        </option>
+                                        <option value="{{ $j->id }}" @selected(request('jabatan_id') == $j->id)>{{ $j->nama_jabatan }}</option>
                                     @endforeach
                                 </select>
-                            </div>
-
-                            {{-- 2. Cabang --}}
-                            <div class="col-12 col-md-6 col-xl-2">
-                                <select name="kode_cabang" class="form-select">
-                                    <option value="">Semua Cabang</option>
+                            </label>
+                            <label class="filter-field">
+                                <span class="filter-label">Cabang</span>
+                                <select name="kode_cabang" class="form-select form-select-sm" data-auto-submit>
+                                    <option value="">Semua</option>
                                     @foreach ($cabang as $c)
-                                        <option value="{{ $c->kode_cabang }}"
-                                            {{ request('kode_cabang') == $c->kode_cabang ? 'selected' : '' }}>
-                                            {{ $c->nama_cabang }}
-                                        </option>
+                                        <option value="{{ $c->kode_cabang }}" @selected(request('kode_cabang') == $c->kode_cabang)>{{ $c->nama_cabang }}</option>
                                     @endforeach
                                 </select>
-                            </div>
-
-                            {{-- 1. Level SP --}}
-                            <div class="col-12 col-md-6 col-xl-2">
-                                <select name="level" class="form-select">
-                                    <option value="">Semua Tingkat (SP)</option>
-                                    <option value="1" {{ request('level') == '1' ? 'selected' : '' }}>SP 1</option>
-                                    <option value="2" {{ request('level') == '2' ? 'selected' : '' }}>SP 2</option>
-                                    <option value="3" {{ request('level') == '3' ? 'selected' : '' }}>SP 3</option>
-                                </select>
-                            </div>
-
-                            {{-- 4. Status --}}
-                            <div class="col-12 col-md-6 col-xl-2">
-                                <select name="status" class="form-select">
-                                    <option value="">Semua Status</option>
-                                    <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Aktif
-                                    </option>
-                                    <option value="expired" {{ request('status') == 'expired' ? 'selected' : '' }}>
-                                        Non-Aktif</option>
-                                </select>
-                            </div>
-
-                            <div class="col-12 col-md-6 col-xl-4">
-                                <div class="input-group">
-                                    {{-- Input Field --}}
-                                    <input type="text" name="q" value="{{ request('q') }}"
-                                        class="form-control" placeholder="Cari Nama / NIK...">
-
-                                    {{-- Tombol Cari --}}
-                                    <button type="submit" class="btn btn-primary">
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                            class="icon icon-tabler icon-tabler-search" width="24" height="24"
-                                            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
-                                            <path d="M21 21l-6 -6" />
-                                        </svg>
-                                        Cari
-                                    </button>
-                                </div>
-                            </div>
+                            </label>
+                            @if ($filterAktif > 0)
+                                <a href="{{ route('suratperingatan.index') }}" class="filter-reset">Reset filter</a>
+                            @endif
                         </div>
-                    </form>
-                </div>
-
-                {{-- TABLE --}}
-                <div class="table-responsive">
-                    <table class="table table-vcenter card-table table-hover">
-                        <thead>
-                            <tr>
-                                <th class="w-1">No</th>
-                                <th>Karyawan</th>
-                                <th>Pelanggaran</th>
-                                <th>Berlaku Hingga</th>
-                                <th>Status</th>
-                                <th>Keterangan</th>
-                                <th class="text-end" style="min-width: 180px;">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($items as $i => $it)
-                                @php
-                                    $today = now();
-                                    $expires = \Carbon\Carbon::parse($it->expires_at);
-                                    $is_active = $expires->gt($today);
-                                    $days_left = $today->diffInDays($expires, false);
-
-                                    // Warna Badge Level
-                                    $bg_level = match ($it->level) {
-                                        3 => 'bg-dark',
-                                        2 => 'bg-orange',
-                                        default => 'bg-warning',
-                                    };
-
-                                    // Ambil foto karyawan
-                                    $fotoUrl = !empty($it->karyawan?->foto)
-                                        ? asset('storage/uploads/karyawan/' . $it->karyawan->foto)
-                                        : asset('assets/img/nophoto.png');
-                                @endphp
-                                <tr>
-                                    <td class="text-muted">{{ $items->firstItem() + $i }}</td>
-                                    <td>
-                                        <div class="d-flex py-1 align-items-center">
-                                            <span class="avatar me-2 rounded"
-                                                style="background-image: url({{ $fotoUrl }})"></span>
-                                            <div class="flex-fill">
-                                                <div class="font-weight-medium">
-                                                    {{ $it->karyawan?->nama_lengkap ?? 'Tidak Diketahui' }}</div>
-                                                <div class="text-muted text-nowrap">
-                                                    NIK: {{ $it->nik }}
-                                                    <span
-                                                        class="badge badge-sm bg-blue-lt ms-1">{{ $it->karyawan?->jabatan_nama ?? '-' }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center mb-1">
-                                            <span class="badge {{ $bg_level }} text-white me-2">SP
-                                                {{ $it->level }}</span>
-                                        </div>
-                                        <div class="text-muted text-uppercase small">
-                                            @if ($it->violation_type == 'late')
-                                                Keterlambatan
-                                            @elseif($it->violation_type == 'absent')
-                                                Alpha / Mangkir
-                                            @else
-                                                Lainnya
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="text-body font-weight-medium">{{ $expires->format('d M Y') }}</div>
-                                        @if ($is_active)
-                                            <div class="text-danger small" title="{{ $expires->diffForHumans() }}">
-                                                Sisa: {{ round($days_left) }} hari
-                                            </div>
-                                        @else
-                                            <div class="text-muted small">Sudah Berakhir</div>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if ($is_active)
-                                            <span class="badge bg-green-lt">Aktif</span>
-                                        @else
-                                            <span class="badge bg-secondary-lt">Non-Aktif</span>
-                                        @endif
-                                    </td>
-                                    <td class="text-muted">
-                                        <div class="text-truncate" style="max-width: 200px;"
-                                            title="{{ $it->note }}">
-                                            {{ $it->note ?? '-' }}
-                                        </div>
-                                    </td>
-                                    <td class="text-end">
-                                        <div class="d-flex justify-content-end align-items-center gap-2">
-                                            <a href="{{ route('suratperingatan.cetak', $it->id) }}" target="_blank"
-                                                class="btn btn-outline-primary btn-sm">
-                                                Cetak
-                                            </a>
-
-                                            <a href="#" class="btn btn-azure btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#modal-detail"
-                                                data-nama="{{ $it->karyawan?->nama_lengkap ?? '-' }}"
-                                                data-nik="{{ $it->nik }}"
-                                                data-jabatan="{{ $it->karyawan?->jabatan_nama ?? '-' }}"
-                                                data-cabang="{{ $it->karyawan?->cabang?->nama_cabang ?? '-' }}"
-                                                data-dept="{{ $it->karyawan?->departemen?->nama_dept ?? '-' }}"
-                                                data-level="{{ $it->level }}" data-jenis="{{ $it->violation_type }}"
-                                                data-tgl-terbit="{{ date('d-m-Y', strtotime($it->issued_at)) }}"
-                                                data-tgl-akhir="{{ date('d-m-Y', strtotime($it->expires_at)) }}"
-                                                data-status="{{ $is_active ? 'Aktif' : 'Non-Aktif' }}"
-                                                data-keterangan="{{ $it->note }}">
-                                                Detail
-                                            </a>
-
-                                            @if ($is_active)
-                                                <form action="{{ route('suratperingatan.pemutihan', $it->id) }}"
-                                                    method="POST" id="form-pemutihan-{{ $it->id }}">
-                                                    @csrf
-                                                    <button type="button" class="btn btn-outline-success btn-sm"
-                                                        onclick="confirmPemutihan({{ $it->id }}, {{ json_encode($it->karyawan?->nama_lengkap ?? '') }})">
-                                                        Putihkan
-                                                    </button>
-                                                </form>
-                                            @endif
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="text-center py-5">
-                                        <div class="empty">
-                                            <div class="empty-img"><img src="{{ asset('assets/img/empty.svg') }}"
-                                                    height="128" alt=""></div>
-                                            <p class="empty-title">Tidak ada data SP ditemukan</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="card-footer d-flex align-items-center">
-                    <p class="m-0 text-muted">
-                        Menampilkan <span>{{ $items->firstItem() ?? 0 }}</span> sampai
-                        <span>{{ $items->lastItem() ?? 0 }}</span> dari <span>{{ $items->total() }}</span> entri
-                    </p>
-                    <div class="ms-auto">
-                        {{ $items->links('pagination::bootstrap-4') }}
                     </div>
+                </form>
+
+                <div class="list-meta">
+                    @if ($items->total() > 0)
+                        Menampilkan <strong>{{ $items->firstItem() }}–{{ $items->lastItem() }}</strong>
+                        dari <strong>{{ $items->total() }}</strong> surat peringatan
+                    @endif
                 </div>
-            </div>
+
+                @if ($items->isEmpty())
+                    <div class="list-empty">
+                        <p class="mb-1 fw-medium">Tidak ada surat peringatan yang cocok.</p>
+                        <p class="mb-0 text-secondary small">
+                            @if ($filterAktif > 0)
+                                Ubah kata kunci atau filter — atau <a href="{{ route('suratperingatan.index') }}">reset filter</a>.
+                            @else
+                                SP otomatis muncul di sini saat karyawan melewati batas pelanggaran.
+                            @endif
+                        </p>
+                    </div>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-vcenter list-table">
+                            <thead>
+                                <tr>
+                                    <th>Karyawan</th>
+                                    <th>Tingkat &amp; pelanggaran</th>
+                                    <th>Berlaku hingga</th>
+                                    <th>Status</th>
+                                    <th>Catatan</th>
+                                    <th class="w-1"><span class="visually-hidden">Aksi</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($items as $it)
+                                    @php
+                                        $expires = \Carbon\Carbon::parse($it->expires_at);
+                                        $aktif = $expires->isFuture();
+                                        $sisaHari = (int) round(now()->diffInDays($expires, false));
+                                        $nama = $it->karyawan?->nama_lengkap ?? 'Tidak diketahui';
+                                        $fotoUrl = !empty($it->karyawan?->foto) ? asset('storage/uploads/karyawan/' . $it->karyawan->foto) : asset('assets/img/nophoto.png');
+                                    @endphp
+                                    <tr>
+                                        <td class="cell-person">
+                                            <span class="person">
+                                                <span class="avatar" style="background-image: url('{{ $fotoUrl }}')"></span>
+                                                <span class="min-w-0">
+                                                    <span class="person-name" title="{{ $nama }}">{{ $nama }}</span>
+                                                    <span class="person-sub">{{ $it->nik }} · {{ $it->karyawan?->jabatan_nama ?? '-' }}</span>
+                                                </span>
+                                            </span>
+                                        </td>
+                                        <td data-label="Tingkat">
+                                            <div class="cell-main fw-medium">SP {{ $it->level }}</div>
+                                            <div class="cell-sub">{{ $jenisPelanggaran[$it->violation_type] ?? 'Lainnya' }}</div>
+                                        </td>
+                                        <td data-label="Berlaku" class="cell-num">
+                                            <div class="cell-main">{{ $expires->translatedFormat('d M Y') }}</div>
+                                            <div class="cell-sub">{{ $aktif ? 'sisa ' . $sisaHari . ' hari' : 'sudah berakhir' }}</div>
+                                        </td>
+                                        <td data-label="Status">
+                                            <span class="emp-status emp-status--{{ $aktif ? 'danger' : 'neutral' }}">{{ $aktif ? 'Aktif' : 'Berakhir' }}</span>
+                                        </td>
+                                        <td data-label="Catatan">
+                                            <div class="cell-clamp" title="{{ $it->note }}">{{ $it->note ?: '-' }}</div>
+                                        </td>
+                                        <td class="cell-actions">
+                                            <x-admin.row-menu :label="$nama">
+                                                <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#modal-detail"
+                                                    data-nama="{{ $nama }}" data-nik="{{ $it->nik }}"
+                                                    data-jabatan="{{ $it->karyawan?->jabatan_nama ?? '-' }}"
+                                                    data-cabang="{{ $it->karyawan?->cabang?->nama_cabang ?? '-' }}"
+                                                    data-dept="{{ $it->karyawan?->departemen?->nama_dept ?? '-' }}"
+                                                    data-level="{{ $it->level }}" data-jenis="{{ $jenisPelanggaran[$it->violation_type] ?? 'Lainnya' }}"
+                                                    data-tgl-terbit="{{ date('d-m-Y', strtotime($it->issued_at)) }}"
+                                                    data-tgl-akhir="{{ $expires->format('d-m-Y') }}"
+                                                    data-aktif="{{ $aktif ? 1 : 0 }}" data-keterangan="{{ $it->note }}">Lihat detail</button>
+                                                <a href="{{ route('suratperingatan.cetak', $it->id) }}" target="_blank" rel="noopener" class="dropdown-item">Cetak surat</a>
+                                                @if ($aktif)
+                                                    <div class="dropdown-divider"></div>
+                                                    <form action="{{ route('suratperingatan.pemutihan', $it->id) }}" method="POST">
+                                                        @csrf
+                                                        <button type="submit" class="dropdown-item"
+                                                            data-confirm="SP {{ $it->level }} milik {{ $nama }} akan dinonaktifkan sekarang."
+                                                            data-confirm-title="Putihkan SP?" data-confirm-ok="Ya, putihkan">Putihkan SP</button>
+                                                    </form>
+                                                @endif
+                                            </x-admin.row-menu>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+
+                @if ($items->hasPages())
+                    <div class="list-footer">
+                        <span class="text-secondary small">Halaman {{ $items->currentPage() }} dari {{ $items->lastPage() }}</span>
+                        {{ $items->withQueryString()->onEachSide(1)->links('pagination::bootstrap-5') }}
+                    </div>
+                @endif
+            </section>
         </div>
     </div>
 
-    {{-- MODALS SECTION --}}
-
-    {{-- 1. Modal Detail --}}
-    <div class="modal modal-blur fade" id="modal-detail" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal modal-blur fade" id="modal-detail" tabindex="-1" aria-labelledby="judulDetailSp" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-form">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Detail Surat Peringatan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div>
+                        <h5 class="modal-title" id="judulDetailSp">Detail surat peringatan</h5>
+                        <p class="modal-subtitle"><span id="mdl-nama">-</span> · NIK <span id="mdl-nik">-</span></p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-5 border-end">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Nama Karyawan</label>
-                                <div class="font-weight-bold fs-3" id="mdl-nama">Loading...</div>
-                                <div class="text-muted" id="mdl-nik">NIK: -</div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Jabatan</label>
-                                <div class="form-control-plaintext pt-0" id="mdl-jabatan">-</div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-6">
-                                    <label class="form-label text-muted small">Cabang</label>
-                                    <div class="form-control-plaintext pt-0 text-uppercase" id="mdl-cabang">-</div>
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label text-muted small">Departemen</label>
-                                    <div class="form-control-plaintext pt-0 text-uppercase" id="mdl-dept">-</div>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Status SP</label>
-                                <div id="mdl-status-badge"></div>
-                            </div>
-                        </div>
-                        <div class="col-md-7 ps-md-4">
-                            <div class="row mb-3">
-                                <div class="col-6">
-                                    <label class="form-label text-muted small">Tingkat SP</label>
-                                    <div class="fs-3 fw-bold" id="mdl-level">SP -</div>
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label text-muted small">Jenis Pelanggaran</label>
-                                    <div id="mdl-jenis">-</div>
-                                </div>
-                            </div>
-                            <div class="card bg-muted-lt mb-3">
-                                <div class="card-body p-2">
-                                    <div class="row text-center">
-                                        <div class="col border-end">
-                                            <div class="text-muted small">Tanggal Terbit</div>
-                                            <div class="fw-bold" id="mdl-tgl-terbit">-</div>
-                                        </div>
-                                        <div class="col">
-                                            <div class="text-muted small">Berlaku Sampai</div>
-                                            <div class="fw-bold text-danger" id="mdl-tgl-akhir">-</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mb-0">
-                                <label class="form-label text-muted">Keterangan</label>
-                                <div class="p-3 bg-white border rounded" style="min-height: 100px;">
-                                    <span id="mdl-keterangan" class="text-secondary">Tidak ada keterangan.</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <dl class="info-grid">
+                        <div><dt>Tingkat</dt><dd id="mdl-level" class="fw-medium">-</dd></div>
+                        <div><dt>Status</dt><dd><span id="mdl-status" class="emp-status">-</span></dd></div>
+                        <div><dt>Jenis pelanggaran</dt><dd id="mdl-jenis">-</dd></div>
+                        <div><dt>Masa berlaku</dt><dd class="cell-num"><span id="mdl-tgl-terbit">-</span> s/d <span id="mdl-tgl-akhir">-</span></dd></div>
+                        <div><dt>Jabatan</dt><dd id="mdl-jabatan">-</dd></div>
+                        <div><dt>Departemen · cabang</dt><dd><span id="mdl-dept">-</span> · <span id="mdl-cabang">-</span></dd></div>
+                        <div class="info-full"><dt>Catatan</dt><dd id="mdl-keterangan" class="info-note">-</dd></div>
+                    </dl>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn" data-bs-dismiss="modal">Tutup</button>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- 2. Modal Tambah SP --}}
-    <div class="modal modal-blur fade" id="modal-tambah-sp" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal modal-blur fade" id="modal-tambah-sp" tabindex="-1" aria-labelledby="judulTambahSp" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-form">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Tambah Surat Peringatan Manual</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div>
+                        <h5 class="modal-title" id="judulTambahSp">Tambah surat peringatan</h5>
+                        <p class="modal-subtitle">SP aktif sebelumnya akan dinonaktifkan bila digantikan.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
-                <form action="{{ route('suratperingatan.store') }}" method="POST" id="form-tambah-sp">
+                <form action="{{ route('suratperingatan.store') }}" method="POST" id="form-tambah-sp" class="modal-form-body">
                     @csrf
                     <div class="modal-body">
-                        <div class="row g-3">
-                            {{-- Baris 1: NIK & Level SP --}}
-                            <div class="col-md-6">
-                                <label class="form-label fw-medium">NIK Karyawan <span
-                                        class="text-danger">*</span></label>
-                                <select class="form-select" id="select-karyawan" name="nik" required
-                                    style="width: 100%;">
-                                    <option value="">Cari nama atau NIK karyawan...</option>
+                        <div class="form-grid">
+                            <div class="form-grid-full">
+                                <label class="form-label required" for="select-karyawan">Karyawan</label>
+                                <select class="form-select" id="select-karyawan" name="nik" required style="width: 100%;">
+                                    <option value="">Cari nama atau NIK…</option>
                                     @foreach ($karyawanList as $k)
-                                        <option value="{{ $k->nik }}">
-                                            {{ $k->nik }} - {{ $k->nama_lengkap }}
-                                        </option>
+                                        <option value="{{ $k->nik }}">{{ $k->nik }} — {{ $k->nama_lengkap }}</option>
                                     @endforeach
                                 </select>
-                                <small class="form-hint">Ketik nama atau NIK untuk mencari</small>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-medium">Level SP <span class="text-danger">*</span></label>
-                                <select class="form-select" name="level" required>
-                                    <option value="">Pilih Level SP</option>
-                                    <option value="1">SP 1</option>
-                                    <option value="2">SP 2</option>
-                                    <option value="3">SP 3</option>
+                            <div>
+                                <label class="form-label required" for="sp-level">Tingkat</label>
+                                <select class="form-select" name="level" id="sp-level" required>
+                                    <option value="">Pilih tingkat</option>
+                                    @foreach ([1, 2, 3] as $lv)
+                                        <option value="{{ $lv }}">SP {{ $lv }}</option>
+                                    @endforeach
                                 </select>
                             </div>
-
-                            {{-- Baris 2: Jenis Pelanggaran & Tanggal Terbit --}}
-                            <div class="col-md-6">
-                                <label class="form-label fw-medium">Jenis Pelanggaran <span
-                                        class="text-danger">*</span></label>
-                                <select class="form-select" name="violation_type" required>
-                                    <option value="">Pilih Jenis</option>
-                                    <option value="late">Keterlambatan</option>
-                                    <option value="absent">Mangkir/Alpha</option>
-                                    <option value="discipline">Pelanggaran Disiplin</option>
-                                    <option value="other">Lainnya</option>
+                            <div>
+                                <label class="form-label required" for="sp-jenis">Jenis pelanggaran</label>
+                                <select class="form-select" name="violation_type" id="sp-jenis" required>
+                                    <option value="">Pilih jenis</option>
+                                    @foreach ($jenisPelanggaran as $kode => $label)
+                                        <option value="{{ $kode }}">{{ $label }}</option>
+                                    @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-medium">Tanggal Terbit <span
-                                        class="text-danger">*</span></label>
-                                <input type="text" class="form-control datepicker" id="issued_at" name="issued_at"
-                                    value="{{ date('Y-m-d') }}" required placeholder="YYYY-MM-DD">
+                            <div>
+                                <label class="form-label required" for="issued_at">Tanggal terbit</label>
+                                <input type="date" class="form-control" id="issued_at" name="issued_at" value="{{ date('Y-m-d') }}" required>
                             </div>
-
-                            {{-- Baris 3: Tanggal Berakhir & Durasi --}}
-                            <div class="col-md-6">
-                                <label class="form-label fw-medium">Tanggal Berakhir <span
-                                        class="text-danger">*</span></label>
-                                <input type="text" class="form-control datepicker" id="expires_at" name="expires_at"
-                                    required placeholder="YYYY-MM-DD">
+                            <div>
+                                <label class="form-label" for="durasi_bulan">Durasi</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="durasi_bulan" placeholder="6" min="1" max="36">
+                                    <span class="input-group-text">bulan</span>
+                                </div>
+                                <div class="form-hint">Mengisi tanggal berakhir otomatis.</div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-medium">Atau Durasi (Bulan)</label>
-                                <input type="number" class="form-control" id="durasi_bulan" placeholder="Misal: 6"
-                                    min="1" max="36">
-                                <small class="form-hint">Otomatis menghitung tanggal berakhir</small>
+                            <div>
+                                <label class="form-label required" for="expires_at">Tanggal berakhir</label>
+                                <input type="date" class="form-control" id="expires_at" name="expires_at" required>
                             </div>
-
-                            {{-- Baris 4: Catatan Full Width --}}
-                            <div class="col-12">
-                                <label class="form-label fw-medium">Catatan</label>
-                                <textarea class="form-control" name="note" rows="3"
-                                    placeholder="Keterangan tambahan tentang pelanggaran (opsional)"></textarea>
+                            <div class="form-grid-full">
+                                <label class="form-label" for="sp-note">Catatan <span class="text-secondary fw-normal">(opsional)</span></label>
+                                <textarea class="form-control" name="note" id="sp-note" rows="3" placeholder="Keterangan tambahan tentang pelanggaran"></textarea>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer bg-light">
-                        <button type="button" class="btn" data-bs-dismiss="modal">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" class="icon me-1">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M18 6l-12 12" />
-                                <path d="M6 6l12 12" />
-                            </svg>
-                            Batal
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" class="icon me-1">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M5 12l5 5l10 -10" />
-                            </svg>
-                            Simpan
-                        </button>
+                    <div class="modal-footer">
+                        <button type="button" class="btn" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
                     </div>
                 </form>
             </div>
@@ -547,171 +310,80 @@
 @push('myscript')
     <script>
         $(function() {
-            // Init Datepicker
-            $(".datepicker").datepicker({
-                autoclose: true,
-                todayHighlight: true,
-                format: 'yyyy-mm-dd'
-            });
-
-            // Inisialisasi Select2 untuk pencarian karyawan
             $('#select-karyawan').select2({
                 dropdownParent: $('#modal-tambah-sp'),
-                placeholder: "Cari NIK atau Nama...",
+                placeholder: 'Cari nama atau NIK…',
                 allowClear: true,
                 width: '100%'
             });
 
-            // Logic Auto Hitung Tanggal Berakhir
+            // Durasi (bulan) → tanggal berakhir.
             $('#durasi_bulan, #issued_at').on('input change', function() {
                 const durasi = parseInt($('#durasi_bulan').val());
-                const issuedVal = $('#issued_at').val();
-
-                if (durasi && issuedVal) {
-                    const tglTerbit = new Date(issuedVal);
-                    if (!isNaN(tglTerbit.getTime())) {
-                        tglTerbit.setMonth(tglTerbit.getMonth() + durasi);
-                        const year = tglTerbit.getFullYear();
-                        const month = String(tglTerbit.getMonth() + 1).padStart(2, '0');
-                        const day = String(tglTerbit.getDate()).padStart(2, '0');
-
-                        // Set nilai ke input expires_at
-                        $('#expires_at').val(`${year}-${month}-${day}`);
-                        // Jika menggunakan bootstrap-datepicker, update juga pluginnya
-                        $('.datepicker').datepicker('update');
-                    }
-                }
-            });
-        });
-
-        // Intercept Form Submit SP Baru
-        $('#form-tambah-sp').on('submit', function(e) {
-            e.preventDefault();
-            const form = this;
-            const nik = $('#select-karyawan').val();
-
-            if (!nik) {
-                Swal.fire('Error', 'Pilih karyawan terlebih dahulu.', 'error');
-                return;
-            }
-
-            // Tampilkan loading sebentar
-            Swal.fire({
-                title: 'Memeriksa Status...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
+                const terbit = $('#issued_at').val();
+                if (!durasi || !terbit) return;
+                const [y, m, d] = terbit.split('-').map(Number);
+                const akhir = new Date(y, m - 1 + durasi, d, 12);
+                $('#expires_at').val(akhir.getFullYear() + '-' + String(akhir.getMonth() + 1).padStart(2, '0') + '-' + String(akhir.getDate()).padStart(2, '0'));
             });
 
-            // Cek SP Aktif via AJAX
-            $.ajax({
-                url: `/panel/surat-peringatan/check-active/${nik}`,
-                type: 'GET',
-                success: function(response) {
-                    Swal.close();
-                    if (response.active) {
-                        const selectedLevel = parseInt($('select[name="level"]').val());
-                        const activeLevel = parseInt(response.level);
+            // Sebelum simpan: cek SP aktif karyawan.
+            $('#form-tambah-sp').on('submit', function(e) {
+                e.preventDefault();
+                const form = this;
+                const nik = $('#select-karyawan').val();
+                if (!nik) {
+                    Swal.fire('Periksa isian', 'Pilih karyawan terlebih dahulu.', 'warning');
+                    return;
+                }
 
-                        if (selectedLevel < activeLevel) {
-                            Swal.fire({
-                                title: 'Penambahan Ditolak!',
-                                html: `Karyawan masih memiliki <strong>SP ${activeLevel}</strong> yang aktif.<br>`,
-                                icon: 'error',
-                                confirmButtonColor: 'var(--color-accent)',
-                                confirmButtonText: 'OK'
-                            });
+                Swal.fire({ title: 'Memeriksa SP aktif…', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+                $.get(`/panel/surat-peringatan/check-active/${nik}`)
+                    .done(function(response) {
+                        Swal.close();
+                        if (!response.active) return form.submit();
+
+                        const levelBaru = parseInt($('#sp-level').val());
+                        const levelAktif = parseInt(response.level);
+                        if (levelBaru < levelAktif) {
+                            Swal.fire('Tidak bisa ditambahkan', `Karyawan masih memiliki SP ${levelAktif} yang aktif.`, 'error');
                             return;
                         }
-
-                        // Jika level sama atau lebih tinggi, minta konfirmasi
                         Swal.fire({
-                            title: 'Ada SP Aktif!',
-                            html: `Karyawan ini masih memiliki <strong>SP ${activeLevel}</strong> yang aktif hingga <strong>${response.expires_at}</strong>.<br><br>` +
-                                `Menyimpan SP baru akan <strong>menonaktifkan (expired)</strong> SP lama tersebut.<br>Lanjutkan?`,
+                            title: 'Ada SP aktif',
+                            html: `Karyawan masih memiliki <strong>SP ${levelAktif}</strong> aktif hingga <strong>${response.expires_at}</strong>.<br>SP baru akan menonaktifkan SP tersebut.`,
                             icon: 'warning',
                             showCancelButton: true,
-                            confirmButtonColor: 'var(--color-accent)',
-                            cancelButtonColor: 'var(--color-muted)',
-                            confirmButtonText: 'Ya, Gantikan & Simpan',
-                            cancelButtonText: 'Batal'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                form.submit();
-                            }
-                        });
-                    } else {
-                        // Jika tidak ada SP aktif, langsung submit
+                            confirmButtonText: 'Gantikan & simpan',
+                            cancelButtonText: 'Batal',
+                            reverseButtons: true
+                        }).then((r) => r.isConfirmed && form.submit());
+                    })
+                    .fail(function() {
+                        // Server tetap menonaktifkan SP lama bila perlu.
+                        Swal.close();
                         form.submit();
-                    }
-                },
-                error: function() {
-                    Swal.close();
-                    // Fallback jika AJAX gagal, biarkan controller yang handle deaktifasi di backend
-                    form.submit();
-                }
+                    });
+            });
+
+            document.getElementById('modal-detail').addEventListener('show.bs.modal', (event) => {
+                const d = event.relatedTarget.dataset;
+                const set = (id, v) => document.getElementById(id).textContent = v || '-';
+                set('mdl-nama', d.nama);
+                set('mdl-nik', d.nik);
+                set('mdl-jabatan', d.jabatan);
+                set('mdl-cabang', d.cabang);
+                set('mdl-dept', d.dept);
+                set('mdl-tgl-terbit', d.tglTerbit);
+                set('mdl-tgl-akhir', d.tglAkhir);
+                set('mdl-keterangan', d.keterangan);
+                set('mdl-level', 'SP ' + d.level);
+                set('mdl-jenis', d.jenis);
+                const status = document.getElementById('mdl-status');
+                status.textContent = d.aktif === '1' ? 'Aktif' : 'Berakhir';
+                status.className = 'emp-status emp-status--' + (d.aktif === '1' ? 'danger' : 'neutral');
             });
         });
-
-        // Script Modal Detail
-        const modalDetail = document.getElementById('modal-detail');
-        if (modalDetail) {
-            modalDetail.addEventListener('show.bs.modal', event => {
-                const button = event.relatedTarget;
-                const data = button.dataset;
-
-                document.getElementById('mdl-nama').textContent = data.nama;
-                document.getElementById('mdl-nik').textContent = 'NIK: ' + data.nik;
-                document.getElementById('mdl-jabatan').textContent = data.jabatan;
-                document.getElementById('mdl-cabang').textContent = data.cabang;
-                document.getElementById('mdl-dept').textContent = data.dept;
-                document.getElementById('mdl-tgl-terbit').textContent = data.tglTerbit;
-                document.getElementById('mdl-tgl-akhir').textContent = data.tglAkhir;
-                document.getElementById('mdl-keterangan').textContent = data.keterangan || '-';
-
-                // Level Styling
-                const elLevel = document.getElementById('mdl-level');
-                elLevel.textContent = 'SP ' + data.level;
-                elLevel.className = 'fs-3 fw-bold ' + (data.level == 3 ? 'text-dark' : (data.level == 2 ?
-                    'text-orange' : 'text-warning'));
-
-                // Status Badge
-                const elStatus = document.getElementById('mdl-status-badge');
-                if (data.status === 'Aktif') {
-                    elStatus.innerHTML = '<span class="badge bg-danger text-white">Aktif</span>';
-                } else {
-                    elStatus.innerHTML = '<span class="badge bg-secondary text-white">Non-Aktif</span>';
-                }
-
-                // Jenis Pelanggaran
-                const jenisMap = {
-                    'late': 'Keterlambatan',
-                    'absent': 'Mangkir',
-                    'discipline': 'Disiplin',
-                    'other': 'Lainnya'
-                };
-                document.getElementById('mdl-jenis').textContent = jenisMap[data.jenis] || 'Lainnya';
-            });
-        }
-
-        // SweetAlert Konfirmasi Pemutihan
-        function confirmPemutihan(id, nama) {
-            Swal.fire({
-                title: 'Konfirmasi Pemutihan',
-                html: 'Yakin ingin memutihkan SP untuk <strong></strong>?',
-                didOpen: (popup) => { popup.querySelector('strong').textContent = nama; },
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: 'var(--color-accent)',
-                cancelButtonColor: 'var(--color-muted)',
-                confirmButtonText: 'Ya, Putihkan'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById('form-pemutihan-' + id).submit();
-                }
-            })
-        }
     </script>
-
 @endpush

@@ -1,269 +1,162 @@
 @extends('layouts.admin.tabler')
 
 @section('page-header')
-    <div class="page-header d-print-none" aria-label="Page header">
+    <div class="page-header d-print-none">
         <div class="container-xl">
             <div class="row g-2 align-items-center">
                 <div class="col">
                     <div class="page-pretitle">Data Master</div>
                     <h2 class="page-title">Data Departemen</h2>
+                    <p class="page-subtitle">Unit kerja yang dipakai di data karyawan, jam kerja, dan KPI.</p>
                 </div>
-                <div class="col-auto ms-auto d-print-none">
-                    <div class="btn-list">
-                        {{-- PERMISSION: departemen-create-admin --}}
-                        @can('departemen-create-admin')
-                            <a href="#" class="btn btn-primary" id="btnTambahDepartemen" data-bs-toggle="modal"
-                                data-bs-target="#modal-inputdepartemen">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-plus">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M12 5l0 14" />
-                                    <path d="M5 12l14 0" />
-                                </svg>Tambah Data</a>
-                        @endcan
+                @can('departemen-create-admin')
+                    <div class="col-auto ms-auto">
+                        <button type="button" class="btn btn-primary" id="btnTambahDepartemen" data-bs-toggle="modal"
+                            data-bs-target="#modal-inputdepartemen" aria-label="Tambah departemen">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="18" height="18" viewBox="0 0 24 24"
+                                stroke-width="1.75" stroke="currentColor" fill="none" stroke-linecap="round"
+                                stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 5l0 14" />
+                                <path d="M5 12l14 0" />
+                            </svg><span class="d-none d-sm-inline">Tambah Departemen</span>
+                        </button>
                     </div>
-                </div>
+                @endcan
             </div>
         </div>
     </div>
 @endsection
 
 @section('content')
-
     <div class="page-body">
         <div class="container-xl">
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-12">
-                                    {{-- Pesan Sukses/Warning dari Controller --}}
-                                    {{-- Notifications will be handled by SweetAlert via @push('myscript') --}}
-                                </div>
-                            </div>
-
-                            <div class="row mt-2">
-                                <div class="col-12">
-                                    <form action="{{ route('departemen.index') }}" method="GET">
-                                        <div class="row g-2">
-                                            <div class="col-12">
-                                                <div class="input-group">
-                                                    {{-- Input Field --}}
-                                                    <input type="text" name="nama_dept" id="nama_dept_search"
-                                                        class="form-control" placeholder="Cari Nama Departemen..."
-                                                        value="{{ request()->nama_dept }}">
-
-                                                    {{-- Tombol Cari --}}
-                                                    <button type="submit" class="btn btn-primary">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20"
-                                                            height="20" viewBox="0 0 24 24" fill="none"
-                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            class="icon icon-tabler icons-tabler-outline icon-tabler-search">
-                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                            <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
-                                                            <path d="M21 21l-6 -6" />
-                                                        </svg>
-                                                        <span class="ms-1">Cari Data</span>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-
-                            <div class="row mt-3">
-                                <div class="col-12">
-                                    <div class="table-responsive">
-                                        <table class="table table-vcenter">
-                                            <thead>
-                                                <tr>
-                                                    <th>No</th>
-                                                    <th>Kode Dept.</th>
-                                                    <th>Nama Departemen</th>
-                                                    <th>Aksi</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach ($departemen as $data)
-                                                    <tr>
-                                                        <td>{{ $loop->iteration + $departemen->firstItem() - 1 }}</td>
-                                                        <td>{{ $data->kode_dept }}</td>
-                                                        <td>{{ $data->nama_dept }}</td>
-                                                        <td>
-                                                            <div class="btn-list flex-nowrap text-nowrap">
-                                                                {{-- PERMISSION: departemen-edit-admin --}}
-                                                                @can('departemen-edit-admin')
-                                                                    <a href="#"
-                                                                        class="btn btn-ghost-primary btn-icon edit-dept"
-                                                                        data-kode_dept="{{ $data->kode_dept }}"
-                                                                        title="Edit Data"
-                                                                        aria-label="Edit {{ $data->nama_dept }}">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                                            class="icon icon-tabler icon-tabler-pencil"
-                                                                            width="24" height="24" viewBox="0 0 24 24"
-                                                                            stroke-width="2" stroke="currentColor"
-                                                                            fill="none" stroke-linecap="round"
-                                                                            stroke-linejoin="round">
-                                                                            <path stroke="none" d="M0 0h24v24H0z"
-                                                                                fill="none" />
-                                                                            <path
-                                                                                d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
-                                                                            <path d="M13.5 6.5l4 4" />
-                                                                        </svg>
-                                                                    </a>
-                                                                @endcan
-
-                                                                {{-- PERMISSION: departemen-delete-admin --}}
-                                                                @can('departemen-delete-admin')
-                                                                    <a href="#"
-                                                                        class="btn btn-ghost-danger btn-icon delete-confirm-dept"
-                                                                        data-kode_dept="{{ $data->kode_dept }}"
-                                                                        data-nama_dept="{{ $data->nama_dept }}"
-                                                                        title="Hapus Data"
-                                                                        aria-label="Hapus {{ $data->nama_dept }}">
-                                                                        {{-- ICON: Trash --}}
-                                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                                            class="icon icon-tabler icon-tabler-trash"
-                                                                            width="24" height="24" viewBox="0 0 24 24"
-                                                                            stroke-width="2" stroke="currentColor"
-                                                                            fill="none" stroke-linecap="round"
-                                                                            stroke-linejoin="round">
-                                                                            <path stroke="none" d="M0 0h24v24H0z"
-                                                                                fill="none" />
-                                                                            <path d="M4 7l16 0" />
-                                                                            <path d="M10 11l0 6" />
-                                                                            <path d="M14 11l0 6" />
-                                                                            <path
-                                                                                d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
-                                                                            <path
-                                                                                d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
-                                                                        </svg>
-                                                                    </a>
-
-                                                                    <form
-                                                                        action="{{ route('departemen.destroy', ['kode_dept' => $data->kode_dept]) }}"
-                                                                        method="POST"
-                                                                        id="deleteFormDept{{ $data->kode_dept }}"
-                                                                        class="d-none">
-                                                                        @csrf
-                                                                        @method('DELETE')
-                                                                    </form>
-                                                                @endcan
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    <div class="mt-3 d-flex justify-content-center justify-content-md-end">
-                                        {{ $departemen->links('pagination::bootstrap-5') }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            <section class="card list-card" aria-label="Daftar departemen">
+                <form action="{{ route('departemen.index') }}" method="GET" class="list-toolbar">
+                    <div class="list-toolbar-row">
+                        <x-admin.search name="nama_dept" placeholder="Cari nama departemen…" label="Cari departemen" />
                     </div>
+                </form>
+
+                <div class="list-meta">
+                    @if ($departemen->total() > 0)
+                        Menampilkan <strong>{{ $departemen->firstItem() }}–{{ $departemen->lastItem() }}</strong>
+                        dari <strong>{{ $departemen->total() }}</strong> departemen
+                    @endif
                 </div>
-            </div>
+
+                @if ($departemen->isEmpty())
+                    <div class="list-empty">
+                        <p class="mb-1 fw-medium">Tidak ada departemen yang cocok.</p>
+                        <p class="mb-0 text-secondary small">
+                            @if (request()->filled('nama_dept'))
+                                Ubah kata kunci — atau <a href="{{ route('departemen.index') }}">tampilkan semua</a>.
+                            @else
+                                Tambahkan departemen pertama lewat tombol di kanan atas.
+                            @endif
+                        </p>
+                    </div>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-vcenter list-table">
+                            <thead>
+                                <tr>
+                                    <th>Departemen</th>
+                                    <th>Kode</th>
+                                    <th class="w-1"><span class="visually-hidden">Aksi</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($departemen as $data)
+                                    <tr>
+                                        <td class="cell-person">
+                                            <span class="person-name">{{ $data->nama_dept }}</span>
+                                        </td>
+                                        <td data-label="Kode" class="cell-num">{{ $data->kode_dept }}</td>
+                                        <td class="cell-actions">
+                                            @canany(['departemen-edit-admin', 'departemen-delete-admin'])
+                                                <x-admin.row-menu :label="$data->nama_dept">
+                                                    @can('departemen-edit-admin')
+                                                        <button type="button" class="dropdown-item edit-dept"
+                                                            data-kode_dept="{{ $data->kode_dept }}">Edit</button>
+                                                    @endcan
+                                                    @can('departemen-delete-admin')
+                                                        <div class="dropdown-divider"></div>
+                                                        <button type="button" class="dropdown-item text-danger delete-confirm-dept"
+                                                            data-kode_dept="{{ $data->kode_dept }}"
+                                                            data-nama_dept="{{ $data->nama_dept }}">Hapus</button>
+                                                    @endcan
+                                                </x-admin.row-menu>
+                                                @can('departemen-delete-admin')
+                                                    <form action="{{ route('departemen.destroy', ['kode_dept' => $data->kode_dept]) }}"
+                                                        method="POST" id="deleteFormDept{{ $data->kode_dept }}" hidden>
+                                                        @csrf
+                                                        @method('DELETE')
+                                                    </form>
+                                                @endcan
+                                            @endcanany
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+
+                @if ($departemen->hasPages())
+                    <div class="list-footer">
+                        <span class="text-secondary small">Halaman {{ $departemen->currentPage() }} dari {{ $departemen->lastPage() }}</span>
+                        {{ $departemen->withQueryString()->onEachSide(1)->links('pagination::bootstrap-5') }}
+                    </div>
+                @endif
+            </section>
         </div>
     </div>
 
-    <div class="modal modal-blur fade" id="modal-inputdepartemen" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Tambah Data Departemen</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form action="{{ route('departemen.store') }}" method="POST" id="formDepartemen">
+    @can('departemen-create-admin')
+        <div class="modal modal-blur fade" id="modal-inputdepartemen" tabindex="-1" aria-labelledby="judulTambahDept" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-form modal-form-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title" id="judulTambahDept">Tambah Departemen</h5>
+                            <p class="modal-subtitle">Kode dipakai sebagai acuan di data lain.</p>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    </div>
+                    <form action="{{ route('departemen.store') }}" method="POST" id="formDepartemen" class="modal-form-body">
                         @csrf
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="input-icon mb-3">
-                                    <span class="input-icon-addon">
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                            class="icon icon-tabler icon-tabler-binary-tree" width="24"
-                                            height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                            fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                            <path d="M6 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
-                                            <path d="M18 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
-                                            <path d="M6 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
-                                            <path d="M18 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
-                                            <path d="M6 8l0 8"></path>
-                                            <path d="M18 8l0 8"></path>
-                                        </svg>
-                                    </span>
-                                    <input type="text" id="kode_dept" value="{{ old('kode_dept') }}"
-                                        class="form-control" name="kode_dept" placeholder="Kode Departemen (3 Char)"
-                                        data-field="Kode Departemen">
-                                </div>
-                                <div class="input-icon mb-3">
-                                    <span class="input-icon-addon">
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                            class="icon icon-tabler icon-tabler-building-factory" width="24"
-                                            height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                                            fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                            <path
-                                                d="M12 21h-5a2 2 0 0 1 -2 -2v-10a1 1 0 0 1 1 -1h14a1 1 0 0 1 1 1v10a2 2 0 0 1 -2 2h-5">
-                                            </path>
-                                            <path d="M7 9l0 12"></path>
-                                            <path d="M17 9l0 12"></path>
-                                            <path d="M10 10l-2 6"></path>
-                                            <path d="M16 10l2 6"></path>
-                                            <path d="M12 7l0 -3"></path>
-                                            <path d="M15 6l0 2"></path>
-                                            <path d="M9 6l0 2"></path>
-                                        </svg>
-                                    </span>
-                                    <input type="text" id="nama_dept" value="{{ old('nama_dept') }}"
-                                        class="form-control" name="nama_dept" placeholder="Nama Departemen"
-                                        data-field="Nama Departemen">
-                                </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label required" for="kode_dept">Kode departemen</label>
+                                <input type="text" id="kode_dept" name="kode_dept" value="{{ old('kode_dept') }}"
+                                    class="form-control" placeholder="Contoh: HRD" maxlength="3" autocomplete="off"
+                                    data-field="Kode Departemen">
+                                <div class="form-hint">3 karakter huruf kapital atau angka.</div>
                             </div>
-                            <div class="row mt-2">
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <button type="submit" class="btn btn-primary w-100">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                class="icon icon-tabler icons-tabler-outline icon-tabler-send">
-                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                <path d="M10 14l11 -11" />
-                                                <path
-                                                    d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" />
-                                            </svg>
-                                            Simpan
-                                        </button>
-                                    </div>
-                                </div>
+                            <div>
+                                <label class="form-label required" for="nama_dept">Nama departemen</label>
+                                <input type="text" id="nama_dept" name="nama_dept" value="{{ old('nama_dept') }}"
+                                    class="form-control" placeholder="Contoh: Human Resource" data-field="Nama Departemen">
                             </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-primary">Simpan</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-    </div>
+    @endcan
 
-    {{-- Modal Edit Departemen --}}
-    <div class="modal modal-blur fade" id="modal-editdepartemen" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal modal-blur fade" id="modal-editdepartemen" tabindex="-1" aria-labelledby="judulEditDept" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-form modal-form-sm">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Edit Data Departemen</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" id="judulEditDept">Edit Departemen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
-                {{-- Form akan dimuat di sini --}}
-                <div class="modal-body" id="loadededitformdept">
-                </div>
+                <div id="loadededitformdept" class="modal-form-body"></div>
             </div>
         </div>
     </div>
@@ -271,52 +164,22 @@
 
 @push('myscript')
     <script>
-
-        function onlyNumberInput(event) {
-            let key = event.key;
-            if (!/^\d$/.test(key) && !event.metaKey && !event.ctrlKey && key.length === 1) {
-                event.preventDefault();
-            }
-        }
-
-        function onlyTextInput(event) {
-            let key = event.key;
-            const isAllowedKey = /^[a-zA-Z\s]$/.test(key);
-            const isControlKey = event.metaKey || event.ctrlKey || key.length !== 1;
-
-            if (!isAllowedKey && !isControlKey) {
-                event.preventDefault();
-            }
-        }
-
-        function validateDepartemenForm(e, isEdit = false) {
+        function validateDepartemenForm(e, isEdit) {
             const kode_dept = isEdit ? $('#kode_dept_edit_dept').val().trim() : $('#kode_dept').val().trim();
             const nama_dept = isEdit ? $('#nama_dept_edit').val().trim() : $('#nama_dept').val().trim();
 
-            const regexKode = /^[A-Z0-9]{3}$/;
-
-            function showWarningDept(text, id) {
+            function peringatan(text, id) {
                 e.preventDefault();
-                Swal.fire({
-                    title: 'Warning',
-                    text: text,
-                    icon: 'warning',
-                    confirmButtonText: 'Ok'
-                }).then(() => {
-                    $(id).focus();
-                });
+                Swal.fire({ title: 'Periksa isian', text: text, icon: 'warning', confirmButtonText: 'Ok' })
+                    .then(() => $(id).focus());
                 return false;
             }
 
             if (!isEdit) {
-                if (kode_dept === "") return showWarningDept('Kode Departemen harus diisi!', '#kode_dept');
-                if (kode_dept.length !== 3) return showWarningDept('Kode Departemen harus 3 karakter!', '#kode_dept');
-                if (!kode_dept.match(regexKode)) return showWarningDept(
-                    'Kode Departemen harus 3 karakter angka/huruf kapital!', '#kode_dept');
+                if (kode_dept === '') return peringatan('Kode departemen harus diisi.', '#kode_dept');
+                if (!/^[A-Z0-9]{3}$/.test(kode_dept)) return peringatan('Kode departemen harus 3 karakter huruf kapital/angka.', '#kode_dept');
             }
-
-            if (nama_dept === "") return showWarningDept('Nama Departemen harus diisi!', isEdit ? '#nama_dept_edit' :
-                '#nama_dept');
+            if (nama_dept === '') return peringatan('Nama departemen harus diisi.', isEdit ? '#nama_dept_edit' : '#nama_dept');
 
             return true;
         }
@@ -326,104 +189,29 @@
                 return validateDepartemenForm(e, false);
             });
 
-            $('.edit-dept').on('click', function(e) {
-                e.preventDefault();
-                let kode_dept = $(this).data('kode_dept');
-
-                $.get('/departemen/' + kode_dept + '/edit', function(data) {
-                    $('#loadededitformdept').html(data);
-                    $('#modal-editdepartemen').modal('show');
-                }).fail(function(xhr, status, error) {
-                    console.error("AJAX Load Error:", status, error);
-                    Swal.fire('Error',
-                        'Gagal memuat form edit departemen. Cek rute dan controller.', 'error');
-                });
-            });
-
             $(document).on('submit', '#formDepartemenEdit', function(e) {
                 return validateDepartemenForm(e, true);
             });
 
-            $('.delete-confirm-dept').on('click', function(e) {
-                e.preventDefault();
-                let kode_dept = $(this).data('kode_dept');
-                let nama_dept = $(this).data('nama_dept');
-
-                // Tampilkan loading SweetAlert
-                Swal.fire({
-                    title: 'Memeriksa Data...',
-                    text: 'Silakan tunggu sementara sistem menganalisis keterkaitan data.',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                // Fetch data relasi
-                $.get('/departemen/' + kode_dept + '/relations', function(response) {
-                    Swal.close();
-                    
-                    if (response.success) {
-                        let rels = response.relations;
-                        let hasRelations = (rels.karyawan > 0 || rels.user > 0 || rels.kpi > 0 || rels.configuration > 0 || rels.holiday > 0);
-                        
-                        let messageHtml = `<p class="mb-3">Apakah Anda yakin ingin menghapus departemen <b>${nama_dept}</b> (${kode_dept})?</p>`;
-                        
-                        if (hasRelations) {
-                            messageHtml += `
-                                <div class="alert alert-warning text-start mb-0">
-                                    <h6 class="alert-heading mb-1 font-weight-bold"><i class="fas fa-exclamation-triangle mr-1"></i> Data Terkait Terdeteksi:</h6>
-                                    <ul class="pl-3 mb-0" style="list-style-type: disc;">
-                            `;
-                            
-                            // Tampilkan data set null (karyawan, user)
-                            if (rels.karyawan > 0 || rels.user > 0) {
-                                messageHtml += `<li class="mb-1 text-dark">Data berikut akan <b>dikosongkan</b> dan perlu diatur ulang nantinya:`;
-                                messageHtml += `<ul class="pl-3" style="list-style-type: circle;">`;
-                                if (rels.karyawan > 0) messageHtml += `<li><b>${rels.karyawan}</b> Karyawan</li>`;
-                                if (rels.user > 0) messageHtml += `<li><b>${rels.user}</b> User Admin</li>`;
-                                messageHtml += `</ul></li>`;
-                            }
-                            
-                            // Tampilkan data cascade (kpi, configuration, holiday)
-                            if (rels.kpi > 0 || rels.configuration > 0 || rels.holiday > 0) {
-                                messageHtml += `<li class="text-danger">Data berikut akan <b>ikut terhapus secara permanen</b>:`;
-                                messageHtml += `<ul class="pl-3" style="list-style-type: circle;">`;
-                                if (rels.configuration > 0) messageHtml += `<li><b>${rels.configuration}</b> Konfigurasi Jam Kerja</li>`;
-                                if (rels.holiday > 0) messageHtml += `<li><b>${rels.holiday}</b> Hari Libur</li>`;
-                                if (rels.kpi > 0) messageHtml += `<li><b>${rels.kpi}</b> Data KPI</li>`;
-                                messageHtml += `</ul></li>`;
-                            }
-                            
-                            messageHtml += `
-                                    </ul>
-                                </div>
-                            `;
-                        } else {
-                            messageHtml += `<p class="text-muted" style="font-size: 13px;">Tidak ada data lain yang bergantung pada departemen ini.</p>`;
-                        }
-
-                        Swal.fire({
-                            title: 'Hapus Data Departemen?',
-                            html: messageHtml,
-                            icon: hasRelations ? 'warning' : 'question',
-                            showCancelButton: true,
-                            confirmButtonColor: 'var(--color-danger)',
-                            cancelButtonColor: 'var(--color-muted)',
-                            confirmButtonText: 'Ya, Hapus!',
-                            cancelButtonText: 'Batal',
-                            reverseButtons: true
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                $(`#deleteFormDept${kode_dept}`).submit();
-                            }
-                        });
-                    } else {
-                        Swal.fire('Error', 'Gagal memproses analisis keterkaitan data.', 'error');
-                    }
+            $('.edit-dept').on('click', function() {
+                $.get('/departemen/' + $(this).data('kode_dept') + '/edit', function(data) {
+                    $('#loadededitformdept').html(data);
+                    $('#modal-editdepartemen').modal('show');
                 }).fail(function() {
-                    Swal.close();
-                    Swal.fire('Error', 'Terjadi kesalahan saat menghubungi server.', 'error');
+                    Swal.fire('Gagal', 'Form edit departemen tidak dapat dimuat.', 'error');
+                });
+            });
+
+            // Hapus: tampilkan dulu data yang bergantung pada departemen ini.
+            $('.delete-confirm-dept').on('click', function() {
+                let kode = $(this).data('kode_dept');
+                hapusDenganRelasi({
+                    url: '/departemen/' + kode + '/relations',
+                    jenis: 'departemen',
+                    nama: $(this).data('nama_dept') + ' (' + kode + ')',
+                    form: document.getElementById('deleteFormDept' + kode),
+                    kosongkan: { karyawan: 'karyawan', user: 'user admin' },
+                    ikutTerhapus: { configuration: 'konfigurasi jam kerja', holiday: 'hari libur', kpi: 'data KPI' }
                 });
             });
         });

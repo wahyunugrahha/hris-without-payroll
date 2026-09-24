@@ -389,7 +389,7 @@ class KonfigurasiController extends Controller
                 ->with('jamKerja')
                 ->get();
 
-            return view('admin.konfigurasi.editsetjamkerja', compact('karyawan', 'jamkerja', 'setjamkerja'));
+            return view('admin.konfigurasi.setjamkerja', compact('karyawan', 'jamkerja', 'setjamkerja'));
         } else {
             return view('admin.konfigurasi.setjamkerja', compact('karyawan', 'jamkerja'));
         }

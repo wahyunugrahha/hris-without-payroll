@@ -7,6 +7,7 @@
                 <div class="col">
                     <div class="page-pretitle">Monitoring Karyawan</div>
                     <h2 class="page-title">Data Presensi Harian</h2>
+                    <p class="page-subtitle">Status kehadiran seluruh karyawan pada tanggal terpilih.</p>
                 </div>
             </div>
         </div>
@@ -14,259 +15,133 @@
 @endsection
 
 @section('content')
-
     <div class="page-body">
         <div class="container-xl">
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-body">
-                            {{-- FORM FILTER --}}
-                            <form id="formFilterMonitoring" autocomplete="off">
-
-                                {{-- BARIS 1: Filter Utama (Tanggal & Organisasi) --}}
-                                <div class="row g-2 align-items-center mb-2">
-
-                                    {{-- 1. Input Tanggal --}}
-                                    <div class="col-12 col-md-6 col-xl-3">
-                                        <div class="input-icon">
-                                            <span class="input-icon-addon">
-                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                    class="icon icon-tabler icon-tabler-calendar-event" width="24"
-                                                    height="24" viewBox="0 0 24 24" stroke-width="2"
-                                                    stroke="currentColor" fill="none" stroke-linecap="round"
-                                                    stroke-linejoin="round">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                    <path
-                                                        d="M4 5m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z" />
-                                                    <path d="M16 3l0 4" />
-                                                    <path d="M8 3l0 4" />
-                                                    <path d="M4 11l16 0" />
-                                                    <path d="M15 15h.01" />
-                                                </svg>
-                                            </span>
-                                            <input type="text" id="tanggal" name="tanggal" value="{{ date('d-m-Y') }}"
-                                                class="form-control" placeholder="Tanggal Presensi" readonly>
-                                        </div>
-                                    </div>
-
-                                    {{-- 2. Input Jabatan --}}
-                                    <div class="col-12 col-md-6 col-xl-3">
-                                        <select name="jabatan_id" id="jabatan_id" class="form-select">
-                                            <option value="">Semua Jabatan</option>
-                                            @foreach ($jabatans as $j)
-                                                <option value="{{ $j->id }}">{{ $j->nama_jabatan }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-
-                                    {{-- 3. Input Departemen --}}
-                                    <div class="col-12 col-md-6 col-xl-3">
-                                        <select name="kode_dept" id="kode_dept" class="form-select">
-                                            <option value="">Semua Departemen</option>
-                                            @foreach ($departemen as $d)
-                                                <option value="{{ $d->kode_dept }}">{{ $d->nama_dept }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-
-                                    {{-- 4. Input Cabang --}}
-                                    <div class="col-12 col-md-6 col-xl-3">
-                                        <select name="kode_cabang" id="kode_cabang" class="form-select"
-                                            {{ isset($forcedKodeCabang) ? 'disabled' : '' }}>
-                                            <option value="">Semua Cabang</option>
-                                            @foreach ($cabang as $c)
-                                                <option value="{{ $c->kode_cabang }}"
-                                                    {{ isset($forcedKodeCabang) && $forcedKodeCabang == $c->kode_cabang ? 'selected' : '' }}>
-                                                    {{ $c->nama_cabang }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                </div>
-
-                                {{-- BARIS 2: Filter Status & Pencarian --}}
-                                <div class="row g-2 align-items-center">
-
-                                    {{-- 1. Input Status --}}
-                                    <div class="col-12 col-md-4 col-xl-3">
-                                        <select name="status" id="status" class="form-select">
-                                            <option value="">Semua Status</option>
-                                            <option value="h">Hadir (Tepat Waktu)</option>
-                                            <option value="late">Hadir (Terlambat)</option>
-                                            <option value="n">Belum Absen</option>
-                                            <option value="a">Alpha</option>
-                                            <option value="s">Sakit</option>
-                                            <option value="i">Izin</option>
-                                            <option value="c">Cuti</option>
-                                            <option value="r">Roster</option>
-                                            <option value="d">Dinas Luar</option>
-                                            <option value="l">Libur</option>
-                                        </select>
-                                    </div>
-
-                                    {{-- 2. Input Pencarian Nama/NIK --}}
-                                    <div class="col-12 col-md-8 col-xl-9">
-                                        <div class="input-group">
-                                            <input type="text" id="search" name="search" class="form-control"
-                                                placeholder="Cari Nama Karyawan atau NIK...">
-                                            <button type="submit" class="btn btn-primary">
-                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                    class="icon icon-tabler icon-tabler-search" width="24"
-                                                    height="24" viewBox="0 0 24 24" stroke-width="2"
-                                                    stroke="currentColor" fill="none" stroke-linecap="round"
-                                                    stroke-linejoin="round">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                    <circle cx="10" cy="10" r="7" />
-                                                    <line x1="21" y1="21" x2="15" y2="15" />
-                                                </svg>
-                                                Cari Data
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
+            <section class="card list-card" aria-label="Presensi harian">
+                <form id="formFilterMonitoring" class="list-toolbar" autocomplete="off">
+                    <div class="list-toolbar-row">
+                        <label class="search-field">
+                            <span class="visually-hidden">Cari karyawan</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24"
+                                stroke-width="1.75" stroke="currentColor" fill="none" stroke-linecap="round"
+                                stroke-linejoin="round" aria-hidden="true">
+                                <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
+                                <path d="M21 21l-6 -6" />
+                            </svg>
+                            <input type="search" id="search" name="search" placeholder="Cari nama atau NIK…">
+                        </label>
+                        <button type="submit" class="btn btn-primary list-search-btn">Cari</button>
                     </div>
-                </div>
-            </div>
-
-            {{-- TABEL PRESENSI --}}
-            <div class="row mt-3">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="table-responsive">
-                            <table class="table table-vcenter card-table">
-                                <thead>
-                                    {{-- PERBAIKAN: Hapus style background agar darkmode aman --}}
-                                    <tr
-                                        style="text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; color: var(--color-muted);">
-                                        <th class="w-1">NO.</th>
-                                        <th>NAMA / NIK</th>
-                                        <th>DEPARTEMEN / JABATAN</th>
-                                        <th>CABANG</th>
-                                        <th class="text-center">JADWAL SHIFT</th>
-                                        <th class="text-center">JAM (M/S)</th>
-                                        <th class="text-center">STATUS</th>
-                                        <th class="text-center">FOTO</th>
-                                        <th class="text-center">AKSI</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="loadpresensi">
-                                    {{-- DATA AKAN DIMUAT DISINI VIA AJAX --}}
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="filter-bar">
+                        <label class="filter-field">
+                            <span class="filter-label">Tanggal</span>
+                            <input type="date" id="tanggal" name="tanggal" value="{{ date('Y-m-d') }}" class="form-control form-control-sm">
+                        </label>
+                        <label class="filter-field">
+                            <span class="filter-label">Status</span>
+                            <select name="status" id="status" class="form-select form-select-sm">
+                                <option value="">Semua</option>
+                                <option value="h">Hadir tepat waktu</option>
+                                <option value="late">Terlambat</option>
+                                <option value="n">Belum absen</option>
+                                <option value="a">Alpha</option>
+                                <option value="s">Sakit</option>
+                                <option value="i">Izin</option>
+                                <option value="c">Cuti</option>
+                                <option value="r">Roster</option>
+                                <option value="d">Dinas luar</option>
+                                <option value="l">Libur</option>
+                            </select>
+                        </label>
+                        <label class="filter-field">
+                            <span class="filter-label">Jabatan</span>
+                            <select name="jabatan_id" id="jabatan_id" class="form-select form-select-sm">
+                                <option value="">Semua</option>
+                                @foreach ($jabatans as $j)
+                                    <option value="{{ $j->id }}">{{ $j->nama_jabatan }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label class="filter-field">
+                            <span class="filter-label">Departemen</span>
+                            <select name="kode_dept" id="kode_dept" class="form-select form-select-sm">
+                                <option value="">Semua</option>
+                                @foreach ($departemen as $d)
+                                    <option value="{{ $d->kode_dept }}">{{ $d->nama_dept }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label class="filter-field">
+                            <span class="filter-label">Cabang</span>
+                            <select name="kode_cabang" id="kode_cabang" class="form-select form-select-sm" @disabled(isset($forcedKodeCabang))>
+                                <option value="">Semua</option>
+                                @foreach ($cabang as $c)
+                                    <option value="{{ $c->kode_cabang }}" @selected(isset($forcedKodeCabang) && $forcedKodeCabang == $c->kode_cabang)>{{ $c->nama_cabang }}</option>
+                                @endforeach
+                            </select>
+                        </label>
                     </div>
+                </form>
+
+                <div class="table-responsive">
+                    <table class="table table-vcenter list-table">
+                        <thead>
+                            <tr>
+                                <th>Karyawan</th>
+                                <th>Jabatan &amp; unit</th>
+                                <th>Jadwal</th>
+                                <th>Masuk / pulang</th>
+                                <th>Status</th>
+                                <th>Foto</th>
+                                <th class="w-1"><span class="visually-hidden">Aksi</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="loadpresensi" aria-live="polite"></tbody>
+                    </table>
                 </div>
-            </div>
+            </section>
         </div>
     </div>
 
-    {{-- MODAL DETAIL --}}
-    <div class="modal modal-blur fade" id="modal-detail-presensi" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+    <div class="modal modal-blur fade" id="modal-detail-presensi" tabindex="-1" aria-labelledby="judulDetailPresensi" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-form">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Detail Presensi</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div>
+                        <h5 class="modal-title" id="judulDetailPresensi">Detail presensi</h5>
+                        <p class="modal-subtitle"><span id="dt_nama"></span> · NIK <span id="dt_nik"></span></p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6 border-end">
-                            <h4 class="mb-2 text-primary">Info Karyawan</h4>
-                            <table class="table table-sm table-borderless">
-                                <tr>
-                                    <td class="text-secondary" width="100">Nama</td>
-                                    <td class="fw-bold" id="dt_nama"></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-secondary">NIK</td>
-                                    <td id="dt_nik"></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-secondary">Jabatan</td>
-                                    <td id="dt_jabatan"></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-secondary">Departemen</td>
-                                    <td id="dt_dept"></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-secondary">Cabang</td>
-                                    <td id="dt_cabang"></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-secondary">Status</td>
-                                    <td><span id="dt_status" class="badge"></span></td>
-                                </tr>
-                            </table>
+                    <section class="form-section">
+                        <h6 class="form-section-title">Ringkasan</h6>
+                        <dl class="info-grid">
+                            <div><dt>Status</dt><dd><span id="dt_status" class="emp-status"></span></dd></div>
+                            <div><dt>Jadwal</dt><dd id="dt_jadwal"></dd></div>
+                            <div><dt>Jam masuk</dt><dd id="dt_jamin" class="cell-num"></dd></div>
+                            <div><dt>Jam pulang</dt><dd id="dt_jamout" class="cell-num"></dd></div>
+                            <div><dt>Jabatan</dt><dd id="dt_jabatan"></dd></div>
+                            <div><dt>Departemen · cabang</dt><dd><span id="dt_dept"></span> · <span id="dt_cabang"></span></dd></div>
+                            <div class="info-full d-none" id="dt_kejanggalan_wrap"><dt>Kejanggalan lokasi</dt><dd id="dt_kejanggalan" class="text-danger"></dd></div>
+                        </dl>
+                    </section>
+                    <section class="form-section">
+                        <h6 class="form-section-title">Foto & dokumen</h6>
+                        <div class="detail-media">
+                            <figure><div id="container_foto_in"></div><figcaption>Foto masuk</figcaption></figure>
+                            <figure><div id="container_foto_out"></div><figcaption>Foto pulang</figcaption></figure>
+                            <figure><div id="container_sid"></div><figcaption>Dokumen (SID)</figcaption></figure>
                         </div>
-                        <div class="col-md-6">
-                            <h4 class="mb-2 text-primary">Waktu Absensi</h4>
-                            <table class="table table-sm table-borderless">
-                                <tr>
-                                    <td class="text-secondary" width="100">Jadwal</td>
-                                    <td id="dt_jadwal"></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-secondary">Masuk</td>
-                                    <td id="dt_jamin" class="fw-bold"></td>
-                                </tr>
-                                <tr>
-                                    <td class="text-secondary">Pulang</td>
-                                    <td id="dt_jamout" class="fw-bold"></td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <div class="card bg-muted-lt">
-                                <div class="card-body p-3">
-                                    <div class="row text-center">
-                                        <div class="col-4">
-                                            <div class="small fw-bold mb-2">Foto Masuk</div>
-                                            <div id="container_foto_in"></div>
-                                        </div>
-                                        <div class="col-4">
-                                            <div class="small fw-bold mb-2">Foto Pulang</div>
-                                            <div id="container_foto_out"></div>
-                                        </div>
-                                        <div class="col-4">
-                                            <div class="small fw-bold mb-2">Dokumen (SID)</div>
-                                            <div id="container_sid"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12">
-                            <h4 class="mb-2 text-primary">Peta Lokasi</h4>
-                            {{-- PERBAIKAN: Tambahkan width 100% dan pastikan container valid --}}
-                            <div id="map-container"
-                                class="border rounded d-flex align-items-center justify-content-center w-100"
-                                style="height: 350px; width: 100%; overflow: hidden;"></div>
-                        </div>
-                    </div>
+                    </section>
+                    <section class="form-section">
+                        <h6 class="form-section-title">Lokasi absen masuk</h6>
+                        <div id="map-container" class="detail-map"></div>
+                    </section>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-danger me-auto d-none" id="btn-batal-presensi">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-trash" width="24"
-                            height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                            <path d="M4 7l16 0"></path>
-                            <path d="M10 11l0 6"></path>
-                            <path d="M14 11l0 6"></path>
-                            <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path>
-                            <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path>
-                        </svg>
-                        Anulir / Batalkan
-                    </button>
-                    <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-outline-danger me-auto d-none" id="btn-batal-presensi">Anulir presensi</button>
+                    <button type="button" class="btn" data-bs-dismiss="modal">Tutup</button>
                 </div>
             </div>
         </div>
@@ -275,205 +150,114 @@
 
 @push('myscript')
     <script>
-        $(document).ready(function() {
-            // Init Datepicker
-            $("#tanggal").datepicker({
-                autoclose: true,
-                todayHighlight: true,
-                format: 'dd-mm-yyyy',
-                orientation: "bottom auto"
-            });
+        $(function() {
+            const kosong = (teks) => `<div class="detail-media-empty">${teks}</div>`;
 
-            // --- FUNGSI LOAD DATA TABEL ---
             function loadPresensi(page = 1) {
-                var tanggal = $("#tanggal").val();
-                var jabatan_id = $("#jabatan_id").val();
-                var kode_dept = $("#kode_dept").val();
-                var kode_cabang = $("#kode_cabang").val();
-                var status = $("#status").val();
-                var search = $("#search").val();
-
                 $.ajax({
                     type: 'GET',
                     url: '/presensi/getpresensi?page=' + page,
                     data: {
-                        _token: '{{ csrf_token() }}',
-                        tanggal: tanggal,
-                        jabatan_id: jabatan_id,
-                        kode_dept: kode_dept,
-                        kode_cabang: kode_cabang,
-                        status: status,
-                        search: search
+                        tanggal: $('#tanggal').val(),
+                        jabatan_id: $('#jabatan_id').val(),
+                        kode_dept: $('#kode_dept').val(),
+                        kode_cabang: $('#kode_cabang').val(),
+                        status: $('#status').val(),
+                        search: $('#search').val()
                     },
                     beforeSend: function() {
-                        $("#loadpresensi").html(
-                            '<tr><td colspan="9" class="text-center py-5"><div class="spinner-border text-primary"></div><div class="mt-2 text-muted">Memuat data...</div></td></tr>'
-                        );
+                        $('#loadpresensi').html('<tr class="row-empty"><td colspan="7"><div class="list-empty"><div class="spinner-border spinner-border-sm text-secondary"></div><p class="mt-2 mb-0 text-secondary small">Memuat data…</p></div></td></tr>');
                     },
-                    success: function(respond) {
-                        $("#loadpresensi").html(respond);
-                    },
-                    error: function() {
-                        $("#loadpresensi").html(
-                            '<tr><td colspan="9" class="text-center text-danger py-5">Gagal memuat data.</td></tr>'
-                        );
-                    }
+                    success: (respond) => $('#loadpresensi').html(respond),
+                    error: () => $('#loadpresensi').html('<tr class="row-empty"><td colspan="7"><div class="list-empty text-danger">Data gagal dimuat. Coba lagi.</div></td></tr>')
                 });
             }
 
-            // Submit Filter
-            $("#formFilterMonitoring").submit(function(e) {
+            $('#formFilterMonitoring').on('submit', function(e) {
                 e.preventDefault();
                 loadPresensi(1);
             });
+            $('#tanggal, #kode_dept, #kode_cabang, #jabatan_id, #status').on('change', () => loadPresensi(1));
 
-            // Pagination Click
-            $(document).on('click', '.pagination a', function(e) {
+            $(document).on('click', '#loadpresensi .pagination a', function(e) {
                 e.preventDefault();
-                var url = $(this).attr('href');
-                if (url) {
-                    var page = url.split('page=')[1];
-                    loadPresensi(page);
-                }
+                const page = new URL(this.href).searchParams.get('page');
+                if (page) loadPresensi(page);
             });
 
-            // Load awal
             loadPresensi(1);
 
-            $("#kode_dept, #kode_cabang, #jabatan_id, #status").change(function() {
-                loadPresensi(1);
-            });
+            // Modal detail.
+            $(document).on('click', '.btn-detail', function() {
+                const d = $(this).data();
 
-            // --- LOGIC MODAL DETAIL & MAP ---
-            $(document).on('click', '.btn-detail', function(e) {
-                e.preventDefault();
-                var d = $(this).data();
-
-                // 1. ISI DATA TEKS & FOTO KE MODAL
                 $('#dt_nama').text(d.nama || '-');
                 $('#dt_nik').text(d.nik || '-');
                 $('#dt_jabatan').text(d.jabatan || '-');
                 $('#dt_dept').text(d.dept || '-');
                 $('#dt_cabang').text(d.cabang || '-');
                 $('#dt_jadwal').text(d.jadwal || '-');
-                $('#dt_jamin').text(d.jamin).removeClass('text-success').addClass(d.jamin !== '-' ?
-                    'text-success' : '');
-                $('#dt_jamout').text(d.jamout).removeClass('text-danger').addClass(d.jamout !== '-' ?
-                    'text-danger' : '');
-                $('#dt_status').text(d.status || '').attr('class', 'badge ' + d.warnastatus);
+                $('#dt_jamin').text(d.jamin || '-');
+                $('#dt_jamout').text(d.jamout || '-');
+                $('#dt_status').text(d.status || '-').attr('class', 'emp-status emp-status--' + (d.nada || 'neutral'));
+                $('#dt_kejanggalan').text(d.kejanggalan || '');
+                $('#dt_kejanggalan_wrap').toggleClass('d-none', !d.kejanggalan);
 
-                // Helper render gambar
-                function renderModalImage(url, altText) {
-                    if (url && url !== 'null' && url !== '-') {
-                        return `<a href="${url}" target="_blank"><img src="${url}" class="img-fluid rounded border bg-white" style="width: 100%; height: 150px; object-fit: cover;" alt="${altText}"></a>`;
-                    }
-                    return `<div class="d-flex align-items-center justify-content-center border rounded bg-light text-muted small" style="height: 150px; width: 100%;">No Photo</div>`;
-                }
+                const gambar = (url, alt) => url ?
+                    $('<a>', { href: url, target: '_blank', rel: 'noopener' }).append($('<img>', { src: url, alt: alt })) :
+                    kosong('Tidak ada foto');
+                $('#container_foto_in').html(gambar(d.fotoin, 'Foto masuk'));
+                $('#container_foto_out').html(gambar(d.fotoout, 'Foto pulang'));
+                $('#container_sid').html(d.sid ?
+                    $('<a>', { href: d.sid, target: '_blank', rel: 'noopener', class: 'btn btn-sm w-100', text: 'Buka dokumen' }) :
+                    kosong('Tidak ada dokumen'));
 
-                $('#container_foto_in').html(renderModalImage(d.fotoin, 'Foto Masuk'));
-                $('#container_foto_out').html(renderModalImage(d.fotoout, 'Foto Pulang'));
+                $('#map-container').html(kosong('Memuat lokasi…'));
+                $('#modal-detail-presensi').attr('data-id-presensi', d.id).attr('data-lokasi-valid', d.lokasivalid);
 
-                if (d.sid && d.sid !== 'null' && d.sid !== '-') {
-                    $('#container_sid').html(
-                        `<a href="${d.sid}" target="_blank" class="btn btn-primary w-100 btn-sm">Lihat Doc</a>`
-                    );
-                } else {
-                    $('#container_sid').html(
-                        `<div class="d-flex align-items-center justify-content-center border rounded bg-light text-muted small" style="height: 38px;">-</div>`
-                    );
-                }
+                // Anulir hanya untuk presensi hadir/terlambat yang sudah tercatat.
+                const bisaAnulir = d.id && (d.status === 'Hadir' || d.status === 'Terlambat');
+                $('#btn-batal-presensi').toggleClass('d-none', !bisaAnulir).data('id', bisaAnulir ? d.id : null);
 
-                // 2. BERSIHKAN MAP CONTAINER LAMA & SET LOADING
-                $('#map-container').html(
-                    '<div class="d-flex flex-column justify-content-center align-items-center h-100"><div class="spinner-border text-primary"></div><div class="mt-2 text-muted small">Memuat lokasi...</div></div>'
-                );
-
-                // 3. SIMPAN ID & STATUS LOKASI KE ATTRIBUTE MODAL
-                $('#modal-detail-presensi')
-                    .attr('data-id-presensi', d.id)
-                    .attr('data-lokasi-valid', d.lokasivalid);
-
-                // Logic Tombol Batal Presensi
-                $('#btn-batal-presensi').addClass('d-none').removeData('id');
-                // Tampilkan hanya jika memiliki ID Presensi (sudah Absen Masuk) dan statusnya bukan jenis Izin/Cuti
-                if (d.id && d.id !== '-' && d.id !== null && d.id !== '') {
-                    // Munculkan untuk status Hadir / Terlambat
-                    if (d.status === 'Hadir' || d.status === 'Terlambat') {
-                        $('#btn-batal-presensi').removeClass('d-none').data('id', d.id);
-                    }
-                }
-
-                // 4. TAMPILKAN MODAL
                 $('#modal-detail-presensi').modal('show');
             });
 
-            // Action Batal Presensi
-            $('#btn-batal-presensi').click(function(e) {
-                e.preventDefault();
-                var presensiId = $(this).data('id');
-
+            $('#btn-batal-presensi').on('click', function() {
+                const presensiId = $(this).data('id');
                 Swal.fire({
-                    title: 'Anulir Presensi?',
-                    text: "Tindakan ini akan mengosongkan jam & foto presensi ini, dan mengubah statusnya menjadi Dianulir. Karyawan akan dianggap Belum Absen pada sistem.",
+                    title: 'Anulir presensi?',
+                    text: 'Jam & foto presensi ini dikosongkan dan statusnya menjadi Dianulir. Karyawan dianggap belum absen.',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: 'var(--color-danger)',
-                    cancelButtonColor: 'var(--color-muted)',
-                    confirmButtonText: 'Ya, Anulir!',
-                    cancelButtonText: 'Kembali'
+                    confirmButtonText: 'Ya, anulir',
+                    cancelButtonText: 'Kembali',
+                    reverseButtons: true
                 }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            type: 'POST',
-                            url: '/presensi/monitoring/' + presensiId + '/batal',
-                            data: {
-                                _token: '{{ csrf_token() }}'
-                            },
-                            success: function(response) {
-                                if (response.status) {
-                                    $('#modal-detail-presensi').modal('hide');
-                                    Swal.fire('Berhasil!', response.message, 'success');
-                                    loadPresensi(1);
-                                } else {
-                                    Swal.fire('Gagal!', response.message, 'error');
-                                }
-                            },
-                            error: function() {
-                                Swal.fire('Error!', 'Terjadi kesalahan sistem.',
-                                    'error');
+                    if (!result.isConfirmed) return;
+                    $.post('/presensi/monitoring/' + presensiId + '/batal', { _token: '{{ csrf_token() }}' })
+                        .done(function(response) {
+                            if (response.status) {
+                                $('#modal-detail-presensi').modal('hide');
+                                Swal.fire('Berhasil', response.message, 'success');
+                                loadPresensi(1);
+                            } else {
+                                Swal.fire('Gagal', response.message, 'error');
                             }
-                        });
-                    }
+                        })
+                        .fail(() => Swal.fire('Gagal', 'Terjadi kesalahan sistem.', 'error'));
                 });
             });
 
-            // --- EVENT SAAT MODAL SUDAH TAMPIL SEPENUHNYA ---
+            // Peta dimuat setelah modal tampil agar ukuran Leaflet benar.
             $('#modal-detail-presensi').on('shown.bs.modal', function() {
-                var id = $(this).attr('data-id-presensi');
-                var lokasivalid = $(this).attr('data-lokasi-valid');
-
-                if (lokasivalid == 1 && id && id !== '-') {
-                    $.ajax({
-                        type: "POST",
-                        url: '/presensi/tampilkanpeta',
-                        data: {
-                            _token: '{{ csrf_token() }}',
-                            id: id
-                        },
-                        cache: false,
-                        success: function(res) {
-                            $('#map-container').html(res);
-                        },
-                        error: function() {
-                            $('#map-container').html(
-                                '<div class="d-flex justify-content-center align-items-center h-100 text-danger">Gagal memuat peta</div>'
-                            );
-                        }
-                    });
+                const id = $(this).attr('data-id-presensi');
+                if ($(this).attr('data-lokasi-valid') == 1 && id) {
+                    $.post('/presensi/tampilkanpeta', { _token: '{{ csrf_token() }}', id: id })
+                        .done((res) => $('#map-container').html(res))
+                        .fail(() => $('#map-container').html(kosong('Peta gagal dimuat')));
                 } else {
-                    $('#map-container').html(
-                        '<div class="d-flex justify-content-center align-items-center h-100 text-muted small fst-italic">Lokasi tidak tersedia / Invalid</div>'
-                    );
+                    $('#map-container').html(kosong('Lokasi tidak tersedia'));
                 }
             });
         });
