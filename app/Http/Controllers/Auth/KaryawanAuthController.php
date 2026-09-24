@@ -193,8 +193,7 @@ class KaryawanAuthController extends Controller
     public function logout(Request $request)
     {
         Auth::guard('karyawan')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        $this->akhiriSesi($request, 'user');
 
         return redirect()->route('login');
     }

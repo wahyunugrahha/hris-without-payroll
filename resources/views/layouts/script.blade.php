@@ -1,4 +1,5 @@
 <script src="{{ asset_v('assets/js/lib/jquery-3.7.1.min.js') }}"></script>
+@include('layouts.sesi')
 <script src="{{ asset_v('assets/js/lib/popper.min.js') }}"></script>
 <script src="{{ asset_v('assets/js/lib/bootstrap.min.js') }}"></script>
 

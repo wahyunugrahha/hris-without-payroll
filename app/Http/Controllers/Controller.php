@@ -3,10 +3,29 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\BusinessException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Throwable;
 
 abstract class Controller
 {
+    /**
+     * Setelah logout satu guard: hapus seluruh sesi hanya bila guard lain juga tidak login.
+     * Admin & karyawan berbagi cookie sesi; menghapus sesi saat guard lain masih aktif membuat
+     * tab lain ikut ter-logout dan setiap form di sana gagal "Sesi telah berakhir" (419).
+     */
+    protected function akhiriSesi(Request $request, string $guardLain): void
+    {
+        if (Auth::guard($guardLain)->check()) {
+            $request->session()->migrate(true);
+
+            return;
+        }
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+    }
+
     /**
      * Cabang yang membatasi admin yang login, atau null jika boleh melihat semua cabang.
      */

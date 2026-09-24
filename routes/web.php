@@ -4,6 +4,10 @@ use App\Http\Controllers\Auth\KaryawanAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// Token CSRF terbaru untuk halaman yang lama terbuka (dipakai assets/js/sesi.js).
+Route::get('/csrf-token', fn () => response()->json(['token' => csrf_token()])
+    ->header('Cache-Control', 'no-store'))->name('csrf.token');
+
 // Halaman yang dibuka saat QR tanda tangan pada dokumen cetak dipindai.
 Route::get('/ttd', function (Request $request) {
     $teks = (string) $request->query('text', '');

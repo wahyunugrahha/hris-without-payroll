@@ -26,13 +26,15 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\AdminAuthController;
 use Illuminate\Support\Facades\Route;
 
+// Logout cukup login admin (tanpa izin tertentu) agar setiap akun admin selalu bisa keluar.
+Route::middleware('auth:user')->get('/proseslogoutadmin', [AdminAuthController::class, 'logout'])->name('proseslogoutadmin');
+
 Route::middleware(['auth:user', 'permission:dashboard-view-admin,user'])->group(function () {
 
     Route::get('/panel/dashboardadmin', [DashboardController::class, 'dashboardadmin'])->name('dashboard.admin');
     // Menampilkan token registrasi & data karyawan: wajib login admin (TV kantor login sekali dengan akun khusus).
     Route::get('/dashboard-tv', [DashboardController::class, 'dashboardtv'])->name('dashboardtv');
     Route::get('/overview', [DashboardController::class, 'dashboardoverview'])->name('overview');
-    Route::get('/proseslogoutadmin', [AdminAuthController::class, 'logout'])->name('proseslogoutadmin');
 
     // Account settings
     Route::get('/panel/account', [UserController::class, 'editSelf'])->name('users.account');

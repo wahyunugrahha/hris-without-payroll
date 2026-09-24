@@ -92,6 +92,7 @@
     </script>
 
     <script src="{{ asset_v('assets/js/admin.js') }}"></script>
+    @include('layouts.sesi')
     @stack('myscript')
 </body>
 

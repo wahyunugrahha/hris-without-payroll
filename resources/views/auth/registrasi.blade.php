@@ -670,6 +670,7 @@
             });
         });
     </script>
+    @include('layouts.sesi')
 </body>
 
 </html>
