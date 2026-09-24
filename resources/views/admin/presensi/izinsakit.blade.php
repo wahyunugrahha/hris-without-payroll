@@ -31,9 +31,9 @@
                 @endphp
                 <nav class="list-tabs" aria-label="Status pengajuan">
                     <a href="{{ $urlStatus(null) }}" class="list-tab {{ blank($statusKini) ? 'is-current' : '' }}" @if (blank($statusKini)) aria-current="page" @endif>Semua <span class="list-tab-count">{{ $jumlahStatus['semua'] ?? 0 }}</span></a>
-                    @foreach ($statusApproval as $nilai => [$label])
+                    @foreach ($statusApproval as $nilai => [$label, $nada])
                         @php $aktif = $statusKini === (string) $nilai; @endphp
-                        <a href="{{ $urlStatus($nilai) }}" class="list-tab {{ $aktif ? 'is-current' : '' }}" @if ($aktif) aria-current="page" @endif>{{ $label }} <span class="list-tab-count">{{ $jumlahStatus[(string) $nilai] ?? 0 }}</span></a>
+                        <a href="{{ $urlStatus($nilai) }}" class="list-tab {{ $aktif ? 'is-current' : '' }}" @if ($aktif) aria-current="page" @endif>{{ $label }} <span class="list-tab-count list-tab-count--{{ $nada }}">{{ $jumlahStatus[(string) $nilai] ?? 0 }}</span></a>
                     @endforeach
                     <span class="list-tabs-note">Jumlah {{ $bulan_indo ?: 'periode terpilih' }}</span>
                 </nav>

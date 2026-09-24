@@ -2973,6 +2973,21 @@ button.summary-item.is-current {
     white-space: nowrap;
 }
 
+/* Jumlah di tab status berwarna sesuai statusnya (Menunggu kuning, Disetujui hijau, Ditolak merah). */
+.list-tab-count--warning { --count-tone: var(--color-warning); }
+.list-tab-count--success { --count-tone: var(--color-success); }
+.list-tab-count--danger { --count-tone: var(--color-danger); }
+
+.list-tab-count[class*="list-tab-count--"] {
+    background: color-mix(in oklab, var(--count-tone) 16%, var(--color-surface));
+    color: color-mix(in oklab, var(--count-tone) 78%, var(--color-ink));
+}
+
+.list-tab.is-current .list-tab-count[class*="list-tab-count--"] {
+    background: var(--count-tone);
+    color: var(--color-accent-ink);
+}
+
 /* ════════════════════════════════════════════════════════════════════
  * 15. Footer
  * ════════════════════════════════════════════════════════════════════ */
