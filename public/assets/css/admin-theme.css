@@ -15,6 +15,17 @@ body {
     overflow-x: clip;
 }
 
+/* Jalur scrollbar selalu dipesan: saat modal membuka dan scrollbar disembunyikan,
+   lebar halaman tidak berubah sehingga konten di belakang tidak bergeser. */
+html {
+    scrollbar-gutter: stable;
+}
+
+/* Kompensasi padding dari Bootstrap jadi tidak perlu (malah menggeser) karena gutter sudah dipesan. */
+body.modal-open {
+    padding-right: 0 !important;
+}
+
 .page {
     min-height: 100vh;
     width: 100%;
