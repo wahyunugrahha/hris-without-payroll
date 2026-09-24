@@ -1793,7 +1793,7 @@
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <h6 class="mb-3 d-flex align-items-center"><span class="badge bg-success me-2">Masuk</span>
+                            <h6 class="mb-3 d-flex align-items-center"><span class="emp-status emp-status--success me-2">Masuk</span>
                                 Total: {{ count($karyawanMasuk ?? []) }}</h6>
                             <div class="table-responsive">
                                 <table class="table table-vcenter table-sm card-table">
@@ -1810,14 +1810,14 @@
                                         @forelse($karyawanMasuk ?? [] as $item)
                                             <tr>
                                                 <td><span
-                                                        class="badge bg-blue-lt font-monospace">{{ optional($item)->nik }}</span>
+                                                        class="cell-num">{{ optional($item)->nik }}</span>
                                                 </td>
                                                 <td>{{ optional($item)->nama_lengkap }}</td>
                                                 <td><span
                                                         class="text-muted">{{ data_get($item, 'cabang.nama_cabang', '-') }}</span>
                                                 </td>
                                                 <td><span
-                                                        class="badge bg-orange-lt">{{ data_get($item, 'jabatanRel.nama_jabatan', '-') }}</span>
+                                                        class="">{{ data_get($item, 'jabatanRel.nama_jabatan', '-') }}</span>
                                                 </td>
                                                 @php
                                                     $tmt = data_get($item, 'tmt');
@@ -1832,7 +1832,7 @@
                                                             : $tmt ?? $tgl_msuk;
                                                 @endphp
                                                 <td><span
-                                                        class="badge bg-green-lt">{{ $tglMasukDisplay ? \Carbon\Carbon::parse($tglMasukDisplay)->translatedFormat('d F Y') : '-' }}</span>
+                                                        class="cell-num">{{ $tglMasukDisplay ? \Carbon\Carbon::parse($tglMasukDisplay)->translatedFormat('d F Y') : '-' }}</span>
                                                 </td>
                                             </tr>
                                         @empty
@@ -1846,7 +1846,7 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <h6 class="mb-3 d-flex align-items-center"><span class="badge bg-danger me-2">Keluar</span>
+                            <h6 class="mb-3 d-flex align-items-center"><span class="emp-status emp-status--danger me-2">Keluar</span>
                                 Total: {{ count($karyawanKeluar ?? []) }}</h6>
                             <div class="table-responsive">
                                 <table class="table table-vcenter table-sm card-table">
@@ -1863,14 +1863,14 @@
                                         @forelse($karyawanKeluar ?? [] as $item)
                                             <tr>
                                                 <td><span
-                                                        class="badge bg-blue-lt font-monospace">{{ optional($item)->nik }}</span>
+                                                        class="cell-num">{{ optional($item)->nik }}</span>
                                                 </td>
                                                 <td>{{ optional($item)->nama_lengkap }}</td>
                                                 <td><span
                                                         class="text-muted">{{ data_get($item, 'cabang.nama_cabang', '-') }}</span>
                                                 </td>
                                                 <td><span
-                                                        class="badge bg-orange-lt">{{ data_get($item, 'jabatanRel.nama_jabatan', '-') }}</span>
+                                                        class="">{{ data_get($item, 'jabatanRel.nama_jabatan', '-') }}</span>
                                                 </td>
                                                 @php
                                                     $tglKeluarDisplay =
@@ -1878,7 +1878,7 @@
                                                         data_get($item, 'updated_at');
                                                 @endphp
                                                 <td><span
-                                                        class="badge bg-red-lt">{{ $tglKeluarDisplay ? \Carbon\Carbon::parse($tglKeluarDisplay)->translatedFormat('d F Y') : '-' }}</span>
+                                                        class="cell-num">{{ $tglKeluarDisplay ? \Carbon\Carbon::parse($tglKeluarDisplay)->translatedFormat('d F Y') : '-' }}</span>
                                                 </td>
                                             </tr>
                                         @empty
@@ -1893,8 +1893,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer"><button type="button" class="btn btn-primary"
-                        data-bs-dismiss="modal">Tutup</button></div>
+                <div class="modal-footer"><button type="button" class="btn" data-bs-dismiss="modal">Tutup</button></div>
             </div>
         </div>
     </div>
@@ -1909,7 +1908,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="table-responsive">
-                        <table class="table table-vcenter card-table table-striped">
+                        <table class="table table-vcenter card-table">
                             <thead>
                                 <tr>
                                     <th>Karyawan</th>
@@ -1932,13 +1931,13 @@
                                             </div>
                                         </td>
                                         <td class="text-nowrap"><span
-                                                class="badge bg-blue-lt font-monospace">{{ optional($item)->nik }}</span>
+                                                class="cell-num">{{ optional($item)->nik }}</span>
                                         </td>
                                         <td><span
-                                                class="badge bg-orange-lt text-wrap">{{ optional($item)->jabatan_nama ?? '-' }}</span>
+                                                class="">{{ optional($item)->jabatan_nama ?? '-' }}</span>
                                         </td>
                                         <td class="text-nowrap"><span
-                                                class="badge bg-lime-lt">{{ \Carbon\Carbon::parse(optional($item)->tanggal_awal_kontrak)->translatedFormat('d F Y') }}</span>
+                                                class="cell-num">{{ \Carbon\Carbon::parse(optional($item)->tanggal_awal_kontrak)->translatedFormat('d F Y') }}</span>
                                         </td>
                                     </tr>
                                 @empty
@@ -1954,7 +1953,7 @@
                 <div class="modal-footer">
                     <div class="text-muted me-auto">Total: <strong>{{ count($daftarKaryawanAktif ?? []) }}</strong>
                         Karyawan</div>
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn" data-bs-dismiss="modal">Tutup</button>
                 </div>
             </div>
         </div>
@@ -1970,7 +1969,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="table-responsive">
-                        <table class="table table-vcenter card-table table-striped">
+                        <table class="table table-vcenter card-table">
                             <thead>
                                 <tr>
                                     <th>Alamat</th>
@@ -1983,10 +1982,8 @@
                                     @php $persentase = ($item->jumlah / ($totalKaryawanForDomisili > 0 ? $totalKaryawanForDomisili : 1)) * 100; @endphp
                                     <tr>
                                         <td class="fw-bold text-reset">{{ $item->alamat ?? 'Tidak Diketahui' }}</td>
-                                        <td class="text-end"><span class="badge bg-dark-lt">{{ $item->jumlah }}</span>
-                                        </td>
-                                        <td class="text-end"><span
-                                                class="badge bg-azure-lt">{{ round($persentase, 1) }}%</span></td>
+                                        <td class="text-end cell-num">{{ $item->jumlah }}</td>
+                                        <td class="text-end cell-num">{{ round($persentase, 1) }}%</td>
                                     </tr>
                                 @empty
                                     <tr>
@@ -1997,8 +1994,7 @@
                         </table>
                     </div>
                 </div>
-                <div class="modal-footer"><button type="button" class="btn btn-primary"
-                        data-bs-dismiss="modal">Tutup</button></div>
+                <div class="modal-footer"><button type="button" class="btn" data-bs-dismiss="modal">Tutup</button></div>
             </div>
         </div>
     </div>
@@ -2016,7 +2012,7 @@
                     <div class="row g-3" id="calendarDetailBody"></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn" data-bs-dismiss="modal">Tutup</button>
                 </div>
             </div>
         </div>
@@ -2312,11 +2308,11 @@
 
                     detailTitle.textContent = `Detail Aktivitas ${dateLabel}`;
                     detailStats.innerHTML = [
-                        `<span class="badge bg-blue-lt">Izin: ${(detail.izin || []).length}</span>`,
-                        `<span class="badge bg-red-lt">Sakit: ${(detail.sakit || []).length}</span>`,
-                        `<span class="badge bg-indigo-lt">Cuti: ${(detail.cuti || []).length}</span>`,
-                        `<span class="badge bg-azure-lt">Dinas Luar: ${(detail.dinas || []).length}</span>`,
-                        `<span class="badge bg-dark-lt text-dark">Total Karyawan: ${uniqueNiks.length}</span>`
+                        `<span class="emp-status emp-status--info">Izin: ${(detail.izin || []).length}</span>`,
+                        `<span class="emp-status emp-status--info">Sakit: ${(detail.sakit || []).length}</span>`,
+                        `<span class="emp-status emp-status--info">Cuti: ${(detail.cuti || []).length}</span>`,
+                        `<span class="emp-status emp-status--info">Dinas luar: ${(detail.dinas || []).length}</span>`,
+                        `<span class="emp-status">Total karyawan: ${uniqueNiks.length}</span>`
                     ].join('');
 
                     detailBody.innerHTML = [

@@ -1,319 +1,169 @@
 @extends('layouts.admin.tabler')
+
+@php
+    $inisial = fn ($nama) => collect(explode(' ', trim($nama)))->filter()->take(2)->map(fn ($k) => mb_strtoupper(mb_substr($k, 0, 1)))->implode('');
+    $filterAktif = collect([request('kode_cabang'), request('name')])->filter(fn ($v) => filled($v))->count();
+@endphp
+
 @section('page-header')
-    <div class="page-header d-print-none" aria-label="Page header">
+    <div class="page-header d-print-none">
         <div class="container-xl">
             <div class="row g-2 align-items-center">
                 <div class="col">
                     <div class="page-pretitle">Konfigurasi</div>
-                    <h2 class="page-title">Data HR, HR Cabang & SPV</h2>
+                    <h2 class="page-title">Manajemen User Admin</h2>
+                    <p class="page-subtitle">Akun HR, HR cabang, dan SPV yang bisa masuk ke panel admin.</p>
                 </div>
-                <div class="col-auto ms-auto d-print-none">
-                    @can('users-create-admin')
-                        <a href="#" class="btn btn-primary" id="btnTambahUser" data-bs-toggle="modal"
-                            data-bs-target="#modal-inputuser">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-plus">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                @can('users-create-admin')
+                    <div class="col-auto ms-auto">
+                        <button type="button" class="btn btn-primary" id="btnTambahUser" data-bs-toggle="modal" data-bs-target="#modal-inputuser" aria-label="Tambah user">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="18" height="18" viewBox="0 0 24 24"
+                                stroke-width="1.75" stroke="currentColor" fill="none" stroke-linecap="round"
+                                stroke-linejoin="round" aria-hidden="true">
                                 <path d="M12 5l0 14" />
                                 <path d="M5 12l14 0" />
-                            </svg>Tambah Data</a>
-                    @endcan
-                </div>
+                            </svg><span class="d-none d-sm-inline">Tambah User</span>
+                        </button>
+                    </div>
+                @endcan
             </div>
         </div>
     </div>
 @endsection
 
 @section('content')
-
     <div class="page-body">
         <div class="container-xl">
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-12">
-
-
-                                </div>
-                            </div>
-
-                            <div class="row mt-2">
-                                <div class="col-12">
-                                    <form action="{{ route('users.index') }}" method="GET">
-                                        <div class="row g-2">
-                                            {{-- 1. Filter Cabang --}}
-                                            <div class="col-12 col-md-4">
-                                                <select name="kode_cabang" class="form-select">
-                                                    <option value="">Semua Cabang</option>
-                                                    @foreach ($cabang as $c)
-                                                        <option value="{{ $c->kode_cabang }}"
-                                                            {{ request('kode_cabang') == $c->kode_cabang ? 'selected' : '' }}>
-                                                            {{ $c->nama_cabang }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-
-                                            {{-- 2. Pencarian Nama & Tombol --}}
-                                            <div class="col-12 col-md-8">
-                                                <div class="input-group">
-                                                    <input type="text" name="name" id="name_search"
-                                                        class="form-control" placeholder="Cari Nama HR, HR Cabang, SPV"
-                                                        value="{{ request()->name }}">
-
-                                                    <button type="submit" class="btn btn-primary">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20"
-                                                            height="20" viewBox="0 0 24 24" fill="none"
-                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            class="icon icon-tabler icons-tabler-outline icon-tabler-search">
-                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                            <path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
-                                                            <path d="M21 21l-6 -6" />
-                                                        </svg>
-                                                        <span class="ms-1">Cari Data</span>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-
-                            <div class="row mt-3">
-                                <div class="col-12">
-                                    <div class="table-responsive">
-                                        <table class="table table-vcenter">
-                                            <thead>
-                                                <tr>
-                                                    <th>No</th>
-                                                    <th>Nama</th>
-                                                    <th>Email</th>
-                                                    <th>Departemen</th>
-                                                    <th>Cabang</th>
-                                                    <th>Jabatan</th>
-                                                    <th>Aksi</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach ($users as $data)
-                                                    <tr>
-                                                        <td>{{ $loop->iteration }}</td>
-                                                        <td>{{ $data->name }}</td>
-                                                        <td>{{ $data->email }}</td>
-                                                        <td>{{ $data->nama_dept }}</td>
-                                                        <td>{{ $data->nama_cabang ?? '-' }}</td>
-                                                        <td>
-                                                            <span class="text-blue">
-                                                                {{ strtoupper($data->jabatan->nama_jabatan ?? '-') }}
-                                                            </span>
-                                                        </td>
-
-                                                        <td>
-                                                            <div class="d-flex gap-2">
-                                                                @can('users-edit-admin')
-                                                                    <a href="#"
-                                                                        class="edit-user btn btn-ghost-primary btn-icon"
-                                                                        data-id="{{ $data->id }}" title="Edit" aria-label="Edit">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                                            class="icon icon-tabler icon-tabler-pencil"
-                                                                            width="24" height="24" viewBox="0 0 24 24"
-                                                                            stroke-width="2" stroke="currentColor"
-                                                                            fill="none" stroke-linecap="round"
-                                                                            stroke-linejoin="round">
-                                                                            <path stroke="none" d="M0 0h24v24H0z"
-                                                                                fill="none" />
-                                                                            <path
-                                                                                d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
-                                                                            <path d="M13.5 6.5l4 4" />
-                                                                        </svg>
-                                                                    </a>
-                                                                @endcan
-
-                                                                @can('users-delete-admin')
-                                                                    <a href="#"
-                                                                        class="delete-confirm-user btn btn-ghost-danger btn-icon"
-                                                                        data-id="{{ $data->id }}"
-                                                                        data-name="{{ $data->name }}" title="Hapus" aria-label="Hapus">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                                            class="icon icon-tabler icon-tabler-trash"
-                                                                            width="24" height="24" viewBox="0 0 24 24"
-                                                                            stroke-width="2" stroke="currentColor"
-                                                                            fill="none" stroke-linecap="round"
-                                                                            stroke-linejoin="round">
-                                                                            <path stroke="none" d="M0 0h24v24H0z"
-                                                                                fill="none" />
-                                                                            <path d="M4 7l16 0" />
-                                                                            <path d="M10 11l0 6" />
-                                                                            <path d="M14 11l0 6" />
-                                                                            <path
-                                                                                d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
-                                                                            <path
-                                                                                d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
-                                                                        </svg>
-                                                                    </a>
-
-                                                                    <form
-                                                                        action="{{ route('users.destroy', ['id' => $data->id]) }}"
-                                                                        method="POST"
-                                                                        id="deleteFormUser{{ $data->id }}">
-                                                                        @csrf
-                                                                        @method('DELETE')
-                                                                    </form>
-                                                                @endcan
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    <div class="mt-3 d-flex justify-content-center justify-content-md-end">
-                                        {{ $users->links('pagination::bootstrap-5') }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            <section class="card list-card" aria-label="Daftar user admin">
+                <form action="{{ route('users.index') }}" method="GET" class="list-toolbar">
+                    <div class="list-toolbar-row">
+                        <x-admin.search name="name" placeholder="Cari nama user…" label="Cari user" />
                     </div>
+                    <div class="filter-bar">
+                        <label class="filter-field">
+                            <span class="filter-label">Cabang</span>
+                            <select name="kode_cabang" class="form-select form-select-sm" data-auto-submit>
+                                <option value="">Semua</option>
+                                @foreach ($cabang as $c)
+                                    <option value="{{ $c->kode_cabang }}" @selected(request('kode_cabang') == $c->kode_cabang)>{{ $c->nama_cabang }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        @if ($filterAktif > 0)
+                            <a href="{{ route('users.index') }}" class="filter-reset">Reset filter</a>
+                        @endif
+                    </div>
+                </form>
+
+                <div class="list-meta">
+                    @if ($users->total() > 0)
+                        Menampilkan <strong>{{ $users->firstItem() }}–{{ $users->lastItem() }}</strong>
+                        dari <strong>{{ $users->total() }}</strong> user
+                    @endif
                 </div>
-            </div>
+
+                @if ($users->isEmpty())
+                    <div class="list-empty">
+                        <p class="mb-1 fw-medium">Tidak ada user yang cocok.</p>
+                        <p class="mb-0 text-secondary small">Ubah kata kunci atau filter.</p>
+                    </div>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-vcenter list-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Jabatan</th>
+                                    <th>Departemen</th>
+                                    <th>Cabang</th>
+                                    <th class="w-1"><span class="visually-hidden">Aksi</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($users as $data)
+                                    <tr>
+                                        <td class="cell-person">
+                                            <span class="person">
+                                                <span class="avatar avatar-sm">{{ $inisial($data->name) }}</span>
+                                                <span class="min-w-0">
+                                                    <span class="person-name" title="{{ $data->name }}">{{ $data->name }}</span>
+                                                    <span class="person-sub">{{ $data->email }}</span>
+                                                </span>
+                                            </span>
+                                        </td>
+                                        <td data-label="Jabatan">{{ $data->jabatan->nama_jabatan ?? '-' }}</td>
+                                        <td data-label="Departemen">{{ $data->nama_dept ?? '-' }}</td>
+                                        <td data-label="Cabang">{{ $data->nama_cabang ?? 'Semua cabang' }}</td>
+                                        <td class="cell-actions">
+                                            @canany(['users-edit-admin', 'users-delete-admin'])
+                                                <x-admin.row-menu :label="$data->name">
+                                                    @can('users-edit-admin')
+                                                        <button type="button" class="dropdown-item edit-user" data-id="{{ $data->id }}">Edit</button>
+                                                    @endcan
+                                                    @can('users-delete-admin')
+                                                        <div class="dropdown-divider"></div>
+                                                        <form action="{{ route('users.destroy', ['id' => $data->id]) }}" method="POST">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="dropdown-item text-danger"
+                                                                data-confirm="User {{ $data->name }} tidak bisa lagi masuk ke panel admin."
+                                                                data-confirm-title="Hapus user?">Hapus</button>
+                                                        </form>
+                                                    @endcan
+                                                </x-admin.row-menu>
+                                            @endcanany
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+
+                @if ($users->hasPages())
+                    <div class="list-footer">
+                        <span class="text-secondary small">Halaman {{ $users->currentPage() }} dari {{ $users->lastPage() }}</span>
+                        {{ $users->withQueryString()->onEachSide(1)->links('pagination::bootstrap-5') }}
+                    </div>
+                @endif
+            </section>
         </div>
     </div>
 
-    <div class="modal modal-blur fade" id="modal-inputuser" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Tambah Data User</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form action="{{ route('users.store') }}" method="POST" id="formUser">
+    @can('users-create-admin')
+        <div class="modal modal-blur fade" id="modal-inputuser" tabindex="-1" aria-labelledby="judulTambahUser" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-form">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title" id="judulTambahUser">Tambah user admin</h5>
+                            <p class="modal-subtitle">Hak akses mengikuti role dari jabatan yang dipilih.</p>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    </div>
+                    <form action="{{ route('users.store') }}" method="POST" id="formUser" class="modal-form-body">
                         @csrf
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="input-icon mb-3">
-                                    <span class="input-icon-addon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
-                                            <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
-                                            <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
-                                        </svg>
-                                    </span>
-                                    <input type="text" id="name" value="{{ old('name') }}"
-                                        class="form-control" name="name" placeholder="Nama User"
-                                        data-field="Nama User">
-                                </div>
-                                <div class="input-icon mb-3">
-                                    <span class="input-icon-addon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            class="icon icon-tabler icons-tabler-outline icon-tabler-mail">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path
-                                                d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" />
-                                            <path d="M3 7l9 6l9 -6" />
-                                        </svg>
-                                    </span>
-                                    <input type="text" id="email" value="{{ old('email') }}"
-                                        class="form-control" name="email" placeholder="Email" data-field="Email">
-                                </div>
-                                <div class="input-icon mb-3">
-                                    <span class="input-icon-addon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            class="icon icon-tabler icons-tabler-outline icon-tabler-lock">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path
-                                                d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6z" />
-                                            <path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" />
-                                            <path d="M8 11v-4a4 4 0 1 1 8 0v4" />
-                                        </svg>
-                                    </span>
-                                    <input type="password" id="password" value="{{ old('password') }}"
-                                        class="form-control" name="password" placeholder="Password"
-                                        data-field="Password">
-                                </div>
-                                <div class="row">
-                                    <div class="col-12 mb-3">
-                                        <div class="form-group">
-                                            <select name="kode_dept" id="kode_dept" class="form-select">
-                                                <option value="">Departemen</option>
-                                                @foreach ($departemen as $d)
-                                                    <option value="{{ $d->kode_dept }}">{{ $d->nama_dept }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12 mb-3">
-                                        <div class="form-group">
-                                            <select name="jabatan_id" id="jabatan_id" class="form-select">
-                                                <option value="">Pilih Jabatan</option>
-                                                @foreach ($jabatan as $j)
-                                                    <option value="{{ $j->id }}">
-                                                        {{ strtoupper($j->nama_jabatan) }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12 mb-3">
-                                        <div class="form-group">
-                                            <select name="kode_cabang" id="kode_cabang" class="form-select">
-                                                <option value="">Cabang (untuk Admin Cabang)</option>
-                                                @foreach ($cabang as $c)
-                                                    <option value="{{ $c->kode_cabang }}">{{ $c->nama_cabang }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row mt-2">
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <button type="submit" class="btn btn-primary w-100">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                class="icon icon-tabler icons-tabler-outline icon-tabler-send">
-                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                <path d="M10 14l11 -11" />
-                                                <path
-                                                    d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" />
-                                            </svg>
-                                            Simpan
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="modal-body">
+                            @include('admin.users._fields', ['user' => null, 'sufiks' => ''])
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-primary">Simpan</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-    </div>
+    @endcan
 
-    <div class="modal modal-blur fade" id="modal-edituser" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal modal-blur fade" id="modal-edituser" tabindex="-1" aria-labelledby="judulEditUser" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-form">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Edit Data User</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="judulEditUser">Edit user admin</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
-                <div class="modal-body" id="loadededitformuser">
-                </div>
+                <div id="loadededitformuser" class="modal-form-body"></div>
             </div>
         </div>
     </div>
@@ -321,114 +171,35 @@
 
 @push('myscript')
     <script>
-        function onlyNumberInput(event) {
-            let key = event.key;
-            if (!/^\d$/.test(key) && !event.metaKey && !event.ctrlKey && key.length === 1) {
-                event.preventDefault();
-            }
-        }
+        function validateUserForm(e, isEdit) {
+            const sfx = isEdit ? '_edit' : '';
+            const val = (id) => ($('#' + id + sfx).val() || '').trim();
 
-        function onlyTextInput(event) {
-            let key = event.key;
-            const isAllowedKey = /^[a-zA-Z\s]$/.test(key);
-            const isControlKey = event.metaKey || event.ctrlKey || key.length !== 1;
-
-            if (!isAllowedKey && !isControlKey) {
-                event.preventDefault();
-            }
-        }
-
-        function validateUserForm(e, isEdit = false) {
-
-            const name = isEdit ? $('#name_edit').val().trim() : $('#name').val().trim();
-            const email = isEdit ? $('#email_edit').val().trim() : $('#email').val().trim();
-            const password = isEdit ? $('#password_edit').val() : $('#password').val();
-            const kode_dept = isEdit ? $('#kode_dept_edit').val().trim() : $('#kode_dept').val().trim();
-            const jabatan_id = isEdit ? $('#jabatan_id_edit').val().trim() : $('#jabatan_id').val().trim();
-
-            function showWarning(text, el) {
+            function peringatan(text, id) {
                 e.preventDefault();
-                Swal.fire({
-                    title: 'Warning',
-                    text: text,
-                    icon: 'warning',
-                    confirmButtonText: 'Ok'
-                }).then(() => {
-                    el.focus();
-                });
+                Swal.fire({ title: 'Periksa isian', text: text, icon: 'warning', confirmButtonText: 'Ok' })
+                    .then(() => $('#' + id + sfx).focus());
                 return false;
             }
 
-            if (name === "")
-                return showWarning('Nama user harus diisi!', isEdit ? $('#name_edit') : $('#name'));
-
-            if (email === "")
-                return showWarning('Email harus diisi!', isEdit ? $('#email_edit') : $('#email'));
-
-            if (!isEdit && password === "")
-                return showWarning('Password harus diisi!', $('#password'));
-
-            if (kode_dept === "")
-                return showWarning('Departemen harus dipilih!', isEdit ? $('#kode_dept_edit') : $('#kode_dept'));
-
-            if (jabatan_id === "")
-                return showWarning('Jabatan harus dipilih!', isEdit ? $('#jabatan_id_edit') : $('#jabatan_id'));
-
+            if (val('name') === '') return peringatan('Nama user harus diisi.', 'name');
+            if (val('email') === '') return peringatan('Email harus diisi.', 'email');
+            if (!isEdit && $('#password').val() === '') return peringatan('Password harus diisi.', 'password');
+            if (val('kode_dept') === '') return peringatan('Departemen harus dipilih.', 'kode_dept');
+            if (val('jabatan_id') === '') return peringatan('Jabatan harus dipilih.', 'jabatan_id');
             return true;
         }
 
         $(function() {
+            $('#formUser').on('submit', (e) => validateUserForm(e, false));
+            $(document).on('submit', '#formUserEdit', (e) => validateUserForm(e, true));
 
-            // SUBMIT TAMBAH USER
-            $('#formUser').on('submit', function(e) {
-                return validateUserForm(e, false);
-            });
-
-            // LOAD FORM EDIT USER (AJAX)
-            $('.edit-user').on('click', function(e) {
-                e.preventDefault();
-
-                let id = $(this).data('id');
-
-                $.get('/users/' + id + '/edit', function(data) {
+            $('.edit-user').on('click', function() {
+                $.get('/users/' + $(this).data('id') + '/edit', function(data) {
                     $('#loadededitformuser').html(data);
                     $('#modal-edituser').modal('show');
-                }).fail(function() {
-                    Swal.fire(
-                        'Error',
-                        'Gagal memuat form edit user.',
-                        'error'
-                    );
-                });
+                }).fail(() => Swal.fire('Gagal', 'Form edit user tidak dapat dimuat.', 'error'));
             });
-
-            // SUBMIT EDIT USER
-            $(document).on('submit', '#formUserEdit', function(e) {
-                return validateUserForm(e, true);
-            });
-
-            // DELETE USER
-            $('.delete-confirm-user').on('click', function(e) {
-                e.preventDefault();
-
-                let id = $(this).data('id');
-                let name = $(this).data('name');
-
-                Swal.fire({
-                    title: 'Hapus Data',
-                    text: `Apakah Anda yakin ingin menghapus user ${name}?`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Ya, Hapus!',
-                    cancelButtonText: 'Batal',
-                    reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $('#deleteFormUser' + id).submit();
-                    }
-                });
-            });
-
         });
     </script>
 @endpush

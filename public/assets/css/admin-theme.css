@@ -2755,6 +2755,164 @@ a.contact-value {
     background: var(--color-accent);
 }
 
+/* Ringkasan yang berfungsi sebagai tab filter di sisi klien (tombol). */
+button.summary-item {
+    border: 0;
+    border-right: 1px solid var(--color-rule);
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+button.summary-item:hover {
+    background: var(--color-surface-2);
+}
+
+button.summary-item.is-current {
+    box-shadow: inset 0 -2px 0 var(--color-accent);
+}
+
+/* Halaman pengaturan: navigasi kelompok di kiri, isian di kanan. */
+.settings-layout {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: var(--space-md);
+    align-items: start;
+}
+
+.settings-nav {
+    position: sticky;
+    top: calc(var(--admin-topbar-height, 64px) + var(--space-sm));
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.settings-nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    border: 0;
+    border-radius: var(--radius-control);
+    background: transparent;
+    color: var(--color-ink-2);
+    font-weight: 500;
+    text-align: left;
+}
+
+.settings-nav-link:hover {
+    background: var(--color-surface-2);
+    color: var(--color-ink);
+}
+
+.settings-nav-link.active {
+    background: var(--color-accent-tint);
+    color: var(--color-accent);
+}
+
+.settings-nav-count {
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.setting-field {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    gap: var(--space-xs) var(--space-lg);
+    align-items: start;
+    padding: var(--space-md);
+    border-top: 1px solid var(--color-rule);
+}
+
+.setting-field:first-child {
+    border-top: 0;
+}
+
+@media (max-width: 767.98px) {
+    .settings-layout,
+    .setting-field {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .settings-nav {
+        position: static;
+        flex-direction: row;
+        overflow-x: auto;
+    }
+}
+
+/* Matriks izin role: modul per baris, aksi sebagai chip. */
+.perm-matrix {
+    border: 1px solid var(--color-rule);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.perm-matrix-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-xs) var(--space-sm);
+    border-bottom: 1px solid var(--color-rule);
+    background: var(--color-surface-2);
+}
+
+.perm-row {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: var(--space-sm);
+    align-items: start;
+    padding: var(--space-xs) var(--space-sm);
+    border-top: 1px solid var(--color-rule);
+}
+
+.perm-matrix-head + .perm-row {
+    border-top: 0;
+}
+
+.perm-module {
+    font-weight: 500;
+    padding-top: 4px;
+}
+
+.perm-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.perm-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    padding: 3px 10px 3px 6px;
+    border: 1px solid var(--color-rule);
+    border-radius: 999px;
+    color: var(--color-ink-2);
+    font-size: 0.8125rem;
+    cursor: pointer;
+}
+
+.perm-chip .form-check-input {
+    margin: 0;
+}
+
+.perm-chip:has(input:checked) {
+    border-color: var(--color-accent);
+    background: var(--color-accent-tint);
+    color: var(--color-ink);
+}
+
+@media (max-width: 575.98px) {
+    .perm-row {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
 /* ════════════════════════════════════════════════════════════════════
  * 15. Footer
  * ════════════════════════════════════════════════════════════════════ */
