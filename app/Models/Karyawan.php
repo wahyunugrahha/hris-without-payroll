@@ -168,10 +168,10 @@ class Karyawan extends Authenticatable
     public function getFotoUrlAttribute()
     {
         if ($this->foto && Storage::disk('public')->exists('uploads/karyawan/'.$this->foto)) {
-            return asset('storage/uploads/karyawan/'.$this->foto);
+            return asset_v('storage/uploads/karyawan/'.$this->foto);
         }
 
-        return asset('assets/img/nophoto.png');
+        return asset_v('assets/img/nophoto.png');
     }
 
     public function getJabatanNamaAttribute(): ?string

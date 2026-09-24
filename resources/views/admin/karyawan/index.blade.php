@@ -199,7 +199,7 @@
                             <tbody>
                                 @foreach ($karyawan as $data)
                                     @php
-                                        $fotoUrl = !empty($data->foto) ? asset('storage/uploads/karyawan/' . $data->foto) : asset('assets/img/nophoto.png');
+                                        $fotoUrl = !empty($data->foto) ? asset_v('storage/uploads/karyawan/' . $data->foto) : asset_v('assets/img/nophoto.png');
                                         $status = $data->status_aktif ?: '-';
                                         $nadaStatus = match ($status) {
                                             \App\Models\Karyawan::STATUS_AKTIF => 'success',

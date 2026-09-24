@@ -140,7 +140,7 @@
                                         $aktif = $expires->isFuture();
                                         $sisaHari = (int) round(now()->diffInDays($expires, false));
                                         $nama = $it->karyawan?->nama_lengkap ?? 'Tidak diketahui';
-                                        $fotoUrl = !empty($it->karyawan?->foto) ? asset('storage/uploads/karyawan/' . $it->karyawan->foto) : asset('assets/img/nophoto.png');
+                                        $fotoUrl = !empty($it->karyawan?->foto) ? asset_v('storage/uploads/karyawan/' . $it->karyawan->foto) : asset_v('assets/img/nophoto.png');
                                     @endphp
                                     <tr>
                                         <td class="cell-person">

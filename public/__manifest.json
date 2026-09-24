@@ -1,13 +1,13 @@
 {
-    "name": "Sistem Absensi SJP Holding",
-    "short_name": "Absensi SJP",
-    "description": "Sistem Absensi Karyawan SJP Holding",
+    "name": "Sistem Absensi wndev",
+    "short_name": "HRIS wndev",
+    "description": "Sistem absensi & HRIS karyawan wndev",
     "start_url": "/",
     "scope": "/",
     "display": "standalone",
     "orientation": "portrait",
     "background_color": "#ffffff",
-    "theme_color": "#1e74fd",
+    "theme_color": "#094b87",
     "icons": [
         {
             "src": "/assets/img/logo.png",

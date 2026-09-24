@@ -212,11 +212,11 @@ class LaporanPresensiController extends Controller
             }
 
             $item->foto_in_url = (! empty($item->foto_in) && $item->foto_in != '-' && Storage::disk('public')->exists('uploads/absensi/'.$item->foto_in))
-                ? asset('storage/uploads/absensi/'.$item->foto_in)
+                ? asset_v('storage/uploads/absensi/'.$item->foto_in)
                 : null;
 
             $item->foto_out_url = (! empty($item->foto_out) && $item->foto_out != '-' && Storage::disk('public')->exists('uploads/absensi/'.$item->foto_out))
-                ? asset('storage/uploads/absensi/'.$item->foto_out)
+                ? asset_v('storage/uploads/absensi/'.$item->foto_out)
                 : null;
 
             return $item;
@@ -224,8 +224,8 @@ class LaporanPresensiController extends Controller
 
         $path_foto_karyawan = 'uploads/karyawan/'.$karyawan->foto;
         $karyawan->foto_url = (! empty($karyawan->foto) && Storage::disk('public')->exists($path_foto_karyawan))
-            ? asset('storage/'.$path_foto_karyawan)
-            : asset('assets/img/nophoto.png');
+            ? asset_v('storage/'.$path_foto_karyawan)
+            : asset_v('assets/img/nophoto.png');
 
         $user = Auth::user();
         $approverName = $user ? $user->name : 'Ahmad Yozi Alhidayah';

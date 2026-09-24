@@ -91,7 +91,7 @@
                             <tbody>
                                 @foreach ($karyawan as $data)
                                     @php
-                                        $fotoUrl = !empty($data->foto) ? asset('storage/uploads/karyawan/' . $data->foto) : asset('assets/img/nophoto.png');
+                                        $fotoUrl = !empty($data->foto) ? asset_v('storage/uploads/karyawan/' . $data->foto) : asset_v('assets/img/nophoto.png');
                                         [$labelStatus, $nadaStatus] = match ($data->status_aktif) {
                                             'Aktif' => ['Habis kontrak · ' . $data->sisa_kontrak, str_contains((string) $data->sisa_kontrak, 'Expired') ? 'danger' : 'warning'],
                                             \App\Models\Karyawan::STATUS_DIBERHENTIKAN => ['Diberhentikan', 'danger'],

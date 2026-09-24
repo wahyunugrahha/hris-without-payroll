@@ -616,11 +616,11 @@
                                     @php
                                         $sidPath = null;
                                         if (Storage::disk('public')->exists('uploads/sid/' . $d->doc_sid)) {
-                                            $sidPath = asset('storage/uploads/sid/' . $d->doc_sid);
+                                            $sidPath = asset_v('storage/uploads/sid/' . $d->doc_sid);
                                         } elseif (
                                             Storage::disk('public')->exists('public/uploads/sid/' . $d->doc_sid)
                                         ) {
-                                            $sidPath = asset('storage/public/uploads/sid/' . $d->doc_sid);
+                                            $sidPath = asset_v('storage/public/uploads/sid/' . $d->doc_sid);
                                         }
                                     @endphp
                                     @if ($sidPath)

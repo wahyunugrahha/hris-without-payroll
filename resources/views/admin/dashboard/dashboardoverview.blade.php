@@ -6,8 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Dashboard Presensi wndev</title>
-    <link rel="icon" type="image/png" href="{{ asset('assets/img/logo.png') }}?v=20260618" sizes="32x32">
-    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/img/logo.png') }}?v=20260618">
+    <link rel="icon" type="image/png" href="{{ asset_v('assets/img/logo.png') }}" sizes="32x32">
+    <link rel="shortcut icon" type="image/png" href="{{ asset_v('assets/img/logo.png') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler.min.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -522,7 +522,7 @@
                                 <div class="list-group list-group-flush">
                                     @forelse($dataPresensi as $p)
                                         <div class="list-item-modern">
-                                            <img src="{{ !empty($p->foto) ? asset('storage/uploads/karyawan/' . $p->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($p->nama_lengkap) . '&background=dcfce7&color=166534' }}"
+                                            <img src="{{ !empty($p->foto) ? asset_v('storage/uploads/karyawan/' . $p->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($p->nama_lengkap) . '&background=dcfce7&color=166534' }}"
                                                 class="avatar-modern me-3">
                                             <div class="flex-fill overflow-hidden">
                                                 <div class="text-dark fw-bold text-truncate">{{ $p->nama_lengkap }}
@@ -559,7 +559,7 @@
                                 <div class="list-group list-group-flush">
                                     @forelse($dataIzinSakit as $iz)
                                         <div class="list-item-modern">
-                                            <img src="{{ !empty($iz->foto) ? asset('storage/uploads/karyawan/' . $iz->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($iz->nama_lengkap) . '&background=fef3c7&color=92400e' }}"
+                                            <img src="{{ !empty($iz->foto) ? asset_v('storage/uploads/karyawan/' . $iz->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($iz->nama_lengkap) . '&background=fef3c7&color=92400e' }}"
                                                 class="avatar-modern me-3">
                                             <div class="flex-fill overflow-hidden">
                                                 <div class="d-flex justify-content-between">
@@ -595,7 +595,7 @@
                                 <div class="list-group list-group-flush">
                                     @forelse($dataDinasLuar as $dl)
                                         <div class="list-item-modern">
-                                            <img src="{{ !empty($dl->foto) ? asset('storage/uploads/karyawan/' . $dl->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($dl->nama_lengkap) . '&background=dbeafe&color=1e40af' }}"
+                                            <img src="{{ !empty($dl->foto) ? asset_v('storage/uploads/karyawan/' . $dl->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($dl->nama_lengkap) . '&background=dbeafe&color=1e40af' }}"
                                                 class="avatar-modern me-3">
                                             <div class="flex-fill overflow-hidden">
                                                 <div class="d-flex justify-content-between">
@@ -651,7 +651,7 @@
                                 <div class="list-group list-group-flush">
                                     @forelse($dataLembur as $lb)
                                         <div class="list-item-modern">
-                                            <img src="{{ !empty($lb->foto) ? asset('storage/uploads/karyawan/' . $lb->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($lb->nama_lengkap) . '&background=f3e8ff&color=6b21a8' }}"
+                                            <img src="{{ !empty($lb->foto) ? asset_v('storage/uploads/karyawan/' . $lb->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($lb->nama_lengkap) . '&background=f3e8ff&color=6b21a8' }}"
                                                 class="avatar-modern me-3">
                                             <div class="flex-fill overflow-hidden">
                                                 <div class="d-flex justify-content-between">
@@ -688,7 +688,7 @@
                                 <div class="list-group list-group-flush">
                                     @forelse($dataBelumPresensi as $ba)
                                         <div class="list-item-modern">
-                                            <img src="{{ !empty($ba->foto) ? asset('storage/uploads/karyawan/' . $ba->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($ba->nama_lengkap) . '&background=fee2e2&color=991b1b' }}"
+                                            <img src="{{ !empty($ba->foto) ? asset_v('storage/uploads/karyawan/' . $ba->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($ba->nama_lengkap) . '&background=fee2e2&color=991b1b' }}"
                                                 class="avatar-modern me-3">
                                             <div class="flex-fill overflow-hidden">
                                                 <div class="text-dark fw-bold text-truncate">{{ $ba->nama_lengkap }}
@@ -732,7 +732,7 @@
                                 <div class="list-group list-group-flush">
                                     @forelse($karyawanSP as $sp)
                                         <div class="list-item-modern">
-                                            <img src="{{ !empty($sp->foto) ? asset('storage/uploads/karyawan/' . $sp->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($sp->nama_lengkap) . '&background=random' }}"
+                                            <img src="{{ !empty($sp->foto) ? asset_v('storage/uploads/karyawan/' . $sp->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($sp->nama_lengkap) . '&background=random' }}"
                                                 class="avatar-modern me-3">
                                             <div class="flex-fill">
                                                 <div class="d-flex justify-content-between align-items-center">
@@ -787,7 +787,7 @@
                                                 class="rank-indicator {{ $index == 0 ? 'rank-gold' : ($index == 1 ? 'rank-silver' : ($index == 2 ? 'rank-bronze' : 'rank-normal')) }}">
                                                 {{ $index + 1 }}
                                             </div>
-                                            <img src="{{ !empty($d->foto) ? asset('storage/uploads/karyawan/' . $d->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($d->nama_lengkap) . '&background=random' }}"
+                                            <img src="{{ !empty($d->foto) ? asset_v('storage/uploads/karyawan/' . $d->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($d->nama_lengkap) . '&background=random' }}"
                                                 class="avatar-modern me-3">
                                             <div class="flex-fill text-truncate">
                                                 <div class="fw-bold text-dark">{{ $d->nama_lengkap }}</div>
@@ -831,7 +831,7 @@
                                                 class="rank-indicator {{ $index == 0 ? 'rank-gold' : ($index == 1 ? 'rank-silver' : ($index == 2 ? 'rank-bronze' : 'rank-normal')) }}">
                                                 {{ $index + 1 }}
                                             </div>
-                                            <img src="{{ !empty($m->foto) ? asset('storage/uploads/karyawan/' . $m->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($m->nama_lengkap) . '&background=random' }}"
+                                            <img src="{{ !empty($m->foto) ? asset_v('storage/uploads/karyawan/' . $m->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($m->nama_lengkap) . '&background=random' }}"
                                                 class="avatar-modern me-3">
                                             <div class="flex-fill text-truncate">
                                                 <div class="fw-bold text-dark">{{ $m->nama_lengkap }}</div>
@@ -873,7 +873,7 @@
                                                 class="rank-indicator {{ $index == 0 ? 'rank-gold' : ($index == 1 ? 'rank-silver' : ($index == 2 ? 'rank-bronze' : 'rank-normal')) }}">
                                                 {{ $index + 1 }}
                                             </div>
-                                            <img src="{{ !empty($m->foto) ? asset('storage/uploads/karyawan/' . $m->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($m->nama_lengkap) . '&background=random' }}"
+                                            <img src="{{ !empty($m->foto) ? asset_v('storage/uploads/karyawan/' . $m->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($m->nama_lengkap) . '&background=random' }}"
                                                 class="avatar-modern me-3">
                                             <div class="flex-fill text-truncate">
                                                 <div class="fw-bold text-dark">{{ $m->nama_lengkap }}</div>

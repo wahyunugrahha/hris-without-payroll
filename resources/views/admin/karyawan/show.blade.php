@@ -6,7 +6,7 @@
 @php
     $tgl = fn ($nilai) => $nilai ? Carbon::parse($nilai)->locale('id')->translatedFormat('d F Y') : '-';
     $isi = fn ($nilai) => filled($nilai) ? $nilai : '-';
-    $foto = !empty($karyawan->foto) ? asset('storage/uploads/karyawan/' . $karyawan->foto) : asset('assets/img/nophoto.png');
+    $foto = !empty($karyawan->foto) ? asset_v('storage/uploads/karyawan/' . $karyawan->foto) : asset_v('assets/img/nophoto.png');
 
     $nadaStatus = match ($karyawan->status_aktif) {
         Karyawan::STATUS_AKTIF => 'success',
@@ -234,7 +234,7 @@
                                             <div><dt>{{ $judul }}</dt><dd class="cell-num">{{ $isi($nomor) }}</dd></div>
                                         </dl>
                                         @if ($berkas)
-                                            @php $urlBerkas = asset('storage/uploads/karyawan/bpjs/' . $berkas); @endphp
+                                            @php $urlBerkas = asset_v('storage/uploads/karyawan/bpjs/' . $berkas); @endphp
                                             <a href="{{ $urlBerkas }}" target="_blank" rel="noopener" class="doc-thumb">
                                                 <img src="{{ $urlBerkas }}" alt="Kartu {{ $judul }}" loading="lazy">
                                             </a>

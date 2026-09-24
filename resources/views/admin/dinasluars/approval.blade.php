@@ -102,7 +102,7 @@
                                         $jumlahHari = abs($selesai->diffInDays($mulai)) + 1;
                                         [$labelStatus, $nadaStatus] = $statusDinas[$d->status_acc] ?? $statusDinas['menunggu'];
                                         $menunggu = $d->status_acc === 'menunggu';
-                                        $foto = !empty($d->karyawan->foto) ? asset('storage/uploads/karyawan/' . $d->karyawan->foto) : asset('assets/img/nophoto.png');
+                                        $foto = !empty($d->karyawan->foto) ? asset_v('storage/uploads/karyawan/' . $d->karyawan->foto) : asset_v('assets/img/nophoto.png');
                                         $dataDetail = [
                                             'id' => $d->id,
                                             'nama' => $d->karyawan->nama_lengkap ?? '-',

@@ -193,9 +193,9 @@ class IzinApprovalController extends Controller
             if (! empty($izin->doc_sid)) {
                 $sidPath = null;
                 if (Storage::disk('public')->exists('uploads/sid/'.$izin->doc_sid)) {
-                    $sidPath = asset('storage/uploads/sid/'.$izin->doc_sid);
+                    $sidPath = asset_v('storage/uploads/sid/'.$izin->doc_sid);
                 } elseif (Storage::disk('public')->exists('public/uploads/sid/'.$izin->doc_sid)) {
-                    $sidPath = asset('storage/public/uploads/sid/'.$izin->doc_sid);
+                    $sidPath = asset_v('storage/public/uploads/sid/'.$izin->doc_sid);
                 }
 
                 if ($sidPath) {

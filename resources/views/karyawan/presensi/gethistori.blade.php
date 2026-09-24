@@ -11,9 +11,9 @@
             @php
                 // Logic Penentuan Data (sama seperti sebelumnya, dirapikan)
                 if ($d->status == 'h') {
-                    $path = Storage::url('uploads/absensi/' . $d->foto_in);
+                    $path = asset_v('storage/' . 'uploads/absensi/' . $d->foto_in);
                     $foto_in_url = url($path);
-                    $foto_out_url = !empty($d->foto_out) ? url(Storage::url('uploads/absensi/' . $d->foto_out)) : '';
+                    $foto_out_url = !empty($d->foto_out) ? url(asset_v('storage/' . 'uploads/absensi/' . $d->foto_out)) : '';
 
                     $jam_in_display = $d->jam_in;
                     $jam_out_display = $d->jam_out != null ? $d->jam_out : '--:--';

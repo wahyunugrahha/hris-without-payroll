@@ -26,7 +26,7 @@ class KPIDailyDetail extends Model
     public function getBuktiFotoUrlAttribute()
     {
         if ($this->bukti_foto && Storage::exists($this->bukti_foto)) {
-            return Storage::url($this->bukti_foto);
+            return asset_v('storage/'.$this->bukti_foto);
         }
 
         return null;

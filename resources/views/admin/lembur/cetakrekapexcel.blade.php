@@ -3,9 +3,9 @@
 <head>
     <meta charset="utf-8">
     <title>Cetak Rekap Lembur Seluruh Karyawan</title>
-    <link rel="icon" type="image/png" href="{{ asset('assets/img/logo.png') }}?v=20260618" sizes="32x32">
-    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/img/logo.png') }}?v=20260618">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/img/logo.png') }}?v=20260618">
+    <link rel="icon" type="image/png" href="{{ asset_v('assets/img/logo.png') }}" sizes="32x32">
+    <link rel="shortcut icon" type="image/png" href="{{ asset_v('assets/img/logo.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset_v('assets/img/logo.png') }}">
     <style>
         html, body { font-family: 'Arial', sans-serif; font-size: 10px; color: #000; }
         #title { font-size: 14px; font-weight: bold; line-height: 1.2; }

@@ -152,7 +152,7 @@
                                     <div class="form-hint">Biarkan kosong jika gambar tidak diubah.</div>
                                 </div>
                                 <div class="mb-3 {{ $p->gambar ? '' : 'd-none' }}" data-pratinjau-wadah>
-                                    <img id="preview-img-{{ $p->id }}" src="{{ $p->gambar ? asset('storage/' . $p->gambar) : '' }}"
+                                    <img id="preview-img-{{ $p->id }}" src="{{ $p->gambar ? asset_v('storage/' . $p->gambar) : '' }}"
                                         alt="Pratinjau gambar pengumuman" class="announce-preview">
                                 </div>
                                 <div class="row g-3">

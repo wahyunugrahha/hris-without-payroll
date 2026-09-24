@@ -55,9 +55,9 @@
                             $sidPathEdit = null;
                                 if (isset($dataizin->doc_sid) && $dataizin->doc_sid != '-') {
                                 if (Storage::disk('public')->exists('uploads/sid/' . $dataizin->doc_sid)) {
-                                    $sidPathEdit = asset('storage/uploads/sid/' . $dataizin->doc_sid);
+                                    $sidPathEdit = asset_v('storage/uploads/sid/' . $dataizin->doc_sid);
                                 } elseif (Storage::disk('public')->exists('public/uploads/sid/' . $dataizin->doc_sid)) {
-                                    $sidPathEdit = asset('storage/public/uploads/sid/' . $dataizin->doc_sid);
+                                    $sidPathEdit = asset_v('storage/public/uploads/sid/' . $dataizin->doc_sid);
                                 }
                             }
                         @endphp

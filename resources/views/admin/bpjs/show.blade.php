@@ -64,7 +64,7 @@
                                     @enderror
                                 </div>
                                 @if (!empty($karyawan->{$kolomFoto}))
-                                    @php $urlFoto = asset('storage/uploads/karyawan/bpjs/' . $karyawan->{$kolomFoto}); @endphp
+                                    @php $urlFoto = asset_v('storage/uploads/karyawan/bpjs/' . $karyawan->{$kolomFoto}); @endphp
                                     <div class="form-grid-full">
                                         <a href="{{ $urlFoto }}" target="_blank" rel="noopener" class="image-preview">
                                             <img src="{{ $urlFoto }}" alt="Foto kartu {{ $judul }}">

@@ -7,8 +7,8 @@
     <meta http-equiv="refresh" content="300">
     <title>wndev TV Dashboard - Master Monitor</title>
 
-    <link rel="icon" type="image/png" href="{{ asset('assets/img/logo.png') }}?v=20260618">
-    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/img/logo.png') }}?v=20260618">
+    <link rel="icon" type="image/png" href="{{ asset_v('assets/img/logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset_v('assets/img/logo.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -803,7 +803,7 @@
                         <div class="scroll-content">
                             @forelse($izinRows as $iz)
                                 <div class="li-row">
-                                    <img src="{{ !empty($iz->foto) ? asset('storage/uploads/karyawan/' . $iz->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($iz->nama_lengkap) . '&background=random&color=fff' }}"
+                                    <img src="{{ !empty($iz->foto) ? asset_v('storage/uploads/karyawan/' . $iz->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($iz->nama_lengkap) . '&background=random&color=fff' }}"
                                         class="u-avt">
                                     <div class="u-info">
                                         <div class="u-main">{{ $iz->nama_lengkap }}</div>
@@ -827,7 +827,7 @@
                         <div class="scroll-content">
                             @forelse($sakitRows as $sk)
                                 <div class="li-row">
-                                    <img src="{{ !empty($sk->foto) ? asset('storage/uploads/karyawan/' . $sk->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($sk->nama_lengkap) . '&background=random&color=fff' }}"
+                                    <img src="{{ !empty($sk->foto) ? asset_v('storage/uploads/karyawan/' . $sk->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($sk->nama_lengkap) . '&background=random&color=fff' }}"
                                         class="u-avt">
                                     <div class="u-info">
                                         <div class="u-main">{{ $sk->nama_lengkap }}</div>
@@ -851,7 +851,7 @@
                         <div class="scroll-content">
                             @forelse($cutiRows as $ct)
                                 <div class="li-row">
-                                    <img src="{{ !empty($ct->foto) ? asset('storage/uploads/karyawan/' . $ct->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($ct->nama_lengkap) . '&background=random&color=fff' }}"
+                                    <img src="{{ !empty($ct->foto) ? asset_v('storage/uploads/karyawan/' . $ct->foto) : 'https://ui-avatars.com/api/?name=' . urlencode($ct->nama_lengkap) . '&background=random&color=fff' }}"
                                         class="u-avt">
                                     <div class="u-info">
                                         <div class="u-main">{{ $ct->nama_lengkap }}</div>

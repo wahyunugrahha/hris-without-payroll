@@ -1120,7 +1120,7 @@
 
 
     @php
-        $avatarKaryawan = fn ($foto) => $foto ? asset('storage/uploads/karyawan/' . $foto) : asset('assets/img/nophoto.png');
+        $avatarKaryawan = fn ($foto) => $foto ? asset_v('storage/uploads/karyawan/' . $foto) : asset_v('assets/img/nophoto.png');
         $totalAktif = (int) ($jmlkaryawan ?? 0);
         // Rasio kehadiran dibanding karyawan yang terjadwal kerja hari ini (bukan yang libur).
         $terjadwal = (int) ($jmlDijadwalkan ?? 0);
@@ -1423,8 +1423,8 @@
                                                         'lembur' => ['Lembur', ($item->total_jam ?? '-') . ' jam', $a['url']],
                                                         'dinas' => ['Dinas luar', \Illuminate\Support\Str::limit($item->lokasi_tujuan ?? '-', 32), $a['url']],
                                                         'kpi' => ['KPI', \Carbon\Carbon::parse($item->tanggal)->locale('id')->translatedFormat('d M Y'), $a['url']],
-                                                        'bpjs' => ['BPJS', ($item->requested_at ?? $item->created_at)?->locale('id')->translatedFormat('d M Y'), route('admin.bpjs.show', $item->id)],
-                                                        'gaji' => ['Kenaikan gaji', (int) ($item->persentase ?? 0) . '% · ' . ($item->tanggal_pengajuan ?? $item->created_at)?->locale('id')->translatedFormat('d M Y'), route('admin.kenaikan_gaji.index', ['status' => 'pending', 'nama_karyawan' => $item->nik])],
+                                                        'bpjs' => ['BPJS', \Carbon\Carbon::parse($item->requested_at ?? $item->created_at)->locale('id')->translatedFormat('d M Y'), route('admin.bpjs.show', $item->id)],
+                                                        'gaji' => ['Kenaikan gaji', (int) ($item->persentase ?? 0) . '% · ' . \Carbon\Carbon::parse($item->tanggal_pengajuan ?? $item->created_at)->locale('id')->translatedFormat('d M Y'), route('admin.kenaikan_gaji.index', ['status' => 'pending', 'nama_karyawan' => $item->nik])],
                                                     };
                                                 @endphp
                                                 <div class="approval-item">
@@ -1680,7 +1680,7 @@
                                             <a href="{{ route('pengumuman.index') }}" class="compact-item">
                                                 <div class="min-w-0 flex-fill">
                                                     <div class="people-name" title="{{ $pg->judul }}">{{ $pg->judul }}</div>
-                                                    <div class="people-sub">{{ ($pg->tanggal_mulai)?->locale('id')->translatedFormat('d M') ?? '-' }} – {{ ($pg->tanggal_selesai)?->locale('id')->translatedFormat('d M Y') ?? '-' }}</div>
+                                                    <div class="people-sub">{{ ($pg->tanggal_mulai ? \Carbon\Carbon::parse($pg->tanggal_mulai) : null)?->locale('id')->translatedFormat('d M') ?? '-' }} – {{ ($pg->tanggal_selesai ? \Carbon\Carbon::parse($pg->tanggal_selesai) : null)?->locale('id')->translatedFormat('d M Y') ?? '-' }}</div>
                                                 </div>
                                                 <span class="pill {{ (int) ($pg->is_active ?? 0) === 1 ? 'pill--success' : 'pill--neutral' }}">{{ (int) ($pg->is_active ?? 0) === 1 ? 'Aktif' : 'Nonaktif' }}</span>
                                             </a>
@@ -1923,7 +1923,7 @@
                                         <td>
                                             <div class="d-flex py-1 align-items-center">
                                                 <span class="avatar me-2 flex-shrink-0"
-                                                    style="background-image: url('{{ data_get($item, 'foto') ? asset('storage/uploads/karyawan/' . data_get($item, 'foto')) : asset('assets/img/nophoto.png') }}')"></span>
+                                                    style="background-image: url('{{ data_get($item, 'foto') ? asset_v('storage/uploads/karyawan/' . data_get($item, 'foto')) : asset_v('assets/img/nophoto.png') }}')"></span>
                                                 <div class="flex-fill">
                                                     <div class="font-weight-medium text-reset">
                                                         {{ optional($item)->nama_lengkap }}</div>

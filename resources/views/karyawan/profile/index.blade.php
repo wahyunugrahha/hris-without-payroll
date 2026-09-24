@@ -115,11 +115,11 @@
                         {{-- Avatar on Left --}}
                         <div class="avatar-container" style="width: 80px; height: 80px; flex-shrink: 0;">
                             @if (isset($karyawan->foto) && $karyawan->foto)
-                                <img src="{{ asset('storage/uploads/karyawan/' . $karyawan->foto) }}"
+                                <img src="{{ asset_v('storage/uploads/karyawan/' . $karyawan->foto) }}"
                                     style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #f1f5f9; box-shadow: 0 4px 10px rgba(0,0,0,0.05);"
                                     alt="Foto Profil" loading="lazy">
                             @else
-                                <img src="{{ asset('assets/img/nophoto.png') }}"
+                                <img src="{{ asset_v('assets/img/nophoto.png') }}"
                                     style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #f1f5f9; box-shadow: 0 4px 10px rgba(0,0,0,0.05);"
                                     alt="Foto Default" loading="lazy">
                             @endif

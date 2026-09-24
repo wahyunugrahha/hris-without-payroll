@@ -18,9 +18,9 @@
 @forelse ($presensi as $d)
     @php
         $path = 'uploads/absensi/';
-        $foto_in = !empty($d->foto_in) && $d->foto_in != '-' ? Storage::url($path . $d->foto_in) : null;
-        $foto_out = !empty($d->foto_out) && $d->foto_out != '-' ? Storage::url($path . $d->foto_out) : null;
-        $doc_sid = !empty($d->doc_sid) && $d->doc_sid != '-' ? Storage::url('uploads/sid/' . $d->doc_sid) : null;
+        $foto_in = !empty($d->foto_in) && $d->foto_in != '-' ? asset_v('storage/' . $path . $d->foto_in) : null;
+        $foto_out = !empty($d->foto_out) && $d->foto_out != '-' ? asset_v('storage/' . $path . $d->foto_out) : null;
+        $doc_sid = !empty($d->doc_sid) && $d->doc_sid != '-' ? asset_v('storage/' . 'uploads/sid/' . $d->doc_sid) : null;
 
         [$status_label, $nada] = $statusPresensi[$d->status] ?? ['Alpha', 'danger'];
         // Jenis ketidakhadiran (izin, sakit, cuti, …) memakai warna kategorinya masing-masing.

@@ -156,8 +156,8 @@
                                                 data-tempat="{{ $lembur->tempat }}" data-jammulai="{{ $lembur->jam_mulai }}"
                                                 data-jamselesai="{{ $lembur->jam_selesai }}" data-totaljam="{{ $lembur->total_jam }}"
                                                 data-kode="{{ $lembur->kode_lembur }}" data-keterangan="{{ $lembur->keterangan ?? '-' }}"
-                                                data-foto-masuk="{{ !empty($lembur->foto_masuk) ? asset('storage/uploads/absensi/' . $lembur->foto_masuk) : '' }}"
-                                                data-foto-keluar="{{ !empty($lembur->foto_keluar) ? asset('storage/uploads/absensi/' . $lembur->foto_keluar) : '' }}">
+                                                data-foto-masuk="{{ !empty($lembur->foto_masuk) ? asset_v('storage/uploads/absensi/' . $lembur->foto_masuk) : '' }}"
+                                                data-foto-keluar="{{ !empty($lembur->foto_keluar) ? asset_v('storage/uploads/absensi/' . $lembur->foto_keluar) : '' }}">
                                                 {{ (int) $lembur->status_approved === 0 ? 'Proses' : 'Detail' }}
                                             </button>
                                         </td>

@@ -128,7 +128,7 @@
                                         <td data-label="Catatan"><div class="cell-clamp">{{ $detail?->catatan ?: '-' }}</div></td>
                                         <td class="cell-actions">
                                             @if ($detail?->bukti_foto)
-                                                <a href="{{ asset('storage/' . $detail->bukti_foto) }}" target="_blank" rel="noopener" class="btn btn-sm">Lihat bukti</a>
+                                                <a href="{{ asset_v('storage/' . $detail->bukti_foto) }}" target="_blank" rel="noopener" class="btn btn-sm">Lihat bukti</a>
                                             @endif
                                         </td>
                                     </tr>
@@ -178,8 +178,8 @@
                             <div class="mb-3">
                                 <span class="form-label d-block">Bukti foto</span>
                                 @if ($savedDetail?->bukti_foto)
-                                    <a href="{{ asset('storage/' . $savedDetail->bukti_foto) }}" target="_blank" rel="noopener" class="image-preview">
-                                        <img src="{{ asset('storage/' . $savedDetail->bukti_foto) }}" alt="Bukti foto {{ $masterDetail->indikator }}">
+                                    <a href="{{ asset_v('storage/' . $savedDetail->bukti_foto) }}" target="_blank" rel="noopener" class="image-preview">
+                                        <img src="{{ asset_v('storage/' . $savedDetail->bukti_foto) }}" alt="Bukti foto {{ $masterDetail->indikator }}">
                                     </a>
                                 @else
                                     <div class="detail-media-empty">Tidak ada bukti foto</div>
