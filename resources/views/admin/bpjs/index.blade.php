@@ -1,12 +1,20 @@
 @extends('layouts.admin.tabler')
 
+@php
+    $statusBpjs = ['pending' => ['Menunggu', 'warning'], 'processed' => ['Diproses', 'success']];
+    $statusKini = request('status');
+    $urlStatus = fn ($s) => route('admin.bpjs.index', array_merge(request()->except(['page', 'status']), $s === null ? [] : ['status' => $s]));
+    $filterAktif = collect([request('dari'), request('sampai'), request('nama_lengkap')])->filter(fn ($v) => filled($v))->count();
+@endphp
+
 @section('page-header')
     <div class="page-header d-print-none">
         <div class="container-xl">
             <div class="row g-2 align-items-center">
                 <div class="col">
                     <div class="page-pretitle">Permintaan Karyawan</div>
-                    <h2 class="page-title">Pengajuan BPJS Karyawan</h2>
+                    <h2 class="page-title">Pengajuan BPJS</h2>
+                    <p class="page-subtitle">Permintaan pendaftaran & pembaruan data BPJS dari karyawan.</p>
                 </div>
             </div>
         </div>
@@ -14,143 +22,94 @@
 @endsection
 
 @section('content')
-
     <div class="page-body">
         <div class="container-xl">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-transparent border-bottom-1 py-3">
-                    <form action="{{ route('admin.bpjs.index') }}" method="GET" autocomplete="off" class="w-100">
-                        <div class="row g-2 mb-2">
-                            <div class="col-12 col-md-6 col-xl-3">
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white text-muted">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
-                                            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path
-                                                d="M4 5m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z" />
-                                            <path d="M16 3l0 4" />
-                                            <path d="M8 3l0 4" />
-                                            <path d="M4 11l16 0" />
-                                        </svg>
-                                    </span>
-                                    <input type="date" value="{{ request('dari') }}" name="dari" class="form-control"
-                                        placeholder="Dari Tanggal">
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-6 col-xl-3">
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white text-muted">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
-                                            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path
-                                                d="M4 5m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z" />
-                                            <path d="M16 3l0 4" />
-                                            <path d="M8 3l0 4" />
-                                            <path d="M4 11l16 0" />
-                                        </svg>
-                                    </span>
-                                    <input type="date" value="{{ request('sampai') }}" name="sampai"
-                                        class="form-control" placeholder="Sampai Tanggal">
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-6 col-xl-3">
-                                <input type="text" value="{{ request('nik') }}" name="nik" class="form-control"
-                                    placeholder="NIK">
-                            </div>
-                            <div class="col-12 col-md-6 col-xl-3">
-                                <select name="status" class="form-select">
-                                    <option value="">Semua Status</option>
-                                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending
-                                    </option>
-                                    <option value="processed" {{ request('status') == 'processed' ? 'selected' : '' }}>
-                                        Processed</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row g-2">
-                            <div class="col-12">
-                                <div class="input-group">
-                                    <input type="text" value="{{ request('nama_lengkap') }}" name="nama_lengkap"
-                                        class="form-control" placeholder="Cari Nama Karyawan / NIK">
-                                    <button type="submit" class="btn btn-primary text-white">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
-                                            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <circle cx="10" cy="10" r="7" />
-                                            <line x1="21" y1="21" x2="15" y2="15" />
-                                        </svg>
-                                        Cari Data
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
+            <section class="card list-card" aria-label="Daftar pengajuan BPJS">
+                <nav class="list-tabs" aria-label="Status pengajuan">
+                    <a href="{{ $urlStatus(null) }}" class="list-tab {{ blank($statusKini) ? 'is-current' : '' }}" @if (blank($statusKini)) aria-current="page" @endif>Semua</a>
+                    @foreach ($statusBpjs as $nilai => [$label])
+                        <a href="{{ $urlStatus($nilai) }}" class="list-tab {{ $statusKini === $nilai ? 'is-current' : '' }}" @if ($statusKini === $nilai) aria-current="page" @endif>{{ $label }}</a>
+                    @endforeach
+                </nav>
+
+                <form action="{{ route('admin.bpjs.index') }}" method="GET" class="list-toolbar" autocomplete="off">
+                    @if (filled($statusKini))
+                        <input type="hidden" name="status" value="{{ $statusKini }}">
+                    @endif
+                    <div class="list-toolbar-row">
+                        <x-admin.search name="nama_lengkap" placeholder="Cari nama atau NIK…" label="Cari karyawan" />
+                    </div>
+                    <div class="filter-bar">
+                        <label class="filter-field">
+                            <span class="filter-label">Diajukan dari</span>
+                            <input type="date" name="dari" value="{{ request('dari') }}" class="form-control form-control-sm">
+                        </label>
+                        <label class="filter-field">
+                            <span class="filter-label">Sampai</span>
+                            <input type="date" name="sampai" value="{{ request('sampai') }}" class="form-control form-control-sm">
+                        </label>
+                        @if ($filterAktif > 0)
+                            <a href="{{ $urlStatus($statusKini ?: null) }}" class="filter-reset">Reset filter</a>
+                        @endif
+                    </div>
+                </form>
+
+                <div class="list-meta">
+                    @if ($pengajuan->total() > 0)
+                        Menampilkan <strong>{{ $pengajuan->firstItem() }}–{{ $pengajuan->lastItem() }}</strong>
+                        dari <strong>{{ $pengajuan->total() }}</strong> pengajuan
+                    @endif
                 </div>
 
-
-                <div class="table-responsive">
-                    <table class="table table-vcenter card-table table-hover">
-                        <thead>
-                            <tr>
-                                <th class="w-1">No</th>
-                                <th>NIK</th>
-                                <th>Nama Karyawan</th>
-                                <th>Tanggal Ajukan</th>
-                                <th>Status</th>
-                                <th>Diproses Oleh</th>
-                                <th class="w-1">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($pengajuan as $p)
+                @if ($pengajuan->isEmpty())
+                    <div class="list-empty">
+                        <p class="mb-1 fw-medium">Belum ada pengajuan BPJS.</p>
+                        <p class="mb-0 text-secondary small">Pengajuan dari aplikasi karyawan akan tampil di sini.</p>
+                    </div>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-vcenter list-table">
+                            <thead>
                                 <tr>
-                                    <td>{{ $loop->iteration + $pengajuan->firstItem() - 1 }}</td>
-                                    <td>{{ $p->nik }}</td>
-                                    <td>{{ $p->nama_lengkap }}</td>
-                                    <td>{{ optional($p->requested_at ?? $p->created_at)->format('d-m-Y H:i') }}</td>
-                                    <td>
-                                        @if ($p->status === 'pending')
-                                            <span class="badge bg-warning-lt">Pending</span>
-                                        @else
-                                            <span class="badge bg-success-lt">Processed</span>
-                                        @endif
-                                    </td>
-                                    <td>{{ $p->processed_by ?? '-' }}</td>
-                                    <td>
-                                        <div class="btn-list flex-nowrap">
-                                            <a href="{{ route('admin.bpjs.show', $p->id) }}"
-                                                class="btn btn-icon btn-outline-info" title="Lihat Detail">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24"
-                                                    height="24" viewBox="0 0 24 24" stroke-width="2"
-                                                    stroke="currentColor" fill="none" stroke-linecap="round"
-                                                    stroke-linejoin="round">
-                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                    <circle cx="12" cy="12" r="2" />
-                                                    <path
-                                                        d="M22 12c-2.667 4.667 -6 7 -10 7s-7.333 -2.333 -10 -7c2.667 -4.667 6 -7 10 -7s7.333 2.333 10 7" />
-                                                </svg>
+                                    <th>Karyawan</th>
+                                    <th>Diajukan</th>
+                                    <th>Status</th>
+                                    <th>Diproses oleh</th>
+                                    <th class="w-1"><span class="visually-hidden">Aksi</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($pengajuan as $p)
+                                    @php [$labelStatus, $nadaStatus] = $statusBpjs[$p->status] ?? [$p->status, 'neutral']; @endphp
+                                    <tr>
+                                        <td class="cell-person">
+                                            <a href="{{ route('admin.bpjs.show', $p->id) }}" class="person">
+                                                <span class="min-w-0">
+                                                    <span class="person-name">{{ $p->nama_lengkap }}</span>
+                                                    <span class="person-sub">NIK {{ $p->nik }}</span>
+                                                </span>
                                             </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="text-center py-5">Belum ada pengajuan BPJS.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                                        </td>
+                                        <td data-label="Diajukan" class="cell-num">{{ optional($p->requested_at ?? $p->created_at)->format('d M Y H:i') }}</td>
+                                        <td data-label="Status"><span class="emp-status emp-status--{{ $nadaStatus }}">{{ $labelStatus }}</span></td>
+                                        <td data-label="Diproses">{{ $p->processed_by ?? '-' }}</td>
+                                        <td class="cell-actions">
+                                            <a href="{{ route('admin.bpjs.show', $p->id) }}" class="btn btn-sm">{{ $p->status === 'pending' ? 'Proses' : 'Detail' }}</a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
 
-                <div class="card-footer d-flex align-items-center">
-                    {{ $pengajuan->links('pagination::bootstrap-5') }}
-                </div>
-            </div>
+                @if ($pengajuan->hasPages())
+                    <div class="list-footer">
+                        <span class="text-secondary small">Halaman {{ $pengajuan->currentPage() }} dari {{ $pengajuan->lastPage() }}</span>
+                        {{ $pengajuan->withQueryString()->onEachSide(1)->links('pagination::bootstrap-5') }}
+                    </div>
+                @endif
+            </section>
         </div>
     </div>
 @endsection

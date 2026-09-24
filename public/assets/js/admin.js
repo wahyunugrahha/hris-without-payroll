@@ -4,7 +4,8 @@
  *  2. Notifikasi flash dari server (SweetAlert).
  *  3. Popover notifikasi & akun di topbar.
  *  4. Sidebar ringkas (desktop) / drawer (mobile).
- *  5. Form daftar: filter auto-submit & konfirmasi aksi berbahaya.
+ *  5. Form daftar: filter auto-submit, konfirmasi aksi berbahaya, daftar centang,
+ *     hapus data master dengan pemeriksaan relasi.
  */
 (function () {
     'use strict';
@@ -200,6 +201,36 @@
         });
     }
 
+    // Daftar centang: [data-check-list] berisi [data-check-all], [data-check-item], [data-check-count].
+    function sinkronDaftarCentang(daftar) {
+        var semua = daftar.querySelector('[data-check-all]');
+        var item = daftar.querySelectorAll('[data-check-item]');
+        var n = daftar.querySelectorAll('[data-check-item]:checked').length;
+        var hitung = daftar.querySelector('[data-check-count]');
+        if (hitung) hitung.textContent = n + ' dipilih';
+        if (semua) {
+            semua.checked = n > 0 && n === item.length;
+            semua.indeterminate = n > 0 && n < item.length;
+        }
+    }
+
+    // Dipanggil ulang setelah konten dimuat via AJAX.
+    window.sinkronSemuaDaftarCentang = function (root) {
+        (root || document).querySelectorAll('[data-check-list]').forEach(sinkronDaftarCentang);
+    };
+
+    function initDaftarCentang() {
+        document.addEventListener('change', function (e) {
+            var daftar = e.target.closest('[data-check-list]');
+            if (!daftar) return;
+            if (e.target.matches('[data-check-all]')) {
+                daftar.querySelectorAll('[data-check-item]').forEach(function (el) { el.checked = e.target.checked; });
+            }
+            if (e.target.matches('[data-check-all], [data-check-item]')) sinkronDaftarCentang(daftar);
+        });
+        window.sinkronSemuaDaftarCentang();
+    }
+
     // Hapus data master yang punya relasi: GET {url} → {success, relations:{kunci: jumlah}},
     // tampilkan dampaknya, lalu kirim form hapus bila dikonfirmasi.
     //   opsi = { url, jenis: 'cabang', nama, form: HTMLFormElement,
@@ -261,6 +292,7 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         initFormDaftar();
+        initDaftarCentang();
         initTema();
         initFlash();
         initPopover();

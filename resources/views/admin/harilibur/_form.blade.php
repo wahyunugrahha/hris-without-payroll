@@ -4,10 +4,6 @@
     $jenisTerpilih = old('jenis_libur', $master->jenis_libur ?? null);
     $cabangTerpilih = old('kode_cabang', $selectedCabang ?? []) ?: [];
     $deptTerpilih = old('kode_dept', $selectedDept ?? []) ?: [];
-    $pilihan = [
-        ['cabang', 'Cabang', 'kode_cabang', $cabang, 'kode_cabang', 'nama_cabang', $cabangTerpilih],
-        ['dept', 'Departemen', 'kode_dept', $departemen, 'kode_dept', 'nama_dept', $deptTerpilih],
-    ];
 @endphp
 
 <form action="{{ $edit ? route('harilibur.update', $master->id) : route('harilibur.store') }}" method="POST"
@@ -80,29 +76,10 @@
             <legend class="form-section-title">Berlaku untuk</legend>
             <p class="text-secondary small mb-3">Biarkan semua kosong agar libur berlaku untuk <strong>semua cabang & departemen</strong>.</p>
             <div class="form-grid">
-                @foreach ($pilihan as [$kunci, $label, $nama, $koleksi, $kolomKode, $kolomNama, $terpilih])
-                    <div class="check-list" data-check-list>
-                        <div class="check-list-head">
-                            <label class="form-check m-0">
-                                <input class="form-check-input" type="checkbox" data-check-all>
-                                <span class="form-check-label fw-medium">Semua {{ strtolower($label) }}</span>
-                            </label>
-                            <span class="check-list-count" data-check-count>0 dipilih</span>
-                        </div>
-                        <div class="check-list-body">
-                            @foreach ($koleksi as $item)
-                                <label class="form-check">
-                                    <input type="checkbox" class="form-check-input" data-check-item name="{{ $nama }}[]"
-                                        value="{{ $item->{$kolomKode} }}" @checked(in_array($item->{$kolomKode}, $terpilih))>
-                                    <span class="form-check-label text-truncate" title="{{ $item->{$kolomNama} }}">{{ $item->{$kolomNama} }}</span>
-                                </label>
-                            @endforeach
-                        </div>
-                        @error($nama)
-                            <div class="text-danger small px-3 pb-2">{{ $message }}</div>
-                        @enderror
-                    </div>
-                @endforeach
+                <x-admin.check-list name="kode_cabang" :items="$cabang" kode="kode_cabang" label="nama_cabang"
+                    :selected="$cabangTerpilih" judul="Semua cabang" />
+                <x-admin.check-list name="kode_dept" :items="$departemen" kode="kode_dept" label="nama_dept"
+                    :selected="$deptTerpilih" judul="Semua departemen" />
             </div>
         </fieldset>
     </div>
@@ -112,28 +89,3 @@
         <button type="submit" class="btn btn-primary">{{ $edit ? 'Simpan perubahan' : 'Simpan hari libur' }}</button>
     </div>
 </form>
-
-@push('myscript')
-    <script>
-        // Daftar centang dengan "pilih semua" + penghitung.
-        document.querySelectorAll('[data-check-list]').forEach(function(daftar) {
-            const semua = daftar.querySelector('[data-check-all]');
-            const item = daftar.querySelectorAll('[data-check-item]');
-            const hitung = daftar.querySelector('[data-check-count]');
-
-            function sinkron() {
-                const n = daftar.querySelectorAll('[data-check-item]:checked').length;
-                hitung.textContent = n + ' dipilih';
-                semua.checked = n > 0 && n === item.length;
-                semua.indeterminate = n > 0 && n < item.length;
-            }
-
-            semua.addEventListener('change', function() {
-                item.forEach((el) => el.checked = semua.checked);
-                sinkron();
-            });
-            item.forEach((el) => el.addEventListener('change', sinkron));
-            sinkron();
-        });
-    </script>
-@endpush

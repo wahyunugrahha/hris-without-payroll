@@ -36,7 +36,10 @@ class BpjsController extends Controller
         }
 
         if (! empty($request->nama_lengkap)) {
-            $query->where('karyawan.nama_lengkap', 'like', '%'.$request->nama_lengkap.'%');
+            // Satu kolom cari untuk nama atau NIK (tidak peka huruf besar/kecil).
+            $cari = '%'.$request->nama_lengkap.'%';
+            $query->where(fn ($q) => $q->where('karyawan.nama_lengkap', 'ilike', $cari)
+                ->orWhere('bpjs_tk_requests.nik', 'ilike', $cari));
         }
 
         if (! empty($request->status)) {

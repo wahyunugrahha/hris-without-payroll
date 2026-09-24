@@ -2654,6 +2654,107 @@ a.contact-value {
 
 .summary-item--danger { --tone: var(--color-danger); }
 
+/* Pratinjau gambar (kartu BPJS, bukti KPI). */
+.image-preview {
+    display: inline-block;
+}
+
+.image-preview img {
+    max-width: 320px;
+    max-height: 180px;
+    border-radius: 10px;
+    object-fit: cover;
+    box-shadow: 0 0 0 1px var(--color-rule);
+}
+
+/* Tabel yang bisa diedit langsung (indikator KPI): textarea menyatu dengan sel sampai difokus. */
+.edit-table textarea.form-control {
+    min-height: 36px;
+    border-color: transparent;
+    background: transparent;
+    overflow: hidden;
+    resize: none;
+}
+
+.edit-table textarea.form-control:hover {
+    border-color: var(--color-rule);
+}
+
+.edit-table textarea.form-control:focus {
+    border-color: var(--color-focus);
+    background: var(--color-surface);
+}
+
+.row-inactive > td {
+    opacity: 0.55;
+}
+
+.row-editable > td {
+    background: var(--color-surface-2);
+}
+
+/* Bilah simpan menempel di bawah layar untuk form panjang. */
+.save-bar {
+    position: sticky;
+    bottom: var(--space-sm);
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-rule);
+    border-radius: 12px;
+    background: var(--color-surface);
+    box-shadow: 0 8px 24px -12px rgb(0 0 0 / 0.25);
+}
+
+/* Filter lebar (mis. pencarian karyawan dengan Select2). */
+.filter-field--wide {
+    flex: 2 1 280px;
+    max-width: 420px;
+}
+
+/* Bilah aksi massal: muncul saat ada baris yang dicentang. */
+.selection-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-md);
+    border-bottom: 1px solid var(--color-rule);
+    background: var(--color-accent-tint);
+    font-size: 0.875rem;
+}
+
+.selection-bar[hidden] {
+    display: none;
+}
+
+/* Meter capaian sederhana (bar + persen). */
+.meter {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    min-width: 160px;
+}
+
+.meter-track {
+    flex: 1;
+    height: 6px;
+    overflow: hidden;
+    border-radius: 3px;
+    background: var(--color-surface-2);
+    box-shadow: inset 0 0 0 1px var(--color-rule);
+}
+
+.meter-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--color-accent);
+}
+
 /* ════════════════════════════════════════════════════════════════════
  * 15. Footer
  * ════════════════════════════════════════════════════════════════════ */
