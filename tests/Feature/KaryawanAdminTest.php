@@ -10,6 +10,8 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\MessageBag;
+use Illuminate\Support\ViewErrorBag;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -90,6 +92,25 @@ class KaryawanAdminTest extends TestCase
 
         $this->actingAs($lihat($this->admin('CBG2')), 'user')->get('/karyawan')
             ->assertViewHas('ringkasan', ['total' => 1, 'aktif' => 1, 'nonaktif' => 0, 'menunggu' => 0]);
+    }
+
+    public function test_error_form_tambah_tampil_di_dekat_field_dan_isian_dipertahankan(): void
+    {
+        Permission::create(['name' => 'karyawan-view-admin', 'guard_name' => 'user']);
+        $admin = $this->admin()->givePermissionTo('karyawan-view-admin');
+
+        $this->actingAs($admin, 'user')
+            ->from('/karyawan')
+            ->post('/karyawan/store', ['_form' => 'tambah', 'nama_lengkap' => 'Budi Santoso'])
+            ->assertSessionHasErrors(['nik' => 'NIK wajib diisi.']);
+
+        $this->actingAs($admin, 'user')
+            ->withSession(['_old_input' => ['_form' => 'tambah', 'nama_lengkap' => 'Budi Santoso']])
+            ->withSession(['errors' => (new ViewErrorBag)->put('default', new MessageBag(['nik' => ['NIK wajib diisi.']]))])
+            ->get('/karyawan')
+            ->assertSee('data-buka-otomatis', false)
+            ->assertSee('NIK wajib diisi.')
+            ->assertSee('value="Budi Santoso"', false);
     }
 
     public function test_cabang_harus_valid(): void

@@ -1641,7 +1641,270 @@ a.summary-item:focus-visible {
 }
 
 /* ════════════════════════════════════════════════════════════════════
- * 12. Footer
+ * 12. Form dalam modal (section, grid 2 kolom, upload foto, setting switch)
+ * ════════════════════════════════════════════════════════════════════ */
+.modal-backdrop.show {
+    backdrop-filter: blur(2px);
+}
+
+.modal-form {
+    --tblr-modal-width: 800px;
+}
+
+.modal-form .modal-content {
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.modal-form .modal-header {
+    align-items: flex-start;
+    padding: var(--space-md) var(--space-lg);
+}
+
+.modal-form .modal-title {
+    font-size: 1.0625rem;
+}
+
+.modal-subtitle {
+    margin: 2px 0 0;
+    color: var(--color-muted);
+    font-size: 0.8125rem;
+}
+
+/* Form membungkus body + footer: biarkan body yang menggulir (header & footer tetap terlihat). */
+.modal-form-body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.modal-form .modal-body {
+    padding: var(--space-md) var(--space-lg);
+    overflow-y: auto;
+}
+
+.modal-form .modal-footer {
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-lg);
+    border-top: 1px solid var(--color-rule);
+}
+
+.modal-form .modal-footer > * {
+    margin: 0;
+}
+
+.form-section {
+    margin: 0;
+    padding: var(--space-md) 0;
+    border: 0;
+    border-top: 1px solid var(--color-rule);
+}
+
+.form-section:first-of-type {
+    padding-top: 0;
+    border-top: 0;
+}
+
+.form-section-title {
+    float: none;
+    width: auto;
+    margin-bottom: var(--space-sm);
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-sm) var(--space-md);
+}
+
+.form-grid-full {
+    grid-column: 1 / -1;
+}
+
+.form-grid .form-label {
+    margin-bottom: 4px;
+}
+
+.form-grid .form-control,
+.form-grid .form-select {
+    min-height: 38px;
+    border-radius: 8px;
+}
+
+.form-grid .invalid-feedback {
+    font-size: 0.75rem;
+}
+
+.form-error-summary {
+    margin-bottom: var(--space-md);
+    padding: var(--space-xs) var(--space-sm);
+    border: 1px solid color-mix(in oklab, var(--color-danger) 35%, transparent);
+    border-radius: 8px;
+    background: color-mix(in oklab, var(--color-danger) 8%, var(--color-surface));
+    color: color-mix(in oklab, var(--color-danger) 80%, var(--color-ink));
+    font-size: 0.8125rem;
+}
+
+/* Upload foto: input asli disembunyikan secara visual tetapi tetap bisa difokus keyboard. */
+.upload-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+}
+
+.upload-drop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: var(--space-md);
+    border: 1px dashed var(--color-rule-2);
+    border-radius: 10px;
+    background: var(--color-surface-2);
+    color: var(--color-muted);
+    text-align: center;
+    cursor: pointer;
+    transition: border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out);
+}
+
+.upload-drop:hover,
+.upload-drop.is-drag {
+    border-color: var(--color-focus);
+    background: var(--color-accent-tint);
+}
+
+.upload-input:focus-visible + .upload-drop,
+.upload-input:focus-visible ~ .upload-preview {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+}
+
+.upload-title {
+    color: var(--color-ink);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.upload-hint {
+    font-size: 0.75rem;
+}
+
+.upload-drop .btn {
+    margin-top: 4px;
+    pointer-events: none;
+}
+
+.upload-preview {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs);
+    border: 1px solid var(--color-rule);
+    border-radius: 10px;
+}
+
+.upload-preview[hidden],
+.upload-drop[hidden] {
+    display: none;
+}
+
+.upload-preview img {
+    flex: 0 0 56px;
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 0 0 1px var(--color-rule);
+}
+
+.upload-nama {
+    color: var(--color-ink);
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.upload-ukuran {
+    color: var(--color-muted);
+    font-size: 0.75rem;
+}
+
+.upload.is-invalid .upload-drop,
+.upload.is-invalid .upload-preview {
+    border-color: var(--color-danger);
+}
+
+/* Baris pengaturan dengan switch. */
+.setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    margin: 0;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-rule);
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.setting-row:hover {
+    background: var(--color-surface-2);
+}
+
+.setting-title {
+    display: block;
+    color: var(--color-ink);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.setting-desc {
+    display: block;
+    color: var(--color-muted);
+    font-size: 0.8125rem;
+}
+
+.setting-row .form-switch .form-check-input {
+    width: 2.25rem;
+    height: 1.25rem;
+    cursor: pointer;
+}
+
+@media (max-width: 575.98px) {
+    .modal-form {
+        margin: var(--space-xs);
+    }
+
+    .modal-form .modal-header,
+    .modal-form .modal-body,
+    .modal-form .modal-footer {
+        padding-inline: var(--space-md);
+    }
+
+    .form-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .modal-form .modal-footer > * {
+        flex: 1;
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+ * 13. Footer
  * ════════════════════════════════════════════════════════════════════ */
 .page > .page-wrapper > .footer {
     border-top: 1px solid var(--color-rule);
@@ -1652,7 +1915,7 @@ a.summary-item:focus-visible {
 }
 
 /* ════════════════════════════════════════════════════════════════════
- * 13. Utilitas yang di-hardcode di view (bg-white, text-dark, dst.)
+ * 14. Utilitas yang di-hardcode di view (bg-white, text-dark, dst.)
  * ════════════════════════════════════════════════════════════════════ */
 /* Dipakai di beberapa view (asal Tailwind), tidak ada di Bootstrap. */
 .min-w-0 {
@@ -1681,7 +1944,7 @@ a.summary-item:focus-visible {
 }
 
 /* ════════════════════════════════════════════════════════════════════
- * 14. Gerak
+ * 15. Gerak
  * ════════════════════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
     *,

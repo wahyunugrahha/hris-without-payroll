@@ -49,7 +49,7 @@
         if (flash.warning) {
             Swal.fire({ title: 'Peringatan!', text: flash.warning, icon: 'warning', confirmButtonText: 'Ok' });
         }
-        if (flash.errors && flash.errors.length) {
+        if (flash.errors && flash.errors.length && !document.querySelector('[data-inline-errors]')) {
             var ul = document.createElement('ul');
             ul.className = 'text-start mb-0';
             flash.errors.forEach(function (pesan) {

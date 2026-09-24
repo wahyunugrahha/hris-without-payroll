@@ -276,96 +276,209 @@
     </div>
 
     {{-- MODAL TAMBAH DATA --}}
-    <div class="modal modal-blur fade" id="modal-inputkaryawan" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    @php
+        // Error validasi & isian lama hanya milik form tambah bila form ini yang dikirim (bukan form edit).
+        $errTambah = old('_form') === 'tambah' && $errors->any();
+        $isian = fn ($field, $default = null) => $errTambah ? old($field, $default) : $default;
+        $galat = fn ($field) => $errTambah ? $errors->first($field) : null;
+        $kelasGalat = fn ($field) => $galat($field) ? ' is-invalid' : '';
+    @endphp
+    <div class="modal modal-blur fade" id="modal-inputkaryawan" tabindex="-1" role="dialog"
+        aria-labelledby="judulTambahKaryawan" aria-describedby="deskripsiTambahKaryawan" aria-hidden="true"
+        @if ($errTambah) data-inline-errors data-buka-otomatis @endif>
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-form" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Tambah Data Karyawan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="{{ route('karyawan.store') }}" method="POST" id="formKaryawan"
-                    enctype="multipart/form-data">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label required">NIK</label>
-                                <input type="text" class="form-control" name="nik" placeholder="NIK" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label required">Nama Lengkap</label>
-                                <input type="text" class="form-control" name="nama_lengkap"
-                                    placeholder="Nama Lengkap" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label required">Nama Panggilan</label>
-                                <input type="text" class="form-control" name="nama_panggilan" placeholder="Panggilan"
-                                    required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label required">Jabatan</label>
-                                <select name="jabatan_id" class="form-select" required>
-                                    <option value="">Pilih Jabatan</option>
-                                    @foreach ($jabatans as $j)
-                                        <option value="{{ $j->id }}">{{ $j->nama_jabatan }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label required">No. HP</label>
-                                <input type="text" class="form-control" name="no_hp" placeholder="08xxx" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Status PTKP</label>
-                                <select name="status_ptkp" class="form-select">
-                                    <option value="TK">TK</option>
-                                    @for ($i = 0; $i <= 10; $i++)
-                                        <option value="K/{{ $i }}">K/{{ $i }}</option>
-                                    @endfor
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">TMT (Join Date)</label>
-                                <input type="date" class="form-control" name="tmt" value="{{ date('Y-m-d') }}">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Awal Kontrak</label>
-                                <input type="date" class="form-control" name="tanggal_awal_kontrak">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label required">Departemen</label>
-                                <select name="kode_dept" class="form-select" required>
-                                    <option value="">Pilih</option>
-                                    @foreach ($departemen as $d)
-                                        <option value="{{ $d->kode_dept }}">{{ $d->nama_dept }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label required">PT</label>
-                                <select name="kode_cabang" class="form-select" required>
-                                    <option value="">Pilih</option>
-                                    @foreach ($cabang as $c)
-                                        <option value="{{ $c->kode_cabang }}">{{ $c->nama_cabang }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="is_whitelist" value="1"
-                                        {{ old('is_whitelist') ? 'checked' : '' }}>
-                                    <span class="form-check-label">Whitelist (karyawan dikecualikan dari presensi
-                                        harian)</span>
-                                </label>
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label class="form-label">Foto</label>
-                                <input type="file" class="form-control" name="foto">
-                            </div>
-                        </div>
+                    <div>
+                        <h5 class="modal-title" id="judulTambahKaryawan">Tambah Karyawan</h5>
+                        <p class="modal-subtitle" id="deskripsiTambahKaryawan">Lengkapi informasi karyawan untuk menambahkan data baru.</p>
                     </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+
+                <form action="{{ route('karyawan.store') }}" method="POST" id="formKaryawan" enctype="multipart/form-data"
+                    class="modal-form-body" novalidate data-validasi-native>
+                    @csrf
+                    <input type="hidden" name="_form" value="tambah">
+
+                    <div class="modal-body">
+                        @if ($errTambah)
+                            <div class="form-error-summary" role="alert">
+                                Periksa {{ $errors->count() }} isian yang ditandai di bawah.
+                            </div>
+                        @endif
+
+                        <fieldset class="form-section">
+                            <legend class="form-section-title">Informasi pribadi</legend>
+                            <div class="form-grid">
+                                <div>
+                                    <label class="form-label required" for="tambah-nik">NIK</label>
+                                    <input type="text" class="form-control{{ $kelasGalat('nik') }}" id="tambah-nik" name="nik"
+                                        value="{{ $isian('nik') }}" placeholder="Contoh: 202400123" inputmode="numeric"
+                                        autocomplete="off" required @if ($galat('nik')) aria-describedby="galat-nik" @endif>
+                                    @if ($galat('nik'))
+                                        <div class="invalid-feedback" id="galat-nik">{{ $galat('nik') }}</div>
+                                    @endif
+                                </div>
+                                <div>
+                                    <label class="form-label required" for="tambah-nama">Nama lengkap</label>
+                                    <input type="text" class="form-control{{ $kelasGalat('nama_lengkap') }}" id="tambah-nama"
+                                        name="nama_lengkap" value="{{ $isian('nama_lengkap') }}" placeholder="Sesuai KTP"
+                                        autocomplete="off" required @if ($galat('nama_lengkap')) aria-describedby="galat-nama_lengkap" @endif>
+                                    @if ($galat('nama_lengkap'))
+                                        <div class="invalid-feedback" id="galat-nama_lengkap">{{ $galat('nama_lengkap') }}</div>
+                                    @endif
+                                </div>
+                                <div>
+                                    <label class="form-label required" for="tambah-panggilan">Nama panggilan</label>
+                                    <input type="text" class="form-control{{ $kelasGalat('nama_panggilan') }}" id="tambah-panggilan"
+                                        name="nama_panggilan" value="{{ $isian('nama_panggilan') }}" placeholder="Nama sehari-hari"
+                                        autocomplete="off" required @if ($galat('nama_panggilan')) aria-describedby="galat-nama_panggilan" @endif>
+                                    @if ($galat('nama_panggilan'))
+                                        <div class="invalid-feedback" id="galat-nama_panggilan">{{ $galat('nama_panggilan') }}</div>
+                                    @endif
+                                </div>
+                                <div>
+                                    <label class="form-label required" for="tambah-hp">No. HP</label>
+                                    <input type="tel" class="form-control{{ $kelasGalat('no_hp') }}" id="tambah-hp" name="no_hp"
+                                        value="{{ $isian('no_hp') }}" placeholder="08xxxxxxxxxx" inputmode="numeric"
+                                        autocomplete="off" required @if ($galat('no_hp')) aria-describedby="galat-no_hp" @endif>
+                                    @if ($galat('no_hp'))
+                                        <div class="invalid-feedback" id="galat-no_hp">{{ $galat('no_hp') }}</div>
+                                    @endif
+                                </div>
+
+                                {{-- Upload foto: input file asli disembunyikan, dipakai apa adanya oleh form. --}}
+                                <div class="form-grid-full">
+                                    <span class="form-label" id="label-foto">Foto</span>
+                                    <div class="upload{{ $galat('foto') ? ' is-invalid' : '' }}" data-upload>
+                                        <input type="file" name="foto" id="tambah-foto" class="upload-input"
+                                            accept="image/jpeg,image/png" aria-labelledby="label-foto"
+                                            aria-describedby="petunjuk-foto" data-maks-byte="{{ 3 * 1024 * 1024 }}">
+                                        <label for="tambah-foto" class="upload-drop" data-upload-kosong>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                                                stroke-width="1.75" stroke="currentColor" fill="none" stroke-linecap="round"
+                                                stroke-linejoin="round" aria-hidden="true">
+                                                <path d="M15 8h.01" />
+                                                <path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12z" />
+                                                <path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5" />
+                                                <path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3" />
+                                            </svg>
+                                            <span class="upload-title">Unggah foto</span>
+                                            <span class="upload-hint" id="petunjuk-foto">JPG / PNG · maks. 3 MB · seret ke sini atau</span>
+                                            <span class="btn btn-sm">Pilih foto</span>
+                                        </label>
+                                        <div class="upload-preview" data-upload-isi hidden>
+                                            <img src="" alt="Pratinjau foto karyawan" data-upload-gambar>
+                                            <div class="min-w-0 flex-fill">
+                                                <div class="upload-nama" data-upload-nama></div>
+                                                <div class="upload-ukuran" data-upload-ukuran></div>
+                                            </div>
+                                            <label for="tambah-foto" class="btn btn-sm">Ganti</label>
+                                            <button type="button" class="btn btn-sm btn-ghost-danger" data-upload-hapus>Hapus</button>
+                                        </div>
+                                    </div>
+                                    <div class="invalid-feedback d-block" data-upload-galat>{{ $galat('foto') }}</div>
+                                    @if ($errTambah && !$galat('foto'))
+                                        <div class="form-hint">Foto perlu dipilih ulang setelah ada isian yang salah.</div>
+                                    @endif
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="form-section">
+                            <legend class="form-section-title">Data kepegawaian</legend>
+                            <div class="form-grid">
+                                <div>
+                                    <label class="form-label required" for="tambah-jabatan">Jabatan</label>
+                                    <select name="jabatan_id" id="tambah-jabatan" class="form-select{{ $kelasGalat('jabatan_id') }}" required>
+                                        <option value="">Pilih jabatan</option>
+                                        @foreach ($jabatans as $j)
+                                            <option value="{{ $j->id }}" @selected($isian('jabatan_id') == $j->id)>{{ $j->nama_jabatan }}</option>
+                                        @endforeach
+                                    </select>
+                                    @if ($galat('jabatan_id'))
+                                        <div class="invalid-feedback">{{ $galat('jabatan_id') }}</div>
+                                    @endif
+                                </div>
+                                <div>
+                                    <label class="form-label required" for="tambah-dept">Departemen</label>
+                                    <select name="kode_dept" id="tambah-dept" class="form-select{{ $kelasGalat('kode_dept') }}" required>
+                                        <option value="">Pilih departemen</option>
+                                        @foreach ($departemen as $d)
+                                            <option value="{{ $d->kode_dept }}" @selected($isian('kode_dept') == $d->kode_dept)>{{ $d->nama_dept }}</option>
+                                        @endforeach
+                                    </select>
+                                    @if ($galat('kode_dept'))
+                                        <div class="invalid-feedback">{{ $galat('kode_dept') }}</div>
+                                    @endif
+                                </div>
+                                <div>
+                                    <label class="form-label required" for="tambah-cabang">PT</label>
+                                    <select name="kode_cabang" id="tambah-cabang" class="form-select{{ $kelasGalat('kode_cabang') }}" required>
+                                        @if ($cabang->count() !== 1)
+                                            <option value="">Pilih PT</option>
+                                        @endif
+                                        @foreach ($cabang as $c)
+                                            <option value="{{ $c->kode_cabang }}" @selected($isian('kode_cabang') == $c->kode_cabang)>{{ $c->nama_cabang }}</option>
+                                        @endforeach
+                                    </select>
+                                    @if ($galat('kode_cabang'))
+                                        <div class="invalid-feedback">{{ $galat('kode_cabang') }}</div>
+                                    @endif
+                                </div>
+                                <div>
+                                    <label class="form-label" for="tambah-tmt">TMT (tanggal bergabung)</label>
+                                    <input type="date" class="form-control{{ $kelasGalat('tmt') }}" id="tambah-tmt" name="tmt"
+                                        value="{{ $isian('tmt', date('Y-m-d')) }}">
+                                    @if ($galat('tmt'))
+                                        <div class="invalid-feedback">{{ $galat('tmt') }}</div>
+                                    @endif
+                                </div>
+                                <div>
+                                    <label class="form-label" for="tambah-awal-kontrak">Awal kontrak</label>
+                                    <input type="date" class="form-control{{ $kelasGalat('tanggal_awal_kontrak') }}" id="tambah-awal-kontrak"
+                                        name="tanggal_awal_kontrak" value="{{ $isian('tanggal_awal_kontrak') }}">
+                                    @if ($galat('tanggal_awal_kontrak'))
+                                        <div class="invalid-feedback">{{ $galat('tanggal_awal_kontrak') }}</div>
+                                    @endif
+                                </div>
+                                <div>
+                                    <label class="form-label" for="tambah-ptkp">Status PTKP</label>
+                                    <select name="status_ptkp" id="tambah-ptkp" class="form-select{{ $kelasGalat('status_ptkp') }}">
+                                        <option value="TK" @selected($isian('status_ptkp', 'TK') === 'TK')>TK</option>
+                                        @for ($i = 0; $i <= 10; $i++)
+                                            <option value="K/{{ $i }}" @selected($isian('status_ptkp') === "K/{$i}")>K/{{ $i }}</option>
+                                        @endfor
+                                    </select>
+                                    @if ($galat('status_ptkp'))
+                                        <div class="invalid-feedback">{{ $galat('status_ptkp') }}</div>
+                                    @endif
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="form-section">
+                            <legend class="form-section-title">Pengaturan presensi</legend>
+                            <label class="setting-row" for="tambah-whitelist">
+                                <span class="min-w-0">
+                                    <span class="setting-title">Whitelist presensi</span>
+                                    <span class="setting-desc">Karyawan tidak diwajibkan melakukan presensi harian.</span>
+                                </span>
+                                <span class="form-check form-switch m-0">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="tambah-whitelist"
+                                        name="is_whitelist" value="1" @checked($isian('is_whitelist'))>
+                                </span>
+                            </label>
+                        </fieldset>
+                    </div>
+
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary ms-auto">Simpan</button>
+                        <button type="button" class="btn" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary" data-tombol-simpan>
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" hidden data-spinner></span>
+                            <span data-label-simpan>Simpan Karyawan</span>
+                        </button>
                     </div>
                 </form>
             </div>
@@ -459,12 +572,180 @@
 
 @push('myscript')
     <script>
-        $(function() {
-            // 1. Reset Form Tambah saat dibuka
-            $('#btnTambahkaryawan').on('click', function() {
-                $('#formKaryawan')[0].reset();
+        // Modal Tambah Karyawan: validasi inline, pratinjau foto, cegah submit ganda, konfirmasi sebelum menutup.
+        (function() {
+            const modalEl = document.getElementById('modal-inputkaryawan');
+            const form = document.getElementById('formKaryawan');
+            if (!modalEl || !form || typeof bootstrap === 'undefined') return;
+
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            const tombolSimpan = form.querySelector('[data-tombol-simpan]');
+            let berubah = false;
+            let menyimpan = false;
+            let bolehTutup = false;
+
+            // ── Pesan error di dekat field ──
+            const labelUntuk = (el) => (form.querySelector(`label[for="${el.id}"]`)?.textContent || el.name).trim();
+
+            function tandai(el, pesan) {
+                const wadah = el.closest('div');
+                let umpan = wadah.querySelector(':scope > .invalid-feedback');
+                el.classList.toggle('is-invalid', Boolean(pesan));
+                el.toggleAttribute('aria-invalid', Boolean(pesan));
+                if (pesan) {
+                    if (!umpan) {
+                        umpan = document.createElement('div');
+                        umpan.className = 'invalid-feedback';
+                        umpan.id = 'galat-' + el.name;
+                        wadah.appendChild(umpan);
+                    }
+                    umpan.textContent = pesan;
+                    el.setAttribute('aria-describedby', umpan.id);
+                } else if (umpan) {
+                    umpan.remove();
+                    el.removeAttribute('aria-describedby');
+                }
+            }
+
+            form.addEventListener('input', (e) => {
+                berubah = true;
+                if (e.target.classList.contains('is-invalid') && e.target.value.trim()) tandai(e.target, null);
+            });
+            form.addEventListener('change', (e) => {
+                berubah = true;
+                if (e.target.matches('select.is-invalid') && e.target.value) tandai(e.target, null);
             });
 
+            // ── Upload foto (input file asli tetap yang dikirim) ──
+            const upload = form.querySelector('[data-upload]');
+            const inputFoto = upload.querySelector('input[type="file"]');
+            const kosong = upload.querySelector('[data-upload-kosong]');
+            const isi = upload.querySelector('[data-upload-isi]');
+            const galatFoto = form.querySelector('[data-upload-galat]');
+            const maksByte = Number(inputFoto.dataset.maksByte);
+            let urlPratinjau = null;
+
+            const ukuranTeks = (b) => b >= 1048576 ? (b / 1048576).toFixed(1).replace('.', ',') + ' MB' : Math.ceil(b / 1024) + ' KB';
+
+            function kosongkanFoto(pesan = '') {
+                inputFoto.value = '';
+                if (urlPratinjau) URL.revokeObjectURL(urlPratinjau);
+                urlPratinjau = null;
+                isi.hidden = true;
+                kosong.hidden = false;
+                galatFoto.textContent = pesan;
+                upload.classList.toggle('is-invalid', Boolean(pesan));
+            }
+
+            inputFoto.addEventListener('change', () => {
+                const file = inputFoto.files[0];
+                if (!file) return kosongkanFoto();
+                if (!['image/jpeg', 'image/png'].includes(file.type)) return kosongkanFoto('Foto harus berformat JPG atau PNG.');
+                if (file.size > maksByte) return kosongkanFoto('Ukuran foto maksimal 3 MB.');
+
+                if (urlPratinjau) URL.revokeObjectURL(urlPratinjau);
+                urlPratinjau = URL.createObjectURL(file);
+                upload.querySelector('[data-upload-gambar]').src = urlPratinjau;
+                upload.querySelector('[data-upload-nama]').textContent = file.name;
+                upload.querySelector('[data-upload-ukuran]').textContent = ukuranTeks(file.size);
+                galatFoto.textContent = '';
+                upload.classList.remove('is-invalid');
+                kosong.hidden = true;
+                isi.hidden = false;
+            });
+
+            upload.querySelector('[data-upload-hapus]').addEventListener('click', () => {
+                kosongkanFoto();
+                inputFoto.focus();
+            });
+
+            ['dragenter', 'dragover'].forEach((ev) => kosong.addEventListener(ev, (e) => {
+                e.preventDefault();
+                kosong.classList.add('is-drag');
+            }));
+            ['dragleave', 'drop'].forEach((ev) => kosong.addEventListener(ev, () => kosong.classList.remove('is-drag')));
+            kosong.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const file = e.dataTransfer.files[0];
+                if (!file) return;
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                inputFoto.files = dt.files;
+                inputFoto.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+
+            // ── Submit: cek field wajib, lalu kunci tombol agar tidak terkirim dua kali ──
+            form.addEventListener('submit', (e) => {
+                if (menyimpan) {
+                    e.preventDefault();
+                    return;
+                }
+                let pertama = null;
+                form.querySelectorAll('[required]').forEach((el) => {
+                    const salah = !el.value.trim();
+                    tandai(el, salah ? `${labelUntuk(el)} wajib diisi.` : null);
+                    if (salah && !pertama) pertama = el;
+                });
+                if (pertama) {
+                    e.preventDefault();
+                    pertama.focus();
+                    return;
+                }
+
+                menyimpan = true;
+                tombolSimpan.disabled = true;
+                tombolSimpan.querySelector('[data-spinner]').hidden = false;
+                tombolSimpan.querySelector('[data-label-simpan]').textContent = 'Menyimpan…';
+            });
+
+            // ── Buka / tutup ──
+            function bersihkan() {
+                form.reset();
+                form.querySelectorAll('.is-invalid').forEach((el) => tandai(el, null));
+                form.querySelector('.form-error-summary')?.remove();
+                kosongkanFoto();
+                berubah = false;
+                modalEl.removeAttribute('data-inline-errors');
+            }
+
+            modalEl.addEventListener('shown.bs.modal', () => {
+                (form.querySelector('.is-invalid') || form.querySelector('#tambah-nik')).focus();
+            });
+
+            // Isian belum disimpan tidak langsung hilang saat ditutup (X, Batal, Esc, atau klik di luar).
+            modalEl.addEventListener('hide.bs.modal', (e) => {
+                if (menyimpan || !berubah || bolehTutup) {
+                    bolehTutup = false;
+                    return;
+                }
+                e.preventDefault();
+                Swal.fire({
+                    target: modalEl, // tetap di dalam modal agar fokus keyboard tidak direbut modal Bootstrap
+                    title: 'Data belum disimpan',
+                    text: 'Yakin ingin keluar? Isian yang sudah diketik akan hilang.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, keluar',
+                    cancelButtonText: 'Lanjut mengisi',
+                    confirmButtonColor: 'var(--color-danger)',
+                    reverseButtons: true,
+                }).then((hasil) => {
+                    if (!hasil.isConfirmed) return;
+                    bersihkan();
+                    bolehTutup = true;
+                    modal.hide();
+                });
+            });
+
+            // Validasi server gagal: buka lagi modal dengan isian lama & pesan di tiap field.
+            if (modalEl.hasAttribute('data-buka-otomatis')) {
+                berubah = true;
+                modal.show();
+            }
+        })();
+    </script>
+    <script>
+        $(function() {
             // 2. Load Form Edit via AJAX
             $('.edit').click(function(e) {
                 e.preventDefault();
